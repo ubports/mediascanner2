@@ -17,17 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Scanner.hh"
-#include <cstdlib>
-#include <cstdio>
+#ifndef SCANNERCORE_H
+#define SCANNERCORE_H
 
-using namespace std;
+enum MediaType {
+    AudioMedia,
+    VideoMedia,
+    UnknownMedia,
+};
 
-int main(int /*argc*/, char **/*argv*/) {
-    Scanner s;
-    string root = getenv("HOME");
-    root += "/Music";
-    vector<string> files = s.scanFiles(root, AudioMedia);
-    printf("Found %ld files.\n", (long)files.size());
-    return 0;
-}
+#endif

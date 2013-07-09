@@ -22,13 +22,14 @@
 
 #include<string>
 #include<vector>
+#include"scannercore.hh"
 
 class Scanner {
 public:
     Scanner();
     ~Scanner();
 
-    std::vector<std::string> scanFiles(const std::string &root);
+    std::vector<std::string> scanFiles(const std::string &root, const MediaType type);
 
 };
 

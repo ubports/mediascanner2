@@ -21,14 +21,10 @@
 #define FILETYPEDETECTOR_HH
 
 #include<string>
-
-enum MediaType {
-    AudioMedia,
-    VideoMedia,
-    UnknownMedia,
-};
+#include"scannercore.hh"
 
 class FileTypeDetector {
+public:
     MediaType detect(const std::string &fname);
 };
 

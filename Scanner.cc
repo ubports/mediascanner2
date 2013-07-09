@@ -18,6 +18,7 @@
  */
 
 #include "Scanner.hh"
+#include "FileTypeDetector.hh"
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>
@@ -31,8 +32,9 @@ Scanner::~Scanner() {
 
 }
 
-vector<string> Scanner::scanFiles(const std::string &root) {
+vector<string> Scanner::scanFiles(const std::string &root, const MediaType type) {
     vector<string> result;
+    FileTypeDetector d;
     DIR* dir = opendir(root.c_str());
     printf("In subdir %s\n", root.c_str());
     if(!dir) {
@@ -46,10 +48,10 @@ vector<string> Scanner::scanFiles(const std::string &root) {
             continue;
         string fullpath = root + "/" + fname;
         stat(fullpath.c_str(), &statbuf);
-        if(S_ISREG(statbuf.st_mode)) {
+        if(S_ISREG(statbuf.st_mode) && d.detect(fullpath) == type) {
             result.push_back(fullpath);
         } else if(S_ISDIR(statbuf.st_mode)) {
-            vector<string> subdir = scanFiles(fullpath);
+            vector<string> subdir = scanFiles(fullpath, type);
             result.insert(result.end(), subdir.begin(), subdir.end());
         }
     }
