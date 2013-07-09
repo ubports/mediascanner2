@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCANNER_HH_
-#define SCANNER_HH_
+#ifndef FILETYPEDETECTOR_HH
+#define FILETYPEDETECTOR_HH
 
 #include<string>
-#include<vector>
 
-class Scanner {
-public:
-    Scanner();
-    ~Scanner();
+enum MediaType {
+    AudioMedia,
+    VideoMedia,
+    UnknownMedia,
+};
 
-    std::vector<std::string> scanFiles(const std::string &root);
-
+class FileTypeDetector {
+    MediaType detect(const std::string &fname);
 };
 
 #endif
