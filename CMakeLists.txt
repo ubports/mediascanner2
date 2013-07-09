@@ -19,5 +19,5 @@ endif()
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 
-add_executable(scanner Scanner.cc FileTypeDetector.cc scannermain.cc)
+add_executable(scanner Scanner.cc FileTypeDetector.cc MediaFile.cc scannermain.cc)
 add_executable(watcher watchertest.cc)
