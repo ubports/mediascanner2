@@ -17,17 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Scanner.hh"
-#include <cstdlib>
-#include <cstdio>
+#include<string>
+#include<vector>
 
-using namespace std;
+class Scanner {
+public:
+    Scanner();
+    ~Scanner();
 
-int main(int /*argc*/, char **/*argv*/) {
-    Scanner s;
-    string root = getenv("HOME");
-    root += "/Music";
-    vector<string> files = s.scanFiles(root);
-    printf("Found %ld files.\n", (long)files.size());
-    return 0;
-}
+    std::vector<std::string> scanFiles(const std::string &root);
+
+};
