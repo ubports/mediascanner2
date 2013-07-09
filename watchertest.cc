@@ -27,7 +27,8 @@ using namespace std;
 #define BUFSIZE 4096
 
 int main(int /*argc*/, char **/*argv*/) {
-    string mount_point = "/media/jpakkane";
+    string mount_point = "/media/";
+    mount_point += getlogin();
     int ifd;
     int wd;
     char buf[BUFSIZE];
@@ -42,6 +43,7 @@ int main(int /*argc*/, char **/*argv*/) {
         printf("Could not create watch for mount point.\n");
         return 1;
     }
+    printf("Watching location %s.\n", mount_point.c_str());
     while(true) {
         ssize_t num_read;
         num_read = read(ifd, buf, BUFSIZE);
