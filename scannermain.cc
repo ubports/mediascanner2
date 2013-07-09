@@ -18,16 +18,37 @@
  */
 
 #include "Scanner.hh"
+#include "MediaFile.hh"
+#include "MediaStore.hh"
+
 #include <cstdlib>
 #include <cstdio>
 
 using namespace std;
 
-int main(int /*argc*/, char **/*argv*/) {
+static int do_query(vector<string> &files, string &query) {
+    MediaStore s;
+    for(auto &fname : files) {
+        s.insert(MediaFile(fname));
+    }
+    vector<MediaFile> matches = s.query(query);
+    printf("Got %ld matches.\n", (long)matches.size());
+    for(auto &m : matches) {
+        printf(" %s\n", m.getFileName().c_str());
+    }
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    if(argc != 2) {
+        printf("%s <query term>\n", argv[0]);
+        return 1;
+    }
     Scanner s;
     string root = getenv("HOME");
+    string query = argv[1];
     root += "/Music";
     vector<string> files = s.scanFiles(root, AudioMedia);
     printf("Found %ld files.\n", (long)files.size());
-    return 0;
+    return do_query(files, query);
 }

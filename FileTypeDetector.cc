@@ -19,6 +19,7 @@
 
 #include"FileTypeDetector.hh"
 #include<cstdio>
+
 bool endsWith(const std::string &text, const std::string &end) {
     auto loc = text.rfind(end);
     if(loc == std::string::npos)
