@@ -19,7 +19,6 @@
 
 #include<cstdio>
 #include<map>
-#include<set>
 #include<string>
 #include<stdexcept>
 #include<sys/inotify.h>
@@ -33,8 +32,8 @@ class SubtreeWatcher {
 private:
     int inotifyid;
     // Ideally use boost::bimap or something instead of these two separate objects.
-    map<int, string> dirmap;
-    set<string> dirs;
+    map<int, string> wd2str;
+    map<string, int> str2wd;
 
     static const int BUFSIZE=4096;
 
@@ -42,6 +41,8 @@ private:
     void fileDeleted(const string &abspath);
     void dirAdded(const string &abspath);
     void dirRemoved(const string &abspath);
+
+    void removeDir(const string &abspath);
 
 public:
     SubtreeWatcher();
@@ -58,7 +59,7 @@ SubtreeWatcher::SubtreeWatcher() {
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
-    for(auto &i : dirmap) {
+    for(auto &i : wd2str) {
         inotify_rm_watch(inotifyid, i.first);
     }
     close(inotifyid);
@@ -67,7 +68,7 @@ SubtreeWatcher::~SubtreeWatcher() {
 void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
-    if(dirs.find(root) != dirs.end())
+    if(str2wd.find(root) != str2wd.end())
         return;
     DIR* dir = opendir(root.c_str());
     printf("Watching subdirectory %s\n", root.c_str());
@@ -79,8 +80,8 @@ void SubtreeWatcher::addDir(const string &root) {
     if(wd == -1) {
         throw runtime_error("Could not create inotify watch object.");
     }
-    dirmap[wd] = root;
-    dirs.insert(root);
+    wd2str[wd] = root;
+    str2wd[root] = wd;
     struct dirent* curloc;
     while( (curloc = readdir(dir)) ) {
         struct stat statbuf;
@@ -95,6 +96,16 @@ void SubtreeWatcher::addDir(const string &root) {
     }
 }
 
+void SubtreeWatcher::removeDir(const string &abspath) {
+    if(str2wd.find(abspath) == str2wd.end())
+        return;
+    int wd = str2wd[abspath];
+    inotify_rm_watch(inotifyid, wd);
+    wd2str.erase(wd);
+    str2wd.erase(abspath);
+    printf("Stopped watching %s.\n", abspath.c_str());
+}
+
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
 }
@@ -105,6 +116,7 @@ void SubtreeWatcher::fileDeleted(const string &abspath) {
 
 void SubtreeWatcher::dirAdded(const string &abspath) {
     printf("New directory was created: %s.\n", abspath.c_str());
+    addDir(abspath);
 }
 
 void SubtreeWatcher::dirRemoved(const string &abspath) {
@@ -127,7 +139,7 @@ void SubtreeWatcher::run() {
         }
         for(char *p = buf; p < buf + num_read;) {
             struct inotify_event *event = (struct inotify_event *) p;
-            string directory = dirmap[event->wd];
+            string directory = wd2str[event->wd];
             string filename(event->name);
             string abspath = directory + '/' + filename;
             bool is_dir = false;
@@ -148,6 +160,8 @@ void SubtreeWatcher::run() {
                     dirRemoved(abspath);
                 if(is_file)
                     fileDeleted(abspath);
+            } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT)) {
+                removeDir(abspath);
             } else {
                 printf("Unknown event.\n");
             }
