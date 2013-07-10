@@ -76,7 +76,7 @@ void SubtreeWatcher::addDir(const string &root) {
         return;
     }
     int wd = inotify_add_watch(inotifyid, root.c_str(),
-            IN_CREATE | IN_DELETE_SELF | IN_DELETE |
+            IN_CREATE | IN_DELETE_SELF | IN_DELETE | IN_CLOSE_WRITE |
             IN_MOVED_FROM | IN_MOVED_TO | IN_ONLYDIR);
     if(wd == -1) {
         throw runtime_error("Could not create inotify watch object.");
@@ -151,17 +151,22 @@ void SubtreeWatcher::run() {
                 is_dir = true;
             if(S_ISREG(statbuf.st_mode))
                 is_file = true;
-            if((event->mask & IN_CREATE) || (event->mask & IN_MOVED_TO)) {
+            if(event->mask & IN_CREATE) {
                 if(is_dir)
                     dirAdded(abspath);
-                if(is_file) // Maybe should check for IN_CLOSE_WRITE instead.
+                // Do not add files upon creation because we can't detect
+                // its metadata until it is fully written.
+            } else if ((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
+                if(is_dir)
+                    dirAdded(abspath);
+                if(is_file)
                     fileAdded(abspath);
             } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
                 if(is_dir)
                     dirRemoved(abspath);
                 if(is_file)
                     fileDeleted(abspath);
-            } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT)) {
+            } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
                 removeDir(abspath);
             } else {
                 printf("Unknown event.\n");
