@@ -33,11 +33,14 @@ private:
     int inotifyid;
     map<int, string> dirmap;
 
+    static const int BUFSIZE=4096;
+
 public:
     SubtreeWatcher();
     ~SubtreeWatcher();
 
     void addDir(const string &path);
+    void run();
 };
 
 SubtreeWatcher::SubtreeWatcher() {
@@ -57,7 +60,7 @@ void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
     DIR* dir = opendir(root.c_str());
-    printf("In subdir %s\n", root.c_str());
+    printf("Watching subdirectory %s\n", root.c_str());
     if(!dir) {
         return;
     }
@@ -82,6 +85,50 @@ void SubtreeWatcher::addDir(const string &root) {
 }
 
 
+void SubtreeWatcher::run() {
+    char buf[BUFSIZE];
+    while(true) {
+        ssize_t num_read;
+        num_read = read(inotifyid, buf, BUFSIZE);
+        if(num_read == 0) {
+            printf("Inotify returned 0.\n");
+            return;
+        }
+        if(num_read == -1) {
+            printf("Read error.\n");
+            return;
+        }
+        for(char *p = buf; p < buf + num_read;) {
+            struct inotify_event *event = (struct inotify_event *) p;
+            string directory = dirmap[event->wd];
+            string filename(event->name);
+            string abspath = directory + '/' + filename;
+            bool is_dir = false;
+            bool is_file = false;
+            struct stat statbuf;
+            stat(abspath.c_str(), &statbuf);
+            if(S_ISDIR(statbuf.st_mode))
+                is_dir = true;
+            if(S_ISREG(statbuf.st_mode))
+                is_file = true;
+            if(event->mask & IN_CREATE) {
+                if(is_dir)
+                    printf("New directory was created: %s.\n", abspath.c_str());
+                if(is_file)
+                    printf("New file was created: %s.\n", abspath.c_str());
+            } else if(event->mask & IN_DELETE) {
+                if(is_dir)
+                    printf("Subdirectory was deleted: %s.\n", abspath.c_str());
+                if(is_file)
+                    printf("File was deleted: %s\n", abspath.c_str());
+            } else {
+                printf("Unknown event.\n");
+            }
+            p += sizeof(struct inotify_event) + event->len;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     SubtreeWatcher sw;
     if(argc != 2) {
@@ -89,5 +136,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     sw.addDir(argv[1]);
+    sw.run();
     return 0;
 }
