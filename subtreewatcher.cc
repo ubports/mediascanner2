@@ -71,12 +71,13 @@ void SubtreeWatcher::addDir(const string &root) {
     if(str2wd.find(root) != str2wd.end())
         return;
     DIR* dir = opendir(root.c_str());
-    printf("Watching subdirectory %s\n", root.c_str());
+    printf("Watching subdirectory %s.\n", root.c_str());
     if(!dir) {
         return;
     }
     int wd = inotify_add_watch(inotifyid, root.c_str(),
-            IN_IGNORED | IN_CREATE | IN_DELETE_SELF | IN_DELETE);
+            IN_CREATE | IN_DELETE_SELF | IN_DELETE |
+            IN_MOVED_FROM | IN_MOVED_TO | IN_ONLYDIR);
     if(wd == -1) {
         throw runtime_error("Could not create inotify watch object.");
     }
@@ -150,12 +151,12 @@ void SubtreeWatcher::run() {
                 is_dir = true;
             if(S_ISREG(statbuf.st_mode))
                 is_file = true;
-            if(event->mask & IN_CREATE) {
+            if((event->mask & IN_CREATE) || (event->mask & IN_MOVED_TO)) {
                 if(is_dir)
                     dirAdded(abspath);
-                if(is_file)
+                if(is_file) // Maybe should check for IN_CLOSE_WRITE instead.
                     fileAdded(abspath);
-            } else if(event->mask & IN_DELETE) {
+            } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
                 if(is_dir)
                     dirRemoved(abspath);
                 if(is_file)
