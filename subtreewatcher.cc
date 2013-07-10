@@ -19,6 +19,7 @@
 
 #include<cstdio>
 #include<map>
+#include<set>
 #include<string>
 #include<stdexcept>
 #include<sys/inotify.h>
@@ -31,9 +32,16 @@ using namespace std;
 class SubtreeWatcher {
 private:
     int inotifyid;
+    // Ideally use boost::bimap or something instead of these two separate objects.
     map<int, string> dirmap;
+    set<string> dirs;
 
     static const int BUFSIZE=4096;
+
+    void fileAdded(const string &abspath);
+    void fileDeleted(const string &abspath);
+    void dirAdded(const string &abspath);
+    void dirRemoved(const string &abspath);
 
 public:
     SubtreeWatcher();
@@ -59,6 +67,8 @@ SubtreeWatcher::~SubtreeWatcher() {
 void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
+    if(dirs.find(root) != dirs.end())
+        return;
     DIR* dir = opendir(root.c_str());
     printf("Watching subdirectory %s\n", root.c_str());
     if(!dir) {
@@ -70,6 +80,7 @@ void SubtreeWatcher::addDir(const string &root) {
         throw runtime_error("Could not create inotify watch object.");
     }
     dirmap[wd] = root;
+    dirs.insert(root);
     struct dirent* curloc;
     while( (curloc = readdir(dir)) ) {
         struct stat statbuf;
@@ -82,6 +93,22 @@ void SubtreeWatcher::addDir(const string &root) {
             addDir(fullpath);
         }
     }
+}
+
+void SubtreeWatcher::fileAdded(const string &abspath) {
+    printf("New file was created: %s.\n", abspath.c_str());
+}
+
+void SubtreeWatcher::fileDeleted(const string &abspath) {
+    printf("File was deleted: %s\n", abspath.c_str());
+}
+
+void SubtreeWatcher::dirAdded(const string &abspath) {
+    printf("New directory was created: %s.\n", abspath.c_str());
+}
+
+void SubtreeWatcher::dirRemoved(const string &abspath) {
+    printf("Subdirectory was deleted: %s.\n", abspath.c_str());
 }
 
 
@@ -113,14 +140,14 @@ void SubtreeWatcher::run() {
                 is_file = true;
             if(event->mask & IN_CREATE) {
                 if(is_dir)
-                    printf("New directory was created: %s.\n", abspath.c_str());
+                    dirAdded(abspath);
                 if(is_file)
-                    printf("New file was created: %s.\n", abspath.c_str());
+                    fileAdded(abspath);
             } else if(event->mask & IN_DELETE) {
                 if(is_dir)
-                    printf("Subdirectory was deleted: %s.\n", abspath.c_str());
+                    dirRemoved(abspath);
                 if(is_file)
-                    printf("File was deleted: %s\n", abspath.c_str());
+                    fileDeleted(abspath);
             } else {
                 printf("Unknown event.\n");
             }
