@@ -18,8 +18,39 @@
  */
 
 #include<cstdio>
+#include<map>
+#include<string>
+#include<stdexcept>
+#include<sys/inotify.h>
+#include<unistd.h>
+
+using namespace std;
+
+class SubtreeWatcher {
+private:
+    int inotifyid;
+    map<int, string> dirmap;
+
+public:
+    SubtreeWatcher();
+    ~SubtreeWatcher();
+};
+
+SubtreeWatcher::SubtreeWatcher() {
+    inotifyid = inotify_init();
+    if(inotifyid == -1)
+        throw runtime_error("Could not init inotify.");
+}
+
+SubtreeWatcher::~SubtreeWatcher() {
+    for(auto &i : dirmap) {
+        inotify_rm_watch(inotifyid, i.first);
+    }
+    close(inotifyid);
+}
 
 int main(int argc, char **argv) {
+    SubtreeWatcher sw;
     if(argc != 2) {
         printf("%s <subdir to watch>\n", argv[0]);
         return 1;
