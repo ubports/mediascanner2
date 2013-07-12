@@ -27,6 +27,7 @@ using namespace std;
 struct metadata {
     string author;
     string title;
+    string album;
 };
 
 static void
@@ -45,6 +46,8 @@ print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
                 md->author = g_value_get_string(val);
             if(tagname == "title")
                 md->title = g_value_get_string(val);
+            if(tagname == "album")
+                md->album == g_value_get_string(val);
             /*
               || tagname == "title" || tagname == "album" || tagname == "genre") {
               printf("%s: %s\n", tag, g_value_get_string (val));
@@ -65,7 +68,8 @@ static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesin
 }
 
 
-int getMetadata(const std::string &filename, std::string &title, std::string &author) {
+int getMetadata(const std::string &filename, std::string &title, std::string &author,
+        std::string &album) {
     struct metadata md;
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
@@ -112,6 +116,7 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     }
     title = md.title;
     author = md.author;
+    album = md.album;
     gst_message_unref (msg);
     return 0;
 }

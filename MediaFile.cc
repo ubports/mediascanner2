@@ -26,13 +26,11 @@ using namespace std;
 
 MediaFile::MediaFile(std::string filename) : filename(filename) {
     FileTypeDetector d;
-    title = "";
-    author = "";
     type = d.detect(filename);
     if(type == UnknownMedia) {
         throw runtime_error("Tried to create an invalid media type.");
     }
-    getMetadata(filename, title, author);
+    getMetadata(filename, title, author, album);
 }
 
 std::string MediaFile::getFileName() const {
@@ -44,6 +42,10 @@ std::string MediaFile::getTitle() const {
 
 std::string MediaFile::getAuthor() const {
     return author;
+}
+
+std::string MediaFile::getAlbum() const {
+    return album;
 }
 
 MediaType MediaFile::getType() const {

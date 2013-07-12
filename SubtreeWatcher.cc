@@ -90,6 +90,7 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 }
 
 void SubtreeWatcher::fileAdded(const string &abspath) {
+    printf("New file was created: %s.\n", abspath.c_str());
     if(store) {
         try {
             MediaFile m(abspath);
@@ -98,14 +99,13 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
             fprintf(stderr, "Error when adding new file: %s\n", e.what());
         }
     }
-    printf("New file was created: %s.\n", abspath.c_str());
 }
 
 void SubtreeWatcher::fileDeleted(const string &abspath) {
+    printf("File was deleted: %s\n", abspath.c_str());
     if(store) {
         store->remove(abspath);
     }
-    printf("File was deleted: %s\n", abspath.c_str());
 }
 
 void SubtreeWatcher::dirAdded(const string &abspath) {

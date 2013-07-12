@@ -19,4 +19,4 @@
 
 #include<string>
 
-int getMetadata(const std::string &filename, std::string &title, std::string &author);
+int getMetadata(const std::string &filename, std::string &title, std::string &author, std::string &album);

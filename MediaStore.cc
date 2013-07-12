@@ -44,9 +44,11 @@ MediaStore::~MediaStore() {
 
 void MediaStore::insert(MediaFile m) {
     p->files.push_back(m);
-    printf("Added to backing store: %s\n", m.getFileName().c_str());
+    const char *typestr = m.getType() == AudioMedia ? "song" : "video";
+    printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
     printf(" author : %s\n", m.getAuthor().c_str());
     printf(" title  : %s\n", m.getTitle().c_str());
+    printf(" album  : %s\n", m.getAlbum().c_str());
 }
 
 void MediaStore::remove(string m) {

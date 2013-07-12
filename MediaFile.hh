@@ -31,12 +31,14 @@ public:
     std::string getFileName() const;
     std::string getTitle() const;
     std::string getAuthor() const;
+    std::string getAlbum() const;
     MediaType getType() const;
 
 private:
     std::string filename;
     std::string title;
     std::string author;
+    std::string album;
     MediaType type;
 };
 
