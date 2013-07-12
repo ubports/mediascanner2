@@ -46,6 +46,15 @@ void MediaStore::insert(MediaFile m) {
     p->files.push_back(m);
 }
 
+void MediaStore::remove(string m) {
+    for(auto i=p->files.begin(); i!=p->files.end(); i++) {
+        if((*i).getFileName() == m) {
+            p->files.erase(i);
+        }
+    }
+}
+
+
 vector<MediaFile> MediaStore::query(const std::string &q) {
     vector<MediaFile> result;
     string lowerq = low(q);

@@ -18,15 +18,19 @@
  */
 
 #include"SubtreeWatcher.hh"
+#include"MediaStore.hh"
+#include"MediaFile.hh"
+
 #include<stdexcept>
 #include<sys/inotify.h>
 #include<dirent.h>
 #include<sys/stat.h>
 #include<unistd.h>
 
+
 using namespace std;
 
-SubtreeWatcher::SubtreeWatcher() {
+SubtreeWatcher::SubtreeWatcher(MediaStore *store) : store(store) {
     inotifyid = inotify_init();
     keep_going = true;
     if(inotifyid == -1)
@@ -86,6 +90,13 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 }
 
 void SubtreeWatcher::fileAdded(const string &abspath) {
+    if(store) {
+        try {
+            MediaFile m(abspath);
+            store->insert(m);
+        } catch(const exception &e) {
+        }
+    }
     printf("New file was created: %s.\n", abspath.c_str());
 }
 

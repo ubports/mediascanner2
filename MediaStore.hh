@@ -36,6 +36,7 @@ public:
     ~MediaStore();
 
     void insert(MediaFile m);
+    void remove(std::string m);
     std::vector<MediaFile> query(const std::string &q);
 };
 

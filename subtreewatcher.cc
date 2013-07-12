@@ -18,13 +18,15 @@
  */
 
 #include"SubtreeWatcher.hh"
+#include"MediaStore.hh"
 
 #include<cstdio>
 
 using namespace std;
 
 int main(int argc, char **argv) {
-    SubtreeWatcher sw;
+    MediaStore store;
+    SubtreeWatcher sw(&store);
     if(argc != 2) {
         printf("%s <subdir to watch>\n", argv[0]);
         return 1;
