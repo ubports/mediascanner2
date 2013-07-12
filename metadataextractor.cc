@@ -23,24 +23,35 @@
 
 using namespace std;
 
+struct metadata {
+    string author;
+    string title;
+};
+
 static void
-print_one_tag (const GstTagList * list, const gchar * tag, gpointer /*user_data*/)
-{
-  int i, num;
-  string tagname(tag);
+print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
+    struct metadata *md = (struct metadata*) user_data;
+    int i, num;
+    string tagname(tag);
 
-  num = gst_tag_list_get_tag_size (list, tag);
-  for (i = 0; i < num; ++i) {
-    const GValue *val;
+    num = gst_tag_list_get_tag_size (list, tag);
+    for (i = 0; i < num; ++i) {
+        const GValue *val;
 
-    val = gst_tag_list_get_value_index (list, tag, i);
-    if (G_VALUE_HOLDS_STRING (val)) {
-      if(tagname == "artist" || tagname == "title" || tagname == "album" || tagname == "genre") {
-          printf("%s: %s\n", tag, g_value_get_string (val));
-      }
+        val = gst_tag_list_get_value_index (list, tag, i);
+        if (G_VALUE_HOLDS_STRING (val)) {
+            if(tagname == "artist")
+                md->author = g_value_get_string(val);
+            if(tagname == "title")
+                md->title = g_value_get_string(val);
+            /*
+              || tagname == "title" || tagname == "album" || tagname == "genre") {
+              printf("%s: %s\n", tag, g_value_get_string (val));
+          */
+        }
     }
-  }
 }
+
 static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesink) {
     GstPad *sinkpad;
 
@@ -52,15 +63,17 @@ static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesin
     gst_object_unref (sinkpad);
 }
 
-int get_metadata(string filename) {
-    filename = "file://" + filename;
+
+int getMetadata(const std::string &filename, std::string &title, std::string &author) {
+    struct metadata md;
+    string uri = "file://" + filename;
     GstElement *pipe, *dec, *sink;
     GstMessage *msg;
 
     pipe = gst_pipeline_new ("pipeline");
 
     dec = gst_element_factory_make ("uridecodebin", NULL);
-    g_object_set (dec, "uri", filename.c_str(), NULL);
+    g_object_set (dec, "uri", uri.c_str(), NULL);
     gst_bin_add (GST_BIN (pipe), dec);
 
     sink = gst_element_factory_make ("fakesink", NULL);
@@ -80,7 +93,7 @@ int get_metadata(string filename) {
 
       gst_message_parse_tag (msg, &tags);
 
-      gst_tag_list_foreach (tags, print_one_tag, NULL);
+      gst_tag_list_foreach (tags, print_one_tag, &md);
       gst_tag_list_unref (tags);
 
       gst_message_unref (msg);
@@ -88,19 +101,11 @@ int get_metadata(string filename) {
 
     if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR)
       g_error ("Got error");
-
+    title = md.title;
+    author = md.author;
     gst_message_unref (msg);
     gst_element_set_state (pipe, GST_STATE_NULL);
     gst_object_unref (pipe);
     return 0;
 }
 
-
-int main(int argc, char **argv) {
-    gst_init (&argc, &argv);
-    if(argc != 2) {
-        printf("%s <input file>", argv[0]);
-        return 0;
-    }
-    return get_metadata(argv[1]);
-}

@@ -19,18 +19,20 @@
 
 #include "MediaFile.hh"
 #include "FileTypeDetector.hh"
+#include "metadataextractor.hh"
 #include <stdexcept>
 
 using namespace std;
 
 MediaFile::MediaFile(std::string filename) : filename(filename) {
     FileTypeDetector d;
-    title = "Media title";
-    author = "Some Dude";
+    title = "";
+    author = "";
     type = d.detect(filename);
     if(type == UnknownMedia) {
         throw runtime_error("Tried to create an invalid media type.");
     }
+    getMetadata(filename, title, author);
 }
 
 std::string MediaFile::getFileName() const {

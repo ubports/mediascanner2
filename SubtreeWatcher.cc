@@ -101,6 +101,9 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
 }
 
 void SubtreeWatcher::fileDeleted(const string &abspath) {
+    if(store) {
+        store->remove(abspath);
+    }
     printf("File was deleted: %s\n", abspath.c_str());
 }
 

@@ -20,11 +20,12 @@ endif()
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 
-add_executable(scanner Scanner.cc FileTypeDetector.cc MediaFile.cc MediaStore.cc scannermain.cc)
+#add_executable(scanner Scanner.cc FileTypeDetector.cc MediaFile.cc MediaStore.cc scannermain.cc)
 add_executable(watcher watchertest.cc)
-add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
-FileTypeDetector.cc)
 
 add_definitions(${GST_CFLAGS})
-add_executable(metadataextractor metadataextractor.cc)
-target_link_libraries(metadataextractor ${GST_LDFLAGS})
+add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
+FileTypeDetector.cc metadataextractor.cc Scanner.cc)
+target_link_libraries(scannerdemo ${GST_LDFLAGS})
+#add_executable(metadataextractor metadataextractor.cc)
+#target_link_libraries(metadataextractor ${GST_LDFLAGS})

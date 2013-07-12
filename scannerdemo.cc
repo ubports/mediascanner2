@@ -19,19 +19,33 @@
 
 #include"SubtreeWatcher.hh"
 #include"MediaStore.hh"
+#include"Scanner.hh"
+#include"MediaFile.hh"
 
 #include<cstdio>
+#include<gst/gst.h>
 
 using namespace std;
 
+void readFiles(MediaStore &store, const string &subdir) {
+    Scanner s;
+    vector<string> files = s.scanFiles(subdir, AudioMedia);
+    for(auto &i : files) {
+        store.insert(MediaFile(i));
+    }
+}
+
 int main(int argc, char **argv) {
+    gst_init (&argc, &argv);
     MediaStore store;
     SubtreeWatcher sw(&store);
     if(argc != 2) {
-        printf("%s <subdir to watch>\n", argv[0]);
+        printf("%s <subdir to process>\n", argv[0]);
         return 1;
     }
-    sw.addDir(argv[1]);
+    string rootdir(argv[1]);
+    readFiles(store, rootdir);
+    sw.addDir(rootdir);
     sw.run();
     return 0;
 }

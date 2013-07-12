@@ -44,12 +44,17 @@ MediaStore::~MediaStore() {
 
 void MediaStore::insert(MediaFile m) {
     p->files.push_back(m);
+    printf("Added to backing store: %s\n", m.getFileName().c_str());
+    printf(" author : %s\n", m.getAuthor().c_str());
+    printf(" title  : %s\n", m.getTitle().c_str());
 }
 
 void MediaStore::remove(string m) {
     for(auto i=p->files.begin(); i!=p->files.end(); i++) {
         if((*i).getFileName() == m) {
             p->files.erase(i);
+            printf("Removed from backing store: %s\n", m.c_str());
+            return;
         }
     }
 }
