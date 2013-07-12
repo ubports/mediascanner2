@@ -22,7 +22,7 @@ set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 
 add_executable(scanner Scanner.cc FileTypeDetector.cc MediaFile.cc MediaStore.cc scannermain.cc)
 add_executable(watcher watchertest.cc)
-add_executable(subtreewatcher subtreewatcher.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
+add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
 FileTypeDetector.cc)
 
 add_definitions(${GST_CFLAGS})
