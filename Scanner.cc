@@ -44,7 +44,7 @@ vector<string> Scanner::scanFiles(const std::string &root, const MediaType type)
     while( (curloc = readdir(dir)) ) {
         struct stat statbuf;
         string fname = curloc->d_name;
-        if(fname == "." || fname == "..")
+        if(fname == "." || fname == "..") // Maybe skip all files starting with a period?
             continue;
         string fullpath = root + "/" + fname;
         stat(fullpath.c_str(), &statbuf);
