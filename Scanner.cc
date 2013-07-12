@@ -55,5 +55,6 @@ vector<string> Scanner::scanFiles(const std::string &root, const MediaType type)
             result.insert(result.end(), subdir.begin(), subdir.end());
         }
     }
+    closedir(dir);
     return result;
 }

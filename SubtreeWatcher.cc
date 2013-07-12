@@ -66,7 +66,7 @@ void SubtreeWatcher::addDir(const string &root) {
     while( (curloc = readdir(dir)) ) {
         struct stat statbuf;
         string fname = curloc->d_name;
-        if(fname == "." || fname == "..")
+        if(fname == "." || fname == "..") // Maybe ignore all entries starting with a period?
             continue;
         string fullpath = root + "/" + fname;
         stat(fullpath.c_str(), &statbuf);
@@ -74,6 +74,7 @@ void SubtreeWatcher::addDir(const string &root) {
             addDir(fullpath);
         }
     }
+    closedir(dir);
 }
 
 bool SubtreeWatcher::removeDir(const string &abspath) {
