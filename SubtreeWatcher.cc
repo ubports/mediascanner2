@@ -95,6 +95,7 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
             MediaFile m(abspath);
             store->insert(m);
         } catch(const exception &e) {
+            fprintf(stderr, "Error when adding new file: %s\n", e.what());
         }
     }
     printf("New file was created: %s.\n", abspath.c_str());

@@ -31,7 +31,11 @@ void readFiles(MediaStore &store, const string &subdir) {
     Scanner s;
     vector<string> files = s.scanFiles(subdir, AudioMedia);
     for(auto &i : files) {
-        store.insert(MediaFile(i));
+        try {
+            store.insert(MediaFile(i));
+        } catch(const exception &e) {
+            fprintf(stderr, "Error when indexing: %s\n", e.what());
+        }
     }
 }
 

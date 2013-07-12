@@ -20,6 +20,7 @@
 #include<gst/gst.h>
 #include<cstdio>
 #include<string>
+#include<stdexcept>
 
 using namespace std;
 
@@ -66,6 +67,7 @@ static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesin
 
 int getMetadata(const std::string &filename, std::string &title, std::string &author) {
     struct metadata md;
+    // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
     GstElement *pipe, *dec, *sink;
     GstMessage *msg;
@@ -98,14 +100,19 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
 
       gst_message_unref (msg);
     };
+    gst_element_set_state (pipe, GST_STATE_NULL);
+    gst_object_unref (pipe);
 
-    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR)
-      g_error ("Got error");
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+        gst_message_unref (msg);
+        string msg = "Extracting metadata of file ";
+        msg += filename;
+        msg += " failed.";
+        throw runtime_error(msg);
+    }
     title = md.title;
     author = md.author;
     gst_message_unref (msg);
-    gst_element_set_state (pipe, GST_STATE_NULL);
-    gst_object_unref (pipe);
     return 0;
 }
 
