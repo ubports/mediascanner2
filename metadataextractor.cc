@@ -47,7 +47,7 @@ print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
             if(tagname == "title")
                 md->title = g_value_get_string(val);
             if(tagname == "album")
-                md->album == g_value_get_string(val);
+                md->album = g_value_get_string(val);
             /*
               || tagname == "title" || tagname == "album" || tagname == "genre") {
               printf("%s: %s\n", tag, g_value_get_string (val));
