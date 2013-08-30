@@ -38,6 +38,7 @@ public:
     void insert(MediaFile m);
     void remove(std::string m);
     std::vector<MediaFile> query(const std::string &q);
+    size_t size() const;
 };
 
 

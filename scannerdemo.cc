@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
         readFiles(store, rootdir);
         sw.addDir(rootdir);
         //sw.run();
+        printf("Cache has %ld songs.\n", (long) store.size());
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
     }

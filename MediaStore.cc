@@ -46,6 +46,11 @@ void create_tables(sqlite3 *db) {
     }
 }
 
+int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
+    (*((size_t*) arg))++;
+    return 0;
+}
+
 MediaStore::MediaStore() {
     p = new MediaStorePrivate();
     // hackety hack
@@ -61,6 +66,16 @@ MediaStore::MediaStore() {
 MediaStore::~MediaStore() {
     sqlite3_close(p->db);
     delete p;
+}
+
+size_t MediaStore::size() const {
+    size_t result = 0;
+    char *err;
+    if(sqlite3_exec(p->db, "SELECT * from music;", incrementer, &result, &err) != SQLITE_OK) {
+        string s = err;
+        throw s;
+    }
+    return result;
 }
 
 void MediaStore::insert(MediaFile m) {
