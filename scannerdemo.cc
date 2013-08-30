@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         string rootdir(argv[1]);
         readFiles(store, rootdir);
         sw.addDir(rootdir);
-        sw.run();
+        //sw.run();
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
     }
