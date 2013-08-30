@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     }
     string term = argv[1];
     term += "*";
-    if(sqlite3_open(fname.c_str(), &db) != SQLITE_OK) {
+    if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
     }
