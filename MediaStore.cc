@@ -78,7 +78,7 @@ size_t MediaStore::size() const {
     return result;
 }
 
-void MediaStore::insert(MediaFile m) {
+void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
@@ -112,7 +112,7 @@ void MediaStore::insert(MediaFile m) {
 
 }
 
-void MediaStore::remove(string m) {
+void MediaStore::remove(const string &m) {
     for(auto i=p->files.begin(); i!=p->files.end(); i++) {
         if((*i).getFileName() == m) {
             p->files.erase(i);
