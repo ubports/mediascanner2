@@ -23,7 +23,7 @@
 
 using namespace std;
 
-int printer(void*arg, int num_cols, char **data, char **colnames) {
+int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
     for(int i=0; i<num_cols; i++) {
         printf("%s: %s\n", colnames[i], data[i]);
     }
@@ -33,7 +33,7 @@ int printer(void*arg, int num_cols, char **data, char **colnames) {
 int main(int argc, char **argv) {
     sqlite3 *db;
     string fname = "mediastore.db";
-    const char *templ = "SELECT * FROM music WHERE %s MATCH '%s'";
+    const char *templ = "SELECT * FROM music WHERE artist MATCH '%s*' UNION SELECT * FROM music WHERE title MATCH '%s*' ";
     if(argc < 2) {
         printf("%s <term>\n", argv[0]);
         return 1;
@@ -45,13 +45,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     char cmd[1024];
-    sprintf(cmd, templ, "artist", term.c_str(), term.c_str());
+    sprintf(cmd, templ, term.c_str(), term.c_str());
     char *err;
-    if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
-        printf("%s\n", sqlite3_errmsg(db));
-        return 1;
-    }
-    sprintf(cmd, templ, "title", term.c_str(), term.c_str());
     if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
