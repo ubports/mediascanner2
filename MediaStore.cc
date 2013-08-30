@@ -50,11 +50,12 @@ MediaStore::MediaStore() {
     p = new MediaStorePrivate();
     // hackety hack
     string fname = "mediastore.db";
-    remove(fname.c_str());
+    ::remove(fname.c_str());
     if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
         string s = sqlite3_errmsg(p->db);
         throw s;
     }
+    create_tables(p->db);
 }
 
 MediaStore::~MediaStore() {
@@ -63,12 +64,37 @@ MediaStore::~MediaStore() {
 }
 
 void MediaStore::insert(MediaFile m) {
+    char *errmsg;
     p->files.push_back(m);
+    // SQL injection here.
+    const char *templ = "INSERT INTO music VALUES('%s', '%s', '%s');";
+    char cmd[1024];
+    string fname = m.getFileName();
+    string title = m.getTitle();
+    string author = m.getAuthor();
+    for(size_t i=0; i<fname.size(); i++) {
+        if(fname[i] == '\'')
+            fname[i] = ' ';
+    }
+    for(size_t i=0; i<title.size(); i++) {
+        if(title[i] == '\'')
+            title[i] = ' ';
+    }
+    for(size_t i=0; i<author.size(); i++) {
+        if(author[i] == '\'')
+            author[i] = ' ';
+    }
+    sprintf(cmd, templ, fname.c_str(), title.c_str(), author.c_str());
+    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
+        string s = sqlite3_errmsg(p->db);
+        throw s;
+    }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
     printf(" author : %s\n", m.getAuthor().c_str());
     printf(" title  : %s\n", m.getTitle().c_str());
     printf(" album  : %s\n", m.getAlbum().c_str());
+
 }
 
 void MediaStore::remove(string m) {
