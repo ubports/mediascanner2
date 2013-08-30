@@ -19,6 +19,8 @@
 
 #include"MediaStore.hh"
 #include"MediaFile.hh"
+#include <sqlite3.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -32,13 +34,31 @@ static string low(const string &s) {
 
 struct MediaStorePrivate {
     vector<MediaFile> files;
+    sqlite3 *db;
 };
+
+void create_tables(sqlite3 *db) {
+    char *errmsg;
+    sqlite3_exec(db, "CREATE VIRTUAL TABLE music USING fts4(filename, title, artist);",
+            nullptr, nullptr, &errmsg);
+    if(errmsg) {
+        throw string(errmsg);
+    }
+}
 
 MediaStore::MediaStore() {
     p = new MediaStorePrivate();
+    // hackety hack
+    string fname = "mediastore.db";
+    remove(fname.c_str());
+    if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
+        string s = sqlite3_errmsg(p->db);
+        throw s;
+    }
 }
 
 MediaStore::~MediaStore() {
+    sqlite3_close(p->db);
     delete p;
 }
 

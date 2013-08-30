@@ -9,6 +9,7 @@ option(full_warnings "All possible compiler warnings." OFF)
 
 include(FindPkgConfig)
 pkg_search_module(GST gstreamer-1.0 REQUIRED)
+pkg_search_module(SQLITE sqlite3 REQUIRED)
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -std=c++0x")
@@ -26,6 +27,6 @@ add_executable(watcher watchertest.cc)
 add_definitions(${GST_CFLAGS})
 add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
 FileTypeDetector.cc metadataextractor.cc Scanner.cc)
-target_link_libraries(scannerdemo ${GST_LDFLAGS})
+target_link_libraries(scannerdemo ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 #add_executable(metadataextractor metadataextractor.cc)
 #target_link_libraries(metadataextractor ${GST_LDFLAGS})
