@@ -28,5 +28,8 @@ add_definitions(${GST_CFLAGS})
 add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
 FileTypeDetector.cc metadataextractor.cc Scanner.cc)
 target_link_libraries(scannerdemo ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
+
 #add_executable(metadataextractor metadataextractor.cc)
 #target_link_libraries(metadataextractor ${GST_LDFLAGS})
+add_executable(query query.cpp)
+target_link_libraries(query ${SQLITE_LDFLAGS})
