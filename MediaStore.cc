@@ -39,7 +39,7 @@ struct MediaStorePrivate {
 
 void create_tables(sqlite3 *db) {
     char *errmsg;
-    sqlite3_exec(db, "CREATE VIRTUAL TABLE music USING fts4(filename, title, artist);",
+    sqlite3_exec(db, "CREATE VIRTUAL TABLE music USING fts4(filename, title, artist, album);",
             nullptr, nullptr, &errmsg);
     if(errmsg) {
         throw string(errmsg);
@@ -82,11 +82,12 @@ void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
-    const char *templ = "INSERT INTO music VALUES('%s', '%s', '%s');";
+    const char *templ = "INSERT INTO music VALUES('%s', '%s', '%s', '%s');";
     char cmd[1024];
     string fname = m.getFileName();
     string title = m.getTitle();
     string author = m.getAuthor();
+    string album = m.getAlbum();
     for(size_t i=0; i<fname.size(); i++) {
         if(fname[i] == '\'')
             fname[i] = ' ';
@@ -99,9 +100,13 @@ void MediaStore::insert(const MediaFile &m) {
         if(author[i] == '\'')
             author[i] = ' ';
     }
-    sprintf(cmd, templ, fname.c_str(), title.c_str(), author.c_str());
+    for(size_t i=0; i<album.size(); i++) {
+        if(album[i] == '\'')
+            album[i] = ' ';
+    }
+    sprintf(cmd, templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        string s = sqlite3_errmsg(p->db);
+        string s = errmsg;
         throw s;
     }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -112,25 +117,34 @@ void MediaStore::insert(const MediaFile &m) {
 
 }
 
-void MediaStore::remove(const string &m) {
-    for(auto i=p->files.begin(); i!=p->files.end(); i++) {
-        if((*i).getFileName() == m) {
-            p->files.erase(i);
-            printf("Removed from backing store: %s\n", m.c_str());
-            return;
-        }
+void MediaStore::remove(const string &fname) {
+    // Note: slow because fts does not do = very well.
+    // Using MATCH may lead to inaccuracies.
+    const char *templ = "DELETE FROM music WHERE filename = '%s';";
+    char cmd[1024];
+    sprintf(cmd, templ, fname.c_str());
+    char *errmsg;
+    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
+        string s = errmsg;
+        throw s;
     }
 }
 
+static int music_adder(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
+    vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
+    t->push_back(MediaFile(data[0], data[1], data[2], data[3]));
+    return 0;
+}
 
 vector<MediaFile> MediaStore::query(const std::string &q) {
     vector<MediaFile> result;
-    string lowerq = low(q);
-    for(auto &c : p->files) {
-        string l = low(c.getFileName());
-        if(l.find(lowerq) != string::npos) {
-            result.push_back(c);
-        }
+    const char *templ = "SELECT * FROM music WHERE title MATCH '%s*';";
+    char cmd[1024];
+    sprintf(cmd, templ, q.c_str());
+    char *errmsg;
+    if(sqlite3_exec(p->db, cmd, music_adder, &result, &errmsg) != SQLITE_OK) {
+        string s = errmsg;
+        throw s;
     }
     return result;
 }
