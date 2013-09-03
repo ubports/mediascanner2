@@ -78,14 +78,16 @@ static void search_func(UnityScopeSearchBase* search, void* /*user_data*/) {
 
         /* Insert the metadata, if available */
         metadata = g_hash_table_new(g_str_hash, g_str_equal);
-/*
-        g_hash_table_insert(metadata, "author",
-                g_variant_new_string((const gchar*)"KLF"));
-         if (result->creation_date) {
+        if(!m.artist.empty()) {
+            GVariant *var = g_variant_new_string((const gchar*)m.artist.c_str());
+            g_hash_table_insert(metadata, (gpointer)"author", (gpointer)var);
+        }
+        /*
+        if (result->creation_date) {
              g_hash_table_insert(metadata, "creation_date",
-                                 g_variant_new_string(result->creation_date));
-         }
-         */
+                     g_variant_new_string(result->creation_date));
+        }
+        */
         scope_result.metadata = metadata;
 
          /*
