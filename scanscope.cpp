@@ -22,20 +22,53 @@
 #define UNIQUE_NAME "/com/canonical/unity/scope/Music/localscan"
 
 #include<unity.h>
+#include<sqlite3.h>
+#include<string>
+#include<vector>
 
-static void search_func(UnityScopeSearchBase* search, void* user_data) {
-    GSList *results = NULL;
+sqlite3 *db;
+
+struct res {
+    std::string filename;
+    std::string title;
+    std::string artist;
+    std::string album;
+};
+
+int storer(void* arg, int /*num_cols*/, char **data, char** /*colnames*/) {
+    std::vector<res> *store = reinterpret_cast<std::vector<res> *> (arg);
+    res r;
+    r.filename = data[0];
+    r.title = data[1];
+    r.artist = data[2];
+    r.album = data[3];
+    store->push_back(r);
+    return 0;
+}
+
+static void search_func(UnityScopeSearchBase* search, void* /*user_data*/) {
     GHashTable *metadata = NULL;
     UnityScopeResult scope_result = { 0, };
+    std::vector<res> matches;
+    const char *templ = "SELECT * FROM music WHERE artist MATCH '%s*' UNION SELECT * FROM music WHERE title MATCH '%s*' ";
+    char cmd[1024];
+    printf("Query: %s\n", search->search_context->search_query);
+    sprintf(cmd, templ, search->search_context->search_query, search->search_context->search_query);
+    char *err;
+    if(sqlite3_exec(db, cmd, storer, &matches, &err) != SQLITE_OK) {
+        fprintf(stderr, "%s\n", sqlite3_errmsg(db));
+        return;
+    }
 
     /* Iterate through the returned results and add them to the
      * Unity's result set
      */
-    for (int i=0; i<1; i++) {
+    for (const auto &m: matches) {
 
         /* Build and populate a scope result from the source data */
-        scope_result.uri = "file:///home/jpakkane/Music/KLF - Justified And Ancient.mp3";
-        scope_result.title = "Justified and Ancient";
+        std::string uri = std::string("file://") + m.filename;
+        scope_result.uri = (gchar*)uri.c_str();
+        scope_result.title = (gchar*)m.title.c_str();
         //scope_result.icon_hint = result->icon_url;
         scope_result.category = 0;
         scope_result.result_type = UNITY_RESULT_TYPE_DEFAULT;
@@ -44,8 +77,8 @@ static void search_func(UnityScopeSearchBase* search, void* user_data) {
         //scope_result.dnd_uri = result->link;
 
         /* Insert the metadata, if available */
-        /*
         metadata = g_hash_table_new(g_str_hash, g_str_equal);
+/*
         g_hash_table_insert(metadata, "author",
                 g_variant_new_string((const gchar*)"KLF"));
          if (result->creation_date) {
@@ -71,12 +104,17 @@ static UnityAbstractPreview* preview_func(UnityResultPreviewer *previewer, void 
 }
 
 int main(void) {
+    std::string fname = "mediastore.db";
     UnitySimpleScope *scope = NULL;
     UnityScopeDBusConnector *connector = NULL;
     UnityCategorySet *cats = NULL;
     UnityCategory *cat = NULL;
     GIcon *icon = NULL;
 
+    if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+        fprintf(stderr, "%s\n", sqlite3_errmsg(db));
+        return 1;
+    }
     /* Create and set a category for the scope, including an icon */
     icon = g_themed_icon_new(CATEGORY_ICON_PATH);
 
@@ -107,6 +145,7 @@ int main(void) {
     unity_scope_dbus_connector_export(connector, NULL);
     unity_scope_dbus_connector_run();
 
+    sqlite3_close(db);
     return 0;
 }
 

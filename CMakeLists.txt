@@ -37,4 +37,4 @@ target_link_libraries(query ${SQLITE_LDFLAGS})
 
 include_directories(${UNITY_INCLUDE_DIRS})
 add_executable(scanscope scanscope.cpp)
-target_link_libraries(scanscope ${UNITY_LDFLAGS})
+target_link_libraries(scanscope ${SQLITE_LDFLAGS} ${UNITY_LDFLAGS})
