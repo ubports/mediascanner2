@@ -17,9 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define CATEGORY_ICON_PATH "/usr/share/unity/icons/preview_play.svg"
+#define GROUP_NAME "com.canonical.Unity.Scope.Music.Localscan"
+#define UNIQUE_NAME "/com/canonical/unity/scope/Music/localscan"
+
+#include<unity.h>
+
+static void search_func(UnityScopeSearchBase* search, void* user_data) {
+}
+
+static UnityAbstractPreview* preview_func(UnityResultPreviewer *previewer, void *user_data) {
+}
 
 int main(void) {
-#if 0
     UnitySimpleScope *scope = NULL;
     UnityScopeDBusConnector *connector = NULL;
     UnityCategorySet *cats = NULL;
@@ -55,7 +65,7 @@ int main(void) {
     connector = unity_scope_dbus_connector_new(UNITY_ABSTRACT_SCOPE(scope));
     unity_scope_dbus_connector_export(connector, NULL);
     unity_scope_dbus_connector_run();
-#endif
+
     return 0;
 }
 
