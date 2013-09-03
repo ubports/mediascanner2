@@ -108,10 +108,21 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     gst_object_unref (pipe);
 
     if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+        GError *err;
+        gchar *dbg_info;
+        gst_message_parse_error(msg, &err, &dbg_info);
+        string errortxt(err->message);
+        string dbtxt(dbg_info);
+        g_error_free(err);
+        g_free(dbg_info);
+
         gst_message_unref (msg);
         string msg = "Extracting metadata of file ";
         msg += filename;
-        msg += " failed.";
+        msg += " failed: ";
+        msg += errortxt;
+        msg += " ";
+        msg += dbg_info;
         throw runtime_error(msg);
     }
     title = md.title;

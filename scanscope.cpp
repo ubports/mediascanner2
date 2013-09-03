@@ -42,7 +42,7 @@ int storer(void* arg, int /*num_cols*/, char **data, char** /*colnames*/) {
     r.title = data[1];
     r.artist = data[2];
     r.album = data[3];
-    store->push_back(r);
+    store->push_back(std::move(r));
     return 0;
 }
 
@@ -52,7 +52,6 @@ static void search_func(UnityScopeSearchBase* search, void* /*user_data*/) {
     std::vector<res> matches;
     const char *templ = "SELECT * FROM music WHERE artist MATCH '%s*' UNION SELECT * FROM music WHERE title MATCH '%s*' ";
     char cmd[1024];
-    printf("Query: %s\n", search->search_context->search_query);
     sprintf(cmd, templ, search->search_context->search_query, search->search_context->search_query);
     char *err;
     if(sqlite3_exec(db, cmd, storer, &matches, &err) != SQLITE_OK) {
