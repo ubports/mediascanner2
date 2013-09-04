@@ -48,7 +48,8 @@ int storer(void* arg, int /*num_cols*/, char **data, char** /*colnames*/) {
 
 static void search_func(UnityScopeSearchBase* search, void* /*user_data*/) {
     GHashTable *metadata = NULL;
-    UnityScopeResult scope_result = { 0, };
+    UnityScopeResult scope_result =
+    { nullptr, nullptr, 0, UNITY_RESULT_TYPE_DEFAULT, nullptr, nullptr, nullptr, nullptr, nullptr};
     std::vector<res> matches;
     const char *templ = "SELECT * FROM music WHERE artist MATCH '%s*' UNION SELECT * FROM music WHERE title MATCH '%s*' ";
     char cmd[1024];
