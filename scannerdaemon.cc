@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
             return 1;
         }
         string rootdir(argv[1]);
+        store.pruneDeleted();
         readFiles(store, rootdir);
         sw.addDir(rootdir);
         printf("Cache has %ld songs.\n", (long) store.size());

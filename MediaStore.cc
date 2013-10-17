@@ -21,7 +21,7 @@
 #include"MediaFile.hh"
 #include"utils.hh"
 #include <sqlite3.h>
-#include <stdio.h>
+#include <cstdio>
 
 using namespace std;
 
@@ -149,3 +149,31 @@ vector<MediaFile> MediaStore::query(const std::string &q) {
     }
     return result;
 }
+
+static int deleteChecker(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
+    vector<string> *t = reinterpret_cast<vector<string>*> (arg);
+    string fname(data[0]);
+    FILE *f = fopen(fname.c_str(), "r");
+    if(f) {
+        fclose(f);
+    } else {
+        printf("Deleted: %s\n", fname.c_str());
+        t->push_back(fname);
+    }
+    return 0;
+}
+
+void MediaStore::pruneDeleted() {
+    vector<string> deleted;
+    const char *query = "SELECT filename FROM music;";
+    char *errmsg;
+    if(sqlite3_exec(p->db, query, deleteChecker, &deleted, &errmsg) != SQLITE_OK) {
+        string s = errmsg;
+        throw s;
+    }
+    printf("%d files deleted from disk.\n", (int)deleted.size());
+    for(const auto &i : deleted) {
+        remove(i);
+    }
+}
+
