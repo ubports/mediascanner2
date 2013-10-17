@@ -152,12 +152,12 @@ vector<MediaFile> MediaStore::query(const std::string &q) {
 
 static int deleteChecker(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
     vector<string> *t = reinterpret_cast<vector<string>*> (arg);
-    string fname(data[0]);
-    FILE *f = fopen(fname.c_str(), "r");
+    const char *fname = data[0];
+    FILE *f = fopen(fname, "r");
     if(f) {
         fclose(f);
     } else {
-        printf("Deleted: %s\n", fname.c_str());
+        printf("Deleted: %s\n", fname);
         t->push_back(fname);
     }
     return 0;
