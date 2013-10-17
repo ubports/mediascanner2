@@ -157,7 +157,6 @@ static int deleteChecker(void* arg, int /*num_cols*/, char **data, char ** /*col
     if(f) {
         fclose(f);
     } else {
-        printf("Deleted: %s\n", fname);
         t->push_back(fname);
     }
     return 0;
