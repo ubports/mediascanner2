@@ -26,15 +26,20 @@
 #include<dirent.h>
 #include<sys/stat.h>
 #include<unistd.h>
-
+#include<cstring>
+#include<cerrno>
+#include<string>
 
 using namespace std;
 
 SubtreeWatcher::SubtreeWatcher(MediaStore *store) : store(store) {
     inotifyid = inotify_init();
     keep_going = true;
-    if(inotifyid == -1)
-        throw runtime_error("Could not init inotify.");
+    if(inotifyid == -1) {
+        string msg("Could not init inotify: ");
+        msg += strerror(errno);
+        throw runtime_error(msg);
+    }
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
@@ -57,7 +62,9 @@ void SubtreeWatcher::addDir(const string &root) {
             IN_CREATE | IN_DELETE_SELF | IN_DELETE | IN_CLOSE_WRITE |
             IN_MOVED_FROM | IN_MOVED_TO | IN_ONLYDIR);
     if(wd == -1) {
-        throw runtime_error("Could not create inotify watch object.");
+        string msg("Could not create inotify watch object: ");
+        msg += strerror(errno);
+        throw runtime_error(msg);
     }
     wd2str[wd] = root;
     str2wd[root] = wd;
