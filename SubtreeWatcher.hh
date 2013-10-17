@@ -48,7 +48,8 @@ public:
     ~SubtreeWatcher();
 
     void addDir(const std::string &path);
-    void run();
+    void pumpEvents();
+    int getFd() const { return inotifyid; }
 };
 
 

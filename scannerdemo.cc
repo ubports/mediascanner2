@@ -39,6 +39,14 @@ void readFiles(MediaStore &store, const string &subdir) {
     }
 }
 
+int runDaemon(SubtreeWatcher &w) {
+    int ifd = w.getFd();
+    int kbdfd = 0;
+    while(true) {
+
+    }
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     try {
@@ -51,10 +59,10 @@ int main(int argc, char **argv) {
         string rootdir(argv[1]);
         readFiles(store, rootdir);
         sw.addDir(rootdir);
-        //sw.run();
         printf("Cache has %ld songs.\n", (long) store.size());
+        return runDaemon(sw);
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
     }
-    return 0;
+    return 100;
 }

@@ -21,6 +21,7 @@
 #include"MediaStore.hh"
 #include"MediaFile.hh"
 
+#include<sys/select.h>
 #include<stdexcept>
 #include<sys/inotify.h>
 #include<dirent.h>
@@ -127,11 +128,20 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 }
 
 
-void SubtreeWatcher::run() {
+void SubtreeWatcher::pumpEvents() {
     char buf[BUFSIZE];
     if(wd2str.empty())
-        keep_going = false;
-    while(keep_going) {
+        return;
+    while(true) {
+        fd_set reads;
+        FD_ZERO(&reads);
+        FD_SET(inotifyid, &reads);
+        struct timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 1;
+        if(select(inotifyid, &reads, nullptr, nullptr, &timeout) <= 0) {
+            return;
+        }
         ssize_t num_read;
         num_read = read(inotifyid, buf, BUFSIZE);
         if(num_read == 0) {

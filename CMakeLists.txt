@@ -13,7 +13,7 @@ pkg_search_module(SQLITE sqlite3 REQUIRED)
 pkg_search_module(UNITY unity REQUIRED)
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -std=c++11")
 if(${full_warnings})
 # C does not have any more warning flags.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
