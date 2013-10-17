@@ -26,9 +26,9 @@ set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 add_executable(watcher watchertest.cc)
 
 add_definitions(${GST_CFLAGS})
-add_executable(scannerdemo scannerdemo.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
+add_executable(scannerdaemon scannerdaemon.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
 FileTypeDetector.cc metadataextractor.cc Scanner.cc)
-target_link_libraries(scannerdemo ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
+target_link_libraries(scannerdaemon ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
 #add_executable(metadataextractor metadataextractor.cc)
 #target_link_libraries(metadataextractor ${GST_LDFLAGS})
