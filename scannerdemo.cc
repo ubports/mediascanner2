@@ -24,6 +24,10 @@
 
 #include<cstdio>
 #include<gst/gst.h>
+#include<sys/select.h>
+#include<cerrno>
+#include<cstring>
+#include<unistd.h>
 
 using namespace std;
 
@@ -41,9 +45,22 @@ void readFiles(MediaStore &store, const string &subdir) {
 
 int runDaemon(SubtreeWatcher &w) {
     int ifd = w.getFd();
-    int kbdfd = 0;
+    int kbdfd = STDIN_FILENO;
     while(true) {
-
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(ifd, &fds);
+        FD_SET(kbdfd, &fds);
+        int rval = select(ifd+1, &fds, nullptr, nullptr, nullptr);
+        if(rval < 0) {
+            string msg("Select failed: ");
+            msg += strerror(errno);
+            throw msg;
+        }
+        if(FD_ISSET(kbdfd, &fds)) {
+            return 0;
+        }
+        w.pumpEvents();
     }
 }
 
@@ -60,6 +77,7 @@ int main(int argc, char **argv) {
         readFiles(store, rootdir);
         sw.addDir(rootdir);
         printf("Cache has %ld songs.\n", (long) store.size());
+        printf("\n\nPress enter to end this program.\n\n");
         return runDaemon(sw);
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());

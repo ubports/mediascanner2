@@ -138,8 +138,8 @@ void SubtreeWatcher::pumpEvents() {
         FD_SET(inotifyid, &reads);
         struct timeval timeout;
         timeout.tv_sec = 0;
-        timeout.tv_usec = 1;
-        if(select(inotifyid, &reads, nullptr, nullptr, &timeout) <= 0) {
+        timeout.tv_usec = 0;
+        if(select(inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
             return;
         }
         ssize_t num_read;
