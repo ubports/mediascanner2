@@ -39,7 +39,7 @@ struct MediaStorePrivate {
 
 void create_tables(sqlite3 *db) {
     char *errmsg;
-    sqlite3_exec(db, "CREATE VIRTUAL TABLE music USING fts4(filename, title, artist, album);",
+    sqlite3_exec(db, "CREATE VIRTUAL TABLE IF NOT EXISTS music USING fts4(filename, title, artist, album);",
             nullptr, nullptr, &errmsg);
     if(errmsg) {
         throw string(errmsg);
@@ -53,9 +53,7 @@ int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*
 
 MediaStore::MediaStore() {
     p = new MediaStorePrivate();
-    // hackety hack
     string fname = "mediastore.db";
-    ::remove(fname.c_str());
     if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
         string s = sqlite3_errmsg(p->db);
         throw s;
@@ -78,12 +76,20 @@ size_t MediaStore::size() const {
     return result;
 }
 
+static int yup(void* arg, int /*num_cols*/, char **/*data*/, char ** /*colnames*/) {
+    bool *t = reinterpret_cast<bool *> (arg);
+    *t = true;
+    return 0;
+}
+
 void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
     const char *templ = "INSERT INTO music VALUES('%s', '%s', '%s', '%s');";
+    const char *query_templ = "SELECT * FROM music WHERE filename='%s';";
     char cmd[1024];
+
     string fname = m.getFileName();
     string title = m.getTitle();
     string author = m.getAuthor();
@@ -91,6 +97,15 @@ void MediaStore::insert(const MediaFile &m) {
     for(size_t i=0; i<fname.size(); i++) {
         if(fname[i] == '\'')
             fname[i] = ' ';
+    }
+    sprintf(cmd, query_templ, fname.c_str());
+    bool was_in = false;
+    if(sqlite3_exec(p->db, cmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
+        string s = errmsg;
+        throw s;
+    }
+    if(was_in) {
+        return;
     }
     for(size_t i=0; i<title.size(); i++) {
         if(title[i] == '\'')
