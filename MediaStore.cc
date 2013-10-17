@@ -19,6 +19,7 @@
 
 #include"MediaStore.hh"
 #include"MediaFile.hh"
+#include"utils.hh"
 #include <sqlite3.h>
 #include <stdio.h>
 
@@ -86,18 +87,15 @@ void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
-    const char *templ = "INSERT INTO music VALUES('%s', '%s', '%s', '%s');";
-    const char *query_templ = "SELECT * FROM music WHERE filename='%s';";
+    const char *templ = "INSERT INTO music VALUES(%s, %s, %s, %s);";
+    const char *query_templ = "SELECT * FROM music WHERE filename=%s;";
     char cmd[1024];
 
-    string fname = m.getFileName();
-    string title = m.getTitle();
-    string author = m.getAuthor();
-    string album = m.getAlbum();
-    for(size_t i=0; i<fname.size(); i++) {
-        if(fname[i] == '\'')
-            fname[i] = ' ';
-    }
+    string fname = sqlQuote(m.getFileName());
+    string title = sqlQuote(m.getTitle());
+    string author = sqlQuote(m.getAuthor());
+    string album = sqlQuote(m.getAlbum());
+
     sprintf(cmd, query_templ, fname.c_str());
     bool was_in = false;
     if(sqlite3_exec(p->db, cmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
@@ -106,18 +104,6 @@ void MediaStore::insert(const MediaFile &m) {
     }
     if(was_in) {
         return;
-    }
-    for(size_t i=0; i<title.size(); i++) {
-        if(title[i] == '\'')
-            title[i] = ' ';
-    }
-    for(size_t i=0; i<author.size(); i++) {
-        if(author[i] == '\'')
-            author[i] = ' ';
-    }
-    for(size_t i=0; i<album.size(); i++) {
-        if(album[i] == '\'')
-            album[i] = ' ';
     }
     sprintf(cmd, templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {

@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include"utils.hh"
+
 #include<sqlite3.h>
 #include<stdio.h>
 #include<string>
@@ -33,13 +35,14 @@ int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
 int main(int argc, char **argv) {
     sqlite3 *db;
     string fname = "mediastore.db";
-    const char *templ = "SELECT * FROM music WHERE artist MATCH '%s*' UNION SELECT * FROM music WHERE title MATCH '%s*' ";
+    const char *templ = "SELECT * FROM music WHERE artist MATCH %s UNION SELECT * FROM music WHERE title MATCH %s;";
     if(argc < 2) {
         printf("%s <term>\n", argv[0]);
         return 1;
     }
     string term = argv[1];
     term += "*";
+    term = sqlQuote(term);
     if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
