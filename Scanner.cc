@@ -22,6 +22,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>
+#include<memory>
+
 using namespace std;
 
 Scanner::Scanner() {
@@ -35,13 +37,13 @@ Scanner::~Scanner() {
 vector<string> Scanner::scanFiles(const std::string &root, const MediaType type) {
     vector<string> result;
     FileTypeDetector d;
-    DIR* dir = opendir(root.c_str());
+    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
     printf("In subdir %s\n", root.c_str());
     if(!dir) {
         return result;
     }
     struct dirent* curloc;
-    while( (curloc = readdir(dir)) ) {
+    while( (curloc = readdir(dir.get())) ) {
         struct stat statbuf;
         string fname = curloc->d_name;
         if(fname[0] == '.') // Ignore hidden files and dirs.
@@ -55,6 +57,5 @@ vector<string> Scanner::scanFiles(const std::string &root, const MediaType type)
             result.insert(result.end(), subdir.begin(), subdir.end());
         }
     }
-    closedir(dir);
     return result;
 }

@@ -30,6 +30,7 @@
 #include<cstring>
 #include<cerrno>
 #include<string>
+#include<memory>
 
 using namespace std;
 
@@ -55,7 +56,7 @@ void SubtreeWatcher::addDir(const string &root) {
         throw runtime_error("Path must be absolute.");
     if(str2wd.find(root) != str2wd.end())
         return;
-    DIR* dir = opendir(root.c_str());
+    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
     if(!dir) {
         return;
     }
@@ -71,7 +72,7 @@ void SubtreeWatcher::addDir(const string &root) {
     str2wd[root] = wd;
     printf("Watching subdirectory %s, %ld watches in total.\n", root.c_str(), (long)wd2str.size());
     struct dirent* curloc;
-    while( (curloc = readdir(dir)) ) {
+    while( (curloc = readdir(dir.get())) ) {
         struct stat statbuf;
         string fname = curloc->d_name;
         if(fname == "." || fname == "..") // Maybe ignore all entries starting with a period?
@@ -82,7 +83,6 @@ void SubtreeWatcher::addDir(const string &root) {
             addDir(fullpath);
         }
     }
-    closedir(dir);
 }
 
 bool SubtreeWatcher::removeDir(const string &abspath) {
