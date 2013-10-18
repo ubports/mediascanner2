@@ -34,40 +34,6 @@
 
 using namespace std;
 
-void readFiles(MediaStore &store, const string &subdir, const MediaType type) {
-    Scanner s;
-    vector<string> files = s.scanFiles(subdir, type);
-    for(auto &i : files) {
-        try {
-            store.insert(MediaFile(i));
-        } catch(const exception &e) {
-            fprintf(stderr, "Error when indexing: %s\n", e.what());
-        }
-    }
-}
-
-int runDaemon(SubtreeWatcher &w) {
-    int ifd = w.getFd();
-    int kbdfd = STDIN_FILENO;
-    while(true) {
-        fd_set fds;
-        FD_ZERO(&fds);
-        FD_SET(ifd, &fds);
-        FD_SET(kbdfd, &fds);
-        int rval = select(ifd+1, &fds, nullptr, nullptr, nullptr);
-        if(rval < 0) {
-            string msg("Select failed: ");
-            msg += strerror(errno);
-            throw msg;
-        }
-        if(FD_ISSET(kbdfd, &fds)) {
-            return 0;
-        }
-        w.pumpEvents();
-    }
-    return 999;
-}
-
 class ScannerDaemon {
 public:
     ScannerDaemon();
@@ -76,6 +42,7 @@ public:
 
 private:
 
+    void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir, const string &id);
     void removeDir(const string &dir);
     map<string, shared_ptr<SubtreeWatcher>> subtrees;
@@ -112,6 +79,18 @@ void ScannerDaemon::removeDir(const string &dir) {
     assert(stores.find(dir) != stores.end());
     subtrees.erase(dir);
     stores.erase(dir);
+}
+
+void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
+    Scanner s;
+    vector<string> files = s.scanFiles(subdir, type);
+    for(auto &i : files) {
+        try {
+            store.insert(MediaFile(i));
+        } catch(const exception &e) {
+            fprintf(stderr, "Error when indexing: %s\n", e.what());
+        }
+    }
 }
 
 int ScannerDaemon::run() {
