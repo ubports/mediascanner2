@@ -99,20 +99,25 @@ void MediaStore::insert(const MediaFile &m) {
     const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s);";
     const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s);";
     const char *query_templ = "SELECT * FROM %s WHERE filename=%s;";
-    char qcmd[1024];
-    char icmd[1024];
+    const size_t bufsize = 1024;
+    char qcmd[bufsize];
+    char icmd[bufsize];
 
     string fname = sqlQuote(m.getFileName());
-    string title = sqlQuote(m.getTitle());
+    string title;
+    if(m.getTitle().empty())
+        title = sqlQuote(filenameToTitle(m.getFileName()));
+    else
+        title = sqlQuote(m.getTitle());
     string author = sqlQuote(m.getAuthor());
     string album = sqlQuote(m.getAlbum());
 
     if(m.getType() == AudioMedia) {
-        sprintf(qcmd, query_templ, "music", fname.c_str());
-        sprintf(icmd, musicinsert_templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
+        snprintf(qcmd, bufsize, query_templ, "music", fname.c_str());
+        snprintf(icmd, bufsize, musicinsert_templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
     } else if(m.getType() == VideoMedia) {
-        sprintf(qcmd, query_templ, "video", fname.c_str());
-        sprintf(icmd, videoinsert_templ, fname.c_str(), title.c_str());
+        snprintf(qcmd, bufsize, query_templ, "video", fname.c_str());
+        snprintf(icmd, bufsize, videoinsert_templ, fname.c_str(), title.c_str());
     } else {
         return;
     }
@@ -130,9 +135,9 @@ void MediaStore::insert(const MediaFile &m) {
     }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
-    printf(" author : %s\n", m.getAuthor().c_str());
-    printf(" title  : %s\n", m.getTitle().c_str());
-    printf(" album  : %s\n", m.getAlbum().c_str());
+    printf(" author : '%s'\n", m.getAuthor().c_str());
+    printf(" title  : %s\n", title.c_str());
+    printf(" album  : '%s'\n", m.getAlbum().c_str());
 
 }
 

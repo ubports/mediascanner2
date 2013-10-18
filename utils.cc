@@ -36,3 +36,34 @@ std::string sqlQuote(const std::string &input) {
     out.push_back('\0');
     return std::string(&out[0]);
 }
+
+// Convert filename into something that full text search
+// will be able to find. That is, separate words with spaces.
+#include<cstdio>
+std::string filenameToTitle(const std::string &filename) {
+    auto fname_start = filename.rfind('/');
+    auto suffix_dot = filename.rfind('.');
+    std::string result;
+    if(fname_start == std::string::npos) {
+        if(suffix_dot == std::string::npos) {
+            result = filename;
+        } else {
+            result = filename.substr(0, suffix_dot-1);
+        }
+    } else {
+        if(suffix_dot == std::string::npos) {
+            result = filename.substr(fname_start+1, filename.size());
+        } else {
+            result = filename.substr(fname_start+1, suffix_dot-fname_start-1);
+        }
+    }
+    for(size_t i=0; i<result.size(); i++) {
+        auto c = result[i];
+        if(c == '.' || c == '_' || c == '(' || c == ')' ||
+           c == '[' || c == ']' || c == '{' || c == '}' ||
+           c == '\\') {
+            result[i] = ' ';
+        }
+    }
+    return result;
+}

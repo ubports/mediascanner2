@@ -23,5 +23,6 @@
 #include<string>
 
 std::string sqlQuote(const std::string &input);
+std::string filenameToTitle(const std::string &filename);
 
 #endif
