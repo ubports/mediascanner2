@@ -25,6 +25,8 @@
 #include<cstdio>
 #include<gst/gst.h>
 #include<sys/select.h>
+#include<sys/stat.h>
+#include<sys/inotify.h>
 #include<cerrno>
 #include<cstring>
 #include<unistd.h>
@@ -42,9 +44,14 @@ public:
 
 private:
 
+    void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir, const string &id);
     void removeDir(const string &dir);
+    void pumpEvents();
+
+    int mountfd;
+    string mountDir;
     map<string, shared_ptr<SubtreeWatcher>> subtrees;
     map<string, shared_ptr<MediaStore>> stores;
 };
@@ -55,6 +62,8 @@ ScannerDaemon::ScannerDaemon() {
     string musicdir = homedir + "/Music";
     string videodir = homedir + "/Videos";
 
+    mountDir = "/home/jpakkane/workspace/scantest/build";
+    setupMountWatcher();
     addDir(musicdir, "home-music");
     addDir(videodir, "home-video");
 }
@@ -105,7 +114,8 @@ int ScannerDaemon::run() {
             FD_SET(cfd, &fds);
         }
         FD_SET(kbdfd, &fds);
-
+        FD_SET(mountfd, &fds);
+        if(mountfd > maxfd) maxfd = mountfd;
 
         int rval = select(maxfd+1, &fds, nullptr, nullptr, nullptr);
         if(rval < 0) {
@@ -118,6 +128,69 @@ int ScannerDaemon::run() {
         }
         for(const auto &i: subtrees) {
             i.second->pumpEvents();
+        }
+        pumpEvents();
+    }
+    return 99;
+}
+
+void ScannerDaemon::setupMountWatcher() {
+    mountfd = inotify_init();
+    if(mountfd < 0) {
+        string msg("Could not init inotify: ");
+        msg += strerror(errno);
+        throw msg;
+    }
+    int wd = inotify_add_watch(mountfd, mountDir.c_str(),
+            IN_CREATE |  IN_DELETE | IN_ONLYDIR);
+    if(wd == -1) {
+        string msg("Could not create inotify watch object: ");
+        msg += strerror(errno);
+        throw msg;
+    }
+}
+
+void ScannerDaemon::pumpEvents() {
+    const int BUFSIZE= 4096;
+    char buf[BUFSIZE];
+    while(true) {
+        fd_set reads;
+        FD_ZERO(&reads);
+        FD_SET(mountfd, &reads);
+        struct timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 0;
+        if(select(mountfd+1, &reads, nullptr, nullptr, &timeout) <= 0) {
+            return;
+        }
+        ssize_t num_read;
+        num_read = read(mountfd, buf, BUFSIZE);
+        if(num_read == 0) {
+            printf("Inotify returned 0.\n");
+            break;
+        }
+        if(num_read == -1) {
+            printf("Read error.\n");
+            break;
+        }
+        for(char *p = buf; p < buf + num_read;) {
+            struct inotify_event *event = (struct inotify_event *) p;
+            string directory = mountDir;
+            string filename(event->name);
+            string abspath = directory + '/' + filename;
+            string mountId = "mount-" + filename;
+            struct stat statbuf;
+            stat(abspath.c_str(), &statbuf);
+            if(S_ISDIR(statbuf.st_mode)) {
+                if(event->mask & IN_CREATE) {
+                    printf("Volume %s was mounted.\n", abspath.c_str());
+                    addDir(abspath, mountId);
+                } else if(event->mask & IN_DELETE){
+                    printf("Volume %s was unmounted.\n", abspath.c_str());
+                    removeDir(abspath);
+                }
+            }
+            p += sizeof(struct inotify_event) + event->len;
         }
     }
 }
