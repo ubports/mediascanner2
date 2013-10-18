@@ -31,9 +31,9 @@
 
 using namespace std;
 
-void readFiles(MediaStore &store, const string &subdir) {
+void readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
-    vector<string> files = s.scanFiles(subdir, AudioMedia);
+    vector<string> files = s.scanFiles(subdir, type);
     for(auto &i : files) {
         try {
             store.insert(MediaFile(i));
@@ -75,7 +75,9 @@ int main(int argc, char **argv) {
         }
         string rootdir(argv[1]);
         store.pruneDeleted();
-        readFiles(store, rootdir);
+        // FIXME, only traverse tree once.
+        readFiles(store, rootdir, AudioMedia);
+        readFiles(store, rootdir, VideoMedia);
         sw.addDir(rootdir);
         printf("Cache has %ld songs.\n", (long) store.size());
         printf("\n\nPress enter to end this program.\n\n");

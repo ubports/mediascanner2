@@ -45,6 +45,11 @@ void create_tables(sqlite3 *db) {
     if(errmsg) {
         throw string(errmsg);
     }
+    sqlite3_exec(db, "CREATE VIRTUAL TABLE IF NOT EXISTS video USING fts4(filename, title);",
+            nullptr, nullptr, &errmsg);
+    if(errmsg) {
+        throw string(errmsg);
+    }
 }
 
 int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
@@ -70,7 +75,11 @@ MediaStore::~MediaStore() {
 size_t MediaStore::size() const {
     size_t result = 0;
     char *err;
-    if(sqlite3_exec(p->db, "SELECT * from music;", incrementer, &result, &err) != SQLITE_OK) {
+    if(sqlite3_exec(p->db, "SELECT * FROM music;", incrementer, &result, &err) != SQLITE_OK) {
+        string s = err;
+        throw s;
+    }
+    if(sqlite3_exec(p->db, "SELECT * FROM video;", incrementer, &result, &err) != SQLITE_OK) {
         string s = err;
         throw s;
     }
@@ -87,26 +96,35 @@ void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
-    const char *templ = "INSERT INTO music VALUES(%s, %s, %s, %s);";
-    const char *query_templ = "SELECT * FROM music WHERE filename=%s;";
-    char cmd[1024];
+    const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s);";
+    const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s);";
+    const char *query_templ = "SELECT * FROM %s WHERE filename=%s;";
+    char qcmd[1024];
+    char icmd[1024];
 
     string fname = sqlQuote(m.getFileName());
     string title = sqlQuote(m.getTitle());
     string author = sqlQuote(m.getAuthor());
     string album = sqlQuote(m.getAlbum());
 
-    sprintf(cmd, query_templ, fname.c_str());
+    if(m.getType() == AudioMedia) {
+        sprintf(qcmd, query_templ, "music", fname.c_str());
+        sprintf(icmd, musicinsert_templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
+    } else if(m.getType() == VideoMedia) {
+        sprintf(qcmd, query_templ, "video", fname.c_str());
+        sprintf(icmd, videoinsert_templ, fname.c_str(), title.c_str());
+    } else {
+        return;
+    }
     bool was_in = false;
-    if(sqlite3_exec(p->db, cmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
+    if(sqlite3_exec(p->db, qcmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
         string s = errmsg;
         throw s;
     }
     if(was_in) {
         return;
     }
-    sprintf(cmd, templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
-    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
+    if(sqlite3_exec(p->db, icmd, NULL, NULL, &errmsg) != SQLITE_OK) {
         string s = errmsg;
         throw s;
     }
@@ -133,7 +151,7 @@ void MediaStore::remove(const string &fname) {
 
 static int music_adder(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
     vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
-    t->push_back(MediaFile(data[0], data[1], data[2], data[3]));
+    t->push_back(MediaFile(data[0], data[1], data[2], data[3], AudioMedia));
     return 0;
 }
 

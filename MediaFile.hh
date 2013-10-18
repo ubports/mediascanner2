@@ -26,7 +26,8 @@
 class MediaFile {
 public:
     MediaFile(std::string filename);
-    MediaFile(std::string filename, std::string title, std::string author, std::string album);
+    MediaFile(std::string filename, std::string title, std::string author, std::string album,
+            MediaType type);
     MediaFile() = delete;
 
     std::string getFileName() const;

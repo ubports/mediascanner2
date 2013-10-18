@@ -33,8 +33,9 @@ MediaFile::MediaFile(std::string filename) : filename(filename) {
     getMetadata(filename, title, author, album);
 }
 
-MediaFile::MediaFile(std::string filename, std::string title, std::string author, std::string album) :
-    filename(filename), title(title), author(author), album(album) {
+MediaFile::MediaFile(std::string filename, std::string title, std::string author, std::string album,
+        MediaType type) :
+    filename(filename), title(title), author(author), album(album), type(type) {
 
 }
 
