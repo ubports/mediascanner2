@@ -30,6 +30,7 @@
 #include<unistd.h>
 #include<map>
 #include<memory>
+#include<cassert>
 
 using namespace std;
 
@@ -64,6 +65,7 @@ int runDaemon(SubtreeWatcher &w) {
         }
         w.pumpEvents();
     }
+    return 999;
 }
 
 class ScannerDaemon {
@@ -73,6 +75,9 @@ public:
     int run();
 
 private:
+
+    void addDir(const string &dir, const string &id);
+    void removeDir(const string &dir);
     map<string, shared_ptr<SubtreeWatcher>> subtrees;
     map<string, shared_ptr<MediaStore>> stores;
 };
@@ -82,15 +87,31 @@ ScannerDaemon::ScannerDaemon() {
     homedir += getlogin();
     string musicdir = homedir + "/Music";
     string videodir = homedir + "/Videos";
-    shared_ptr<MediaStore> ms(new MediaStore());
+
+    addDir(musicdir, "home-music");
+    addDir(videodir, "home-video");
+}
+
+void ScannerDaemon::addDir(const string &dir, const string &id) {
+    assert(dir[0] == '/');
+    assert(!id.empty());
+    shared_ptr<MediaStore> ms(new MediaStore(id));
     shared_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
     ms->pruneDeleted();
-    // FIXME, only traverse tree once.
-    readFiles(*ms.get(), musicdir, AudioMedia);
-    readFiles(*ms.get(), musicdir, VideoMedia);
-    sw->addDir(musicdir);
-    subtrees[musicdir] = sw;
-    stores[musicdir] = ms;
+    // Fixme, only traverse once.
+    readFiles(*ms.get(), dir, VideoMedia);
+    readFiles(*ms.get(), dir, AudioMedia);
+    sw->addDir(dir);
+    subtrees[dir] = sw;
+    stores[dir] = ms;
+}
+
+void ScannerDaemon::removeDir(const string &dir) {
+    assert(dir[0] == '/');
+    assert(subtrees.find(dir) != subtrees.end());
+    assert(stores.find(dir) != stores.end());
+    subtrees.erase(dir);
+    stores.erase(dir);
 }
 
 int ScannerDaemon::run() {

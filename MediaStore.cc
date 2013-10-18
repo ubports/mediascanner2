@@ -57,9 +57,9 @@ int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*
     return 0;
 }
 
-MediaStore::MediaStore() {
+MediaStore::MediaStore(const std::string &filename_base) {
     p = new MediaStorePrivate();
-    string fname = "mediastore.db";
+    string fname = filename_base + "-mediastore.db";
     if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
         string s = sqlite3_errmsg(p->db);
         throw s;

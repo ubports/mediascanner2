@@ -31,7 +31,7 @@ private:
     MediaStorePrivate *p;
 
 public:
-    MediaStore();
+    MediaStore(const std::string &filename_base);
     MediaStore(const MediaStore &other) = delete;
     ~MediaStore();
 
