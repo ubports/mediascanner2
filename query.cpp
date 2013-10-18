@@ -32,18 +32,11 @@ int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
     return 0;
 }
 
-int main(int argc, char **argv) {
+int queryDb(const string &fname, const string &core_term) {
     sqlite3 *db;
-    string fname = "mediastore.db";
     const char *music_templ = "SELECT * FROM music WHERE artist MATCH %s UNION SELECT * FROM music WHERE title MATCH %s;";
     const char *video_templ = "SELECT * FROM video WHERE title MATCH %s;";
-    if(argc < 2) {
-        printf("%s <term>\n", argv[0]);
-        return 1;
-    }
-    string term = argv[1];
-    term += "*";
-    term = sqlQuote(term);
+    string term = sqlQuote(core_term + "*");
     if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
@@ -63,4 +56,19 @@ int main(int argc, char **argv) {
         return 1;
     }
     sqlite3_close(db);
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    if(argc < 2) {
+        printf("%s <term>\n", argv[0]);
+        return 1;
+    }
+    string audioname = "home-music-mediastore.db";
+    string videoname = "home-video-mediastore.db";
+    string term = argv[1];
+    printf("Results from music directory\n");
+    queryDb(audioname, term);
+    printf("Results from video directory\n");
+    queryDb(videoname, term);
 }
