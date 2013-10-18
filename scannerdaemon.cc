@@ -72,6 +72,9 @@ ScannerDaemon::ScannerDaemon() {
 void ScannerDaemon::addDir(const string &dir, const string &id) {
     assert(dir[0] == '/');
     assert(!id.empty());
+    if(subtrees.find(dir) != subtrees.end()) {
+        return;
+    }
     shared_ptr<MediaStore> ms(new MediaStore(id));
     shared_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
     ms->pruneDeleted();
