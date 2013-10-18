@@ -28,6 +28,8 @@
 #include<cerrno>
 #include<cstring>
 #include<unistd.h>
+#include<map>
+#include<memory>
 
 using namespace std;
 
@@ -64,24 +66,68 @@ int runDaemon(SubtreeWatcher &w) {
     }
 }
 
+class ScannerDaemon {
+public:
+    ScannerDaemon();
+
+    int run();
+
+private:
+    map<string, shared_ptr<SubtreeWatcher>> subtrees;
+    map<string, shared_ptr<MediaStore>> stores;
+};
+
+ScannerDaemon::ScannerDaemon() {
+    string homedir = "/home/";
+    homedir += getlogin();
+    string musicdir = homedir + "/Music";
+    string videodir = homedir + "/Videos";
+    shared_ptr<MediaStore> ms(new MediaStore());
+    shared_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
+    ms->pruneDeleted();
+    // FIXME, only traverse tree once.
+    readFiles(*ms.get(), musicdir, AudioMedia);
+    readFiles(*ms.get(), musicdir, VideoMedia);
+    sw->addDir(musicdir);
+    subtrees[musicdir] = sw;
+    stores[musicdir] = ms;
+}
+
+int ScannerDaemon::run() {
+    int kbdfd = STDIN_FILENO;
+    while(true) {
+        int maxfd = 0;
+        fd_set fds;
+        FD_ZERO(&fds);
+        for(const auto &i: subtrees) {
+            int cfd = i.second->getFd();
+            if(cfd > maxfd) maxfd = cfd;
+            FD_SET(cfd, &fds);
+        }
+        FD_SET(kbdfd, &fds);
+
+
+        int rval = select(maxfd+1, &fds, nullptr, nullptr, nullptr);
+        if(rval < 0) {
+            string msg("Select failed: ");
+            msg += strerror(errno);
+            throw msg;
+        }
+        if(FD_ISSET(kbdfd, &fds)) {
+            return 0;
+        }
+        for(const auto &i: subtrees) {
+            i.second->pumpEvents();
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     try {
-        MediaStore store;
-        SubtreeWatcher sw(&store);
-        if(argc != 2) {
-            printf("%s <subdir to process>\n", argv[0]);
-            return 1;
-        }
-        string rootdir(argv[1]);
-        store.pruneDeleted();
-        // FIXME, only traverse tree once.
-        readFiles(store, rootdir, AudioMedia);
-        readFiles(store, rootdir, VideoMedia);
-        sw.addDir(rootdir);
-        printf("Cache has %ld songs.\n", (long) store.size());
+        ScannerDaemon d;
         printf("\n\nPress enter to end this program.\n\n");
-        return runDaemon(sw);
+        return d.run();
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
     }
