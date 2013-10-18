@@ -49,6 +49,7 @@ private:
     void addDir(const string &dir, const string &id);
     void removeDir(const string &dir);
     void pumpEvents();
+    void addMountedVolumes();
 
     int mountfd;
     string mountDir;
@@ -80,6 +81,7 @@ void ScannerDaemon::addDir(const string &dir, const string &id) {
     sw->addDir(dir);
     subtrees[dir] = sw;
     stores[dir] = ms;
+    addMountedVolumes();
 }
 
 void ScannerDaemon::removeDir(const string &dir) {
@@ -191,6 +193,26 @@ void ScannerDaemon::pumpEvents() {
                 }
             }
             p += sizeof(struct inotify_event) + event->len;
+        }
+    }
+}
+
+void ScannerDaemon::addMountedVolumes() {
+    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(mountDir.c_str()), closedir);
+    if(!dir) {
+        return;
+    }
+    struct dirent* curloc;
+    while((curloc = readdir(dir.get())) ) {
+        struct stat statbuf;
+        string fname = curloc->d_name;
+        if(fname == "." || fname == "..") // Maybe ignore all entries starting with a period?
+            continue;
+        string fullpath = mountDir + "/" + fname;
+        string mountId = "mount-" + fname;
+        stat(fullpath.c_str(), &statbuf);
+        if(S_ISDIR(statbuf.st_mode)) {
+            addDir(fullpath, mountId);
         }
     }
 }
