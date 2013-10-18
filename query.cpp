@@ -22,6 +22,9 @@
 #include<sqlite3.h>
 #include<stdio.h>
 #include<string>
+#include<memory>
+#include<sys/stat.h>
+#include<dirent.h>
 
 using namespace std;
 
@@ -71,4 +74,26 @@ int main(int argc, char **argv) {
     queryDb(audioname, term);
     printf("Results from video directory\n");
     queryDb(videoname, term);
+    string mountDir("/home/jpakkane/workspace/scantest/build");
+    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(mountDir.c_str()), closedir);
+    unique_ptr<struct dirent, void(*)(void*)> entry((struct dirent*)malloc(sizeof(struct dirent) + NAME_MAX),
+                free);
+    struct dirent *de;
+    while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
+        struct stat statbuf;
+        string fname = entry.get()->d_name;
+        if(fname[0] == '.')
+            continue;
+        string fullpath = mountDir + "/" + fname;
+        stat(fullpath.c_str(), &statbuf);
+        if(S_ISDIR(statbuf.st_mode)) {
+            string dbCandidate("mount-");
+            dbCandidate += fname;
+            dbCandidate += "-mediastore.db";
+            if(stat(dbCandidate.c_str(), &statbuf) == 0) {
+                printf("Results from external volume %s\n", fname.c_str());
+                queryDb(dbCandidate, term);
+            }
+        }
+    }
 }
