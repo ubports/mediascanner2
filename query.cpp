@@ -35,7 +35,8 @@ int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
 int main(int argc, char **argv) {
     sqlite3 *db;
     string fname = "mediastore.db";
-    const char *templ = "SELECT * FROM music WHERE artist MATCH %s UNION SELECT * FROM music WHERE title MATCH %s;";
+    const char *music_templ = "SELECT * FROM music WHERE artist MATCH %s UNION SELECT * FROM music WHERE title MATCH %s;";
+    const char *video_templ = "SELECT * FROM video WHERE title MATCH %s;";
     if(argc < 2) {
         printf("%s <term>\n", argv[0]);
         return 1;
@@ -48,8 +49,15 @@ int main(int argc, char **argv) {
         return 1;
     }
     char cmd[1024];
-    sprintf(cmd, templ, term.c_str(), term.c_str());
+    sprintf(cmd, music_templ, term.c_str(), term.c_str());
     char *err;
+    printf("Music results\n\n");
+    if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
+        printf("%s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    printf("\nVideo results\n\n");
+    sprintf(cmd, video_templ, term.c_str());
     if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
