@@ -39,7 +39,7 @@ using namespace std;
 class ScannerDaemon {
 public:
     ScannerDaemon();
-
+    ~ScannerDaemon();
     int run();
 
 private:
@@ -67,6 +67,10 @@ ScannerDaemon::ScannerDaemon() {
     setupMountWatcher();
     addDir(musicdir, "home-music");
     addDir(videodir, "home-video");
+}
+
+ScannerDaemon::~ScannerDaemon() {
+    close(mountfd);
 }
 
 void ScannerDaemon::addDir(const string &dir, const string &id) {
