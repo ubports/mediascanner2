@@ -65,6 +65,7 @@ ScannerDaemon::ScannerDaemon() {
 
     mountDir = "/home/jpakkane/workspace/scantest/build";
     setupMountWatcher();
+    addMountedVolumes();
     addDir(musicdir, "home-music");
     addDir(videodir, "home-video");
 }
@@ -88,7 +89,6 @@ void ScannerDaemon::addDir(const string &dir, const string &id) {
     sw->addDir(dir);
     subtrees[dir] = move(sw);
     stores[dir] = move(ms);
-    addMountedVolumes();
 }
 
 void ScannerDaemon::removeDir(const string &dir) {
