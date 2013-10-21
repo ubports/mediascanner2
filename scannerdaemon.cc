@@ -53,8 +53,8 @@ private:
 
     int mountfd;
     string mountDir;
-    map<string, shared_ptr<SubtreeWatcher>> subtrees;
-    map<string, shared_ptr<MediaStore>> stores;
+    map<string, unique_ptr<SubtreeWatcher>> subtrees;
+    map<string, unique_ptr<MediaStore>> stores;
 };
 
 ScannerDaemon::ScannerDaemon() {
@@ -79,15 +79,15 @@ void ScannerDaemon::addDir(const string &dir, const string &id) {
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    shared_ptr<MediaStore> ms(new MediaStore(id));
-    shared_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
+    unique_ptr<MediaStore> ms(new MediaStore(id));
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
     ms->pruneDeleted();
     // Fixme, only traverse once.
     readFiles(*ms.get(), dir, VideoMedia);
     readFiles(*ms.get(), dir, AudioMedia);
     sw->addDir(dir);
-    subtrees[dir] = sw;
-    stores[dir] = ms;
+    subtrees[dir] = move(sw);
+    stores[dir] = move(ms);
     addMountedVolumes();
 }
 
