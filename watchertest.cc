@@ -27,8 +27,9 @@ using namespace std;
 #define BUFSIZE 4096
 
 int main(int /*argc*/, char **/*argv*/) {
-    string mount_point = "/media/";
-    mount_point += getlogin();
+    string dbdir = "/home/";
+    dbdir += getlogin();
+    dbdir += "/.cache/mediascanner-test";
     int ifd;
     int wd;
     char buf[BUFSIZE];
@@ -38,12 +39,12 @@ int main(int /*argc*/, char **/*argv*/) {
         printf("Inotify init failed.\n");
         return 1;
     }
-    wd = inotify_add_watch(ifd, mount_point.c_str(), IN_CREATE | IN_DELETE);
+    wd = inotify_add_watch(ifd, dbdir.c_str(), IN_CREATE | IN_DELETE | IN_MODIFY);
     if(wd == -1) {
-        printf("Could not create watch for mount point.\n");
+        printf("Could not create watch for data dir.\n");
         return 1;
     }
-    printf("Watching location %s.\n", mount_point.c_str());
+    printf("This program simulates invalidation of query results as media files come and go.\n\n");
     while(true) {
         ssize_t num_read;
         num_read = read(ifd, buf, BUFSIZE);
@@ -58,11 +59,11 @@ int main(int /*argc*/, char **/*argv*/) {
         for(char *p = buf; p < buf + num_read;) {
             struct inotify_event *event = (struct inotify_event *) p;
             if(event->mask & IN_CREATE) {
-                printf("File system was mounted: %s.\n", event->name);
+                printf("Invalidation: create\n");
             } else if(event->mask & IN_DELETE) {
-                printf("File system was unmounted: %s\n", event->name);
+                printf("Invalidation: delete\n");
             } else {
-                printf("Unknown event.\n");
+                printf("Invalidation: modify %s\n", event->name);
             }
             p += sizeof(struct inotify_event) + event->len;
         }
