@@ -53,6 +53,7 @@ private:
 
     int mountfd;
     string mountDir;
+    string cachedir;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     map<string, unique_ptr<MediaStore>> stores;
 };
@@ -62,7 +63,19 @@ ScannerDaemon::ScannerDaemon() {
     homedir += getlogin();
     string musicdir = homedir + "/Music";
     string videodir = homedir + "/Videos";
-
+    char *env_cachedir = getenv("MEDIASCANNER_CACHEDIR");
+    if(env_cachedir) {
+        cachedir = env_cachedir;
+    } else {
+        cachedir = homedir + "/.cache/mediascanner-test";
+    }
+    int ec;
+    errno = 0;
+    ec = mkdir(cachedir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+    if(ec < 0 && errno != EEXIST) {
+        string msg("Could not create cache dir.");
+        throw msg;
+    }
     mountDir = string("/media/") + getlogin();
     setupMountWatcher();
     addMountedVolumes();
@@ -77,10 +90,11 @@ ScannerDaemon::~ScannerDaemon() {
 void ScannerDaemon::addDir(const string &dir, const string &id) {
     assert(dir[0] == '/');
     assert(!id.empty());
+    string absname = cachedir + "/" + id;
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    unique_ptr<MediaStore> ms(new MediaStore(id));
+    unique_ptr<MediaStore> ms(new MediaStore(absname));
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
     ms->pruneDeleted();
     // Fixme, only traverse once.
