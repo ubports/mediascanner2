@@ -63,7 +63,7 @@ ScannerDaemon::ScannerDaemon() {
     string musicdir = homedir + "/Music";
     string videodir = homedir + "/Videos";
 
-    mountDir = "/home/jpakkane/workspace/scantest/build";
+    mountDir = string("/media/") + getlogin();
     setupMountWatcher();
     addMountedVolumes();
     addDir(musicdir, "home-music");

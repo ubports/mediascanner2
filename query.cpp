@@ -25,6 +25,7 @@
 #include<memory>
 #include<sys/stat.h>
 #include<dirent.h>
+#include<unistd.h>
 
 using namespace std;
 
@@ -74,7 +75,10 @@ int main(int argc, char **argv) {
     queryDb(audioname, term);
     printf("Results from video directory\n");
     queryDb(videoname, term);
-    string mountDir("/home/jpakkane/workspace/scantest/build");
+    char cwd[1024];
+    getcwd(cwd, 1024);
+    // FIXME in this test app use current dir.
+    string mountDir(cwd);
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(mountDir.c_str()), closedir);
     unique_ptr<struct dirent, void(*)(void*)> entry((struct dirent*)malloc(sizeof(struct dirent) + NAME_MAX),
                 free);
