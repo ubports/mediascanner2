@@ -49,23 +49,37 @@ static void execute_sql(sqlite3 *db, const string &cmd) {
 void create_tables(sqlite3 *db) {
     string musicCreate("CREATE TABLE IF NOT EXISTS music (filename TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, duration INT);");
     string musicFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS music_fts USING fts4(title, artist, album);");
-    string videoCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video USING fts4(filename, title);");
+    string videoCreate("CREATE TABLE IF NOT EXISTS video (filename TEXT PRIMARY KEY, title TEXT, duration INT);");
+    string videoFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video_fts USING fts4(title);");
 
-    string tC("CREATE TRIGGER IF NOT EXISTS music_bu BEFORE UPDATE ON music BEGIN\n");
-    tC +="  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
-    tC +="CREATE TRIGGER IF NOT EXISTS music_bd BEFORE DELETE ON music BEGIN\n";
-    tC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
-    tC += "CREATE TRIGGER IF NOT EXISTS music_au AFTER UPDATE ON music BEGIN\n";
-    tC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
-    tC += "END;\n";
-    tC += "CREATE TRIGGER music_ai AFTER INSERT ON music BEGIN\n";
-    tC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
-    tC += "END;";
+    string mTC("CREATE TRIGGER IF NOT EXISTS music_bu BEFORE UPDATE ON music BEGIN\n");
+    mTC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
+    mTC += "CREATE TRIGGER IF NOT EXISTS music_bd BEFORE DELETE ON music BEGIN\n";
+    mTC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
+    mTC += "CREATE TRIGGER IF NOT EXISTS music_au AFTER UPDATE ON music BEGIN\n";
+    mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
+    mTC += "END;\n";
+    mTC += "CREATE TRIGGER music_ai AFTER INSERT ON music BEGIN\n";
+    mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
+    mTC += "END;";
+
+    string vTC("CREATE TRIGGER IF NOT EXISTS video_bu BEFORE UPDATE ON video BEGIN\n");
+    vTC += "  DELETE FROM video_fts WHERE docid=old.rowid;\nEND;\n";
+    vTC += "CREATE TRIGGER IF NOT EXISTS video_bd BEFORE DELETE ON video BEGIN\n";
+    vTC += "  DELETE FROM video_fts WHERE docid=old.rowid;\nEND;\n";
+    vTC += "CREATE TRIGGER IF NOT EXISTS video_au AFTER UPDATE ON video BEGIN\n";
+    vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
+    vTC += "END;\n";
+    vTC += "CREATE TRIGGER video_ai AFTER INSERT ON video BEGIN\n";
+    vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
+    vTC += "END;";
 //    printf("%s", tC.c_str());
     execute_sql(db, musicCreate);
     execute_sql(db, musicFtsCreate);
     execute_sql(db, videoCreate);
-    execute_sql(db, tC);
+    execute_sql(db, videoFtsCreate);
+    execute_sql(db, mTC);
+    execute_sql(db, vTC);
 }
 
 int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
@@ -113,7 +127,7 @@ void MediaStore::insert(const MediaFile &m) {
     p->files.push_back(m);
     // SQL injection here.
     const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s, %s);";
-    const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s);";
+    const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s, %s);";
     const char *query_templ = "SELECT * FROM %s WHERE filename=%s;";
     const size_t bufsize = 1024;
     char qcmd[bufsize];
@@ -135,7 +149,7 @@ void MediaStore::insert(const MediaFile &m) {
                 author.c_str(), album.c_str(), duration.c_str());
     } else if(m.getType() == VideoMedia) {
         snprintf(qcmd, bufsize, query_templ, "video", fname.c_str());
-        snprintf(icmd, bufsize, videoinsert_templ, fname.c_str(), title.c_str());
+        snprintf(icmd, bufsize, videoinsert_templ, fname.c_str(), title.c_str(), duration.c_str());
     } else {
         return;
     }
