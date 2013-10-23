@@ -40,21 +40,21 @@ MediaFile::MediaFile(std::string filename, std::string title, std::string author
 
 }
 
-std::string MediaFile::getFileName() const {
+const std::string& MediaFile::getFileName() const noexcept {
     return filename;
 }
-std::string MediaFile::getTitle() const {
+const std::string& MediaFile::getTitle() const noexcept {
     return title;
 }
 
-std::string MediaFile::getAuthor() const {
+const std::string& MediaFile::getAuthor() const noexcept {
     return author;
 }
 
-std::string MediaFile::getAlbum() const {
+const std::string& MediaFile::getAlbum() const noexcept {
     return album;
 }
 
-MediaType MediaFile::getType() const {
+MediaType MediaFile::getType() const noexcept {
     return type;
 }

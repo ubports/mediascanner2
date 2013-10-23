@@ -30,12 +30,11 @@ public:
             MediaType type);
     MediaFile() = delete;
 
-    std::string getFileName() const;
-    std::string getTitle() const;
-    std::string getAuthor() const;
-    std::string getAlbum() const;
-    int getDuration() const;
-    MediaType getType() const;
+    const std::string& getFileName() const noexcept;
+    const std::string& getTitle() const noexcept;
+    const std::string& getAuthor() const noexcept;
+    const std::string& getAlbum() const noexcept;
+    MediaType getType() const noexcept;
 
 private:
     std::string filename;
