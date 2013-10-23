@@ -42,7 +42,6 @@ private:
     std::string title;
     std::string author;
     std::string album;
-    int duration;
     MediaType type;
 };
 

@@ -31,7 +31,7 @@ MediaFile::MediaFile(std::string filename) : filename(filename) {
         throw runtime_error("Tried to create an invalid media type.");
     }
     getMetadata(filename, title, author, album);
-    duration = ::getDuration(filename);
+    //duration = ::getDuration(filename);
 }
 
 MediaFile::MediaFile(std::string filename, std::string title, std::string author, std::string album,
@@ -53,10 +53,6 @@ std::string MediaFile::getAuthor() const {
 
 std::string MediaFile::getAlbum() const {
     return album;
-}
-
-int MediaFile::getDuration() const {
-    return duration;
 }
 
 MediaType MediaFile::getType() const {
