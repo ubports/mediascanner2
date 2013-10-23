@@ -24,8 +24,17 @@
 #include<string>
 #include<stdexcept>
 #include<gst/pbutils/pbutils.h>
+#include<memory>
 
 using namespace std;
+
+static void discov_unref(GstDiscoverer *t) {
+    g_object_unref(G_OBJECT(t));
+}
+
+static void info_unref(GstDiscovererInfo *t) {
+    g_object_unref(G_OBJECT(t));
+}
 
 struct metadata {
     string author;
@@ -61,12 +70,11 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
 
-    GstDiscoverer *discoverer;
-    GstDiscovererInfo *info;
     GError *error = NULL;
 
-    // FIXME: we should share the discoverer between uses.
-    discoverer = gst_discoverer_new(GST_SECOND * 25, &error);
+    // FIXME: possibly share the discoverer between uses.
+    unique_ptr<GstDiscoverer, void(*)(GstDiscoverer *)> discoverer(gst_discoverer_new(GST_SECOND * 25, &error),
+            discov_unref);
     if (discoverer == NULL) {
         string errortxt(error->message);
         g_error_free(error);
@@ -76,11 +84,11 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
         throw runtime_error(msg);
     }
 
-    info = gst_discoverer_discover_uri(discoverer, uri.c_str(), &error);
-    if (info == NULL) {
+    unique_ptr<GstDiscovererInfo, void(*)(GstDiscovererInfo *)> info(gst_discoverer_discover_uri(discoverer.get(),
+            uri.c_str(), &error), info_unref);
+    if (info.get() == NULL) {
         string errortxt(error->message);
         g_error_free(error);
-        g_object_unref(discoverer);
 
         string msg = "Discovery of file ";
         msg += filename;
@@ -89,19 +97,15 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
         throw runtime_error(msg);
     }
 
-    if (gst_discoverer_info_get_result(info) != GST_DISCOVERER_OK) {
-        g_object_unref(info);
-        g_object_unref(discoverer);
+    if (gst_discoverer_info_get_result(info.get()) != GST_DISCOVERER_OK) {
         throw runtime_error("Unable to discover file " + filename);
     }
 
-    const GstTagList *tags = gst_discoverer_info_get_tags(info);
+    const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
     if (tags != NULL) {
         gst_tag_list_foreach (tags, extract_tag_info, &md);
     }
-    int dur = static_cast<int>(gst_discoverer_info_get_duration(info)/GST_SECOND);
-    g_object_unref(info);
-    g_object_unref(discoverer);
+    int dur = static_cast<int>(gst_discoverer_info_get_duration(info.get())/GST_SECOND);
 
     title = md.title;
     author = md.author;
