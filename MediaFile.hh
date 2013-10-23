@@ -34,6 +34,7 @@ public:
     std::string getTitle() const;
     std::string getAuthor() const;
     std::string getAlbum() const;
+    int getDuration() const;
     MediaType getType() const;
 
 private:
@@ -41,6 +42,7 @@ private:
     std::string title;
     std::string author;
     std::string album;
+    int duration;
     MediaType type;
 };
 

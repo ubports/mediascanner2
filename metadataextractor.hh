@@ -17,6 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef METADATAEXTRACTOR_H
+#define METADATAEXTRACTOR_H
+
 #include<string>
 
 int getMetadata(const std::string &filename, std::string &title, std::string &author, std::string &album);
+int getDuration(const std::string &filename);
+
+#endif

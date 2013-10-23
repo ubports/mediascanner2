@@ -21,6 +21,7 @@
 #include<cstdio>
 #include<string>
 #include<stdexcept>
+#include<gst/pbutils/pbutils.h>
 
 using namespace std;
 
@@ -48,10 +49,6 @@ print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
                 md->title = g_value_get_string(val);
             if(tagname == "album")
                 md->album = g_value_get_string(val);
-            /*
-              || tagname == "title" || tagname == "album" || tagname == "genre") {
-              printf("%s: %s\n", tag, g_value_get_string (val));
-          */
         }
     }
 }
@@ -66,7 +63,6 @@ static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesin
     }
     gst_object_unref (sinkpad);
 }
-
 
 int getMetadata(const std::string &filename, std::string &title, std::string &author,
         std::string &album) {
@@ -132,3 +128,14 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     return 0;
 }
 
+int getDuration(const std::string &filename) {
+    // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
+    string uri = "file://" + filename;
+    GstDiscoverer *disc = gst_discoverer_new(10*GST_SECOND, nullptr);
+    GstDiscovererInfo *i = gst_discoverer_discover_uri(disc, uri.c_str(), nullptr);
+    GstClockTime dur = gst_discoverer_info_get_duration(i);
+    int result = static_cast<int>(dur/GST_SECOND);
+    gst_discoverer_info_unref(i);
+    g_object_unref(disc);
+    return result;
+}
