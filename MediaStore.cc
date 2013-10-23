@@ -61,7 +61,7 @@ void create_tables(sqlite3 *db) {
     tC += "CREATE TRIGGER music_ai AFTER INSERT ON music BEGIN\n";
     tC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
     tC += "END;";
-    printf("%s", tC.c_str());
+//    printf("%s", tC.c_str());
     execute_sql(db, musicCreate);
     execute_sql(db, musicFtsCreate);
     execute_sql(db, videoCreate);
@@ -160,8 +160,6 @@ void MediaStore::insert(const MediaFile &m) {
 }
 
 void MediaStore::remove(const string &fname) {
-    // Note: slow because fts does not do = very well.
-    // Using MATCH may lead to inaccuracies.
     const char *templ = "DELETE FROM music WHERE filename = '%s';";
     char cmd[1024];
     sprintf(cmd, templ, fname.c_str());

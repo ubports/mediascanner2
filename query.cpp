@@ -38,7 +38,7 @@ int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
 
 int queryDb(const string &fname, const string &core_term) {
     sqlite3 *db;
-    const char *music_templ = "SELECT * FROM music WHERE artist MATCH %s UNION SELECT * FROM music WHERE title MATCH %s;";
+    const char *music_templ = "SELECT * FROM music WHERE rowid IN (SELECT docid FROM music_fts WHERE artist MATCH %s UNION SELECT docid FROM music_fts WHERE title MATCH %s);";
     const char *video_templ = "SELECT * FROM video WHERE title MATCH %s;";
     string term = sqlQuote(core_term + "*");
     if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
@@ -53,12 +53,14 @@ int queryDb(const string &fname, const string &core_term) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
     }
+    /*
     printf("\nVideo results\n\n");
     sprintf(cmd, video_templ, term.c_str());
     if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
         printf("%s\n", sqlite3_errmsg(db));
         return 1;
     }
+    */
     sqlite3_close(db);
     return 0;
 }
@@ -73,8 +75,10 @@ int main(int argc, char **argv) {
     string term = argv[1];
     printf("Results from music directory\n");
     queryDb(audioname, term);
+    /*
     printf("Results from video directory\n");
     queryDb(videoname, term);
+    */
     char cwd[1024];
     getcwd(cwd, 1024);
     // FIXME in this test app use current dir.

@@ -31,7 +31,6 @@ struct metadata {
     string author;
     string title;
     string album;
-    int duration;
 };
 
 static void
@@ -100,13 +99,13 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     if (tags != NULL) {
         gst_tag_list_foreach (tags, extract_tag_info, &md);
     }
-    md.duration = static_cast<int>(gst_discoverer_info_get_duration(info)/GST_SECOND);
+    int dur = static_cast<int>(gst_discoverer_info_get_duration(info)/GST_SECOND);
     g_object_unref(info);
     g_object_unref(discoverer);
 
     title = md.title;
     author = md.author;
     album = md.album;
-    duration = md.duration;
+    duration = dur;
     return 0;
 }
