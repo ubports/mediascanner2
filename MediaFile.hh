@@ -27,13 +27,14 @@ class MediaFile {
 public:
     MediaFile(std::string filename);
     MediaFile(std::string filename, std::string title, std::string author, std::string album,
-            MediaType type);
+            int duration, MediaType type);
     MediaFile() = delete;
 
     const std::string& getFileName() const noexcept;
     const std::string& getTitle() const noexcept;
     const std::string& getAuthor() const noexcept;
     const std::string& getAlbum() const noexcept;
+    int getDuration() const noexcept;
     MediaType getType() const noexcept;
 
 private:
@@ -41,6 +42,7 @@ private:
     std::string title;
     std::string author;
     std::string album;
+    int duration; // In seconds.
     MediaType type;
 };
 

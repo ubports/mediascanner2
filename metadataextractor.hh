@@ -22,7 +22,8 @@
 
 #include<string>
 
-int getMetadata(const std::string &filename, std::string &title, std::string &author, std::string &album);
+int getMetadata(const std::string &filename, std::string &title, std::string &author, std::string &album,
+        int &duration);
 int getDuration(const std::string &filename);
 
 #endif

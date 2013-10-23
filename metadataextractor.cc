@@ -31,14 +31,16 @@ struct metadata {
     string author;
     string title;
     string album;
+    int duration;
 };
 
 static void
-print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
+extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data) {
     struct metadata *md = (struct metadata*) user_data;
     int i, num;
     string tagname(tag);
 
+    md->duration = 0;
     num = gst_tag_list_get_tag_size (list, tag);
     for (i = 0; i < num; ++i) {
         const GValue *val;
@@ -52,11 +54,16 @@ print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
             if(tagname == "album")
                 md->album = g_value_get_string(val);
         }
+        if (G_VALUE_HOLDS_INT64(val)) {
+            if(tagname == GST_TAG_DURATION)
+                md->duration = static_cast<int>(g_value_get_int64(val)/GST_SECOND);
+        }
+
     }
 }
 
 int getMetadata(const std::string &filename, std::string &title, std::string &author,
-        std::string &album) {
+        std::string &album, int &duration) {
     struct metadata md;
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
@@ -97,7 +104,7 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
 
     const GstTagList *tags = gst_discoverer_info_get_tags(info);
     if (tags != NULL) {
-        gst_tag_list_foreach (tags, print_one_tag, &md);
+        gst_tag_list_foreach (tags, extract_tag_info, &md);
     }
 
     g_object_unref(info);
@@ -106,17 +113,6 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     title = md.title;
     author = md.author;
     album = md.album;
+    duration = md.duration;
     return 0;
-}
-
-int getDuration(const std::string &filename) {
-    // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
-    string uri = "file://" + filename;
-    GstDiscoverer *disc = gst_discoverer_new(10*GST_SECOND, nullptr);
-    GstDiscovererInfo *i = gst_discoverer_discover_uri(disc, uri.c_str(), nullptr);
-    GstClockTime dur = gst_discoverer_info_get_duration(i);
-    int result = static_cast<int>(dur/GST_SECOND);
-    gst_discoverer_info_unref(i);
-    g_object_unref(disc);
-    return result;
 }

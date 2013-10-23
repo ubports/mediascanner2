@@ -38,18 +38,34 @@ struct MediaStorePrivate {
     sqlite3 *db;
 };
 
-void create_tables(sqlite3 *db) {
+static void execute_sql(sqlite3 *db, const string &cmd) {
     char *errmsg;
-    sqlite3_exec(db, "CREATE VIRTUAL TABLE IF NOT EXISTS music USING fts4(filename, title, artist, album);",
-            nullptr, nullptr, &errmsg);
+    sqlite3_exec(db, cmd.c_str(), nullptr, nullptr, &errmsg);
     if(errmsg) {
         throw string(errmsg);
     }
-    sqlite3_exec(db, "CREATE VIRTUAL TABLE IF NOT EXISTS video USING fts4(filename, title);",
-            nullptr, nullptr, &errmsg);
-    if(errmsg) {
-        throw string(errmsg);
-    }
+}
+
+void create_tables(sqlite3 *db) {
+    string musicCreate("CREATE TABLE IF NOT EXISTS music (filename TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, duration INT);");
+    string musicFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS music_fts USING fts4(title, artist, album);");
+    string videoCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video USING fts4(filename, title);");
+
+    string tC("CREATE TRIGGER IF NOT EXISTS music_bu BEFORE UPDATE ON music BEGIN\n");
+    tC +="  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
+    tC +="CREATE TRIGGER IF NOT EXISTS music_bd BEFORE DELETE ON music BEGIN\n";
+    tC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
+    tC += "CREATE TRIGGER IF NOT EXISTS music_au AFTER UPDATE ON music BEGIN\n";
+    tC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
+    tC += "END;\n";
+    tC += "CREATE TRIGGER music_ai AFTER INSERT ON music BEGIN\n";
+    tC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
+    tC += "END;";
+    printf("%s", tC.c_str());
+    execute_sql(db, musicCreate);
+    execute_sql(db, musicFtsCreate);
+    execute_sql(db, videoCreate);
+    execute_sql(db, tC);
 }
 
 int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
@@ -156,7 +172,8 @@ void MediaStore::remove(const string &fname) {
 
 static int music_adder(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
     vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
-    t->push_back(MediaFile(data[0], data[1], data[2], data[3], AudioMedia));
+    int duration = 0; // TMP
+    t->push_back(MediaFile(data[0], data[1], data[2], data[3], duration, AudioMedia));
     return 0;
 }
 

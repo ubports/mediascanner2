@@ -30,13 +30,12 @@ MediaFile::MediaFile(std::string filename) : filename(filename) {
     if(type == UnknownMedia) {
         throw runtime_error("Tried to create an invalid media type.");
     }
-    getMetadata(filename, title, author, album);
-    //duration = ::getDuration(filename);
+    getMetadata(filename, title, author, album, duration);
 }
 
 MediaFile::MediaFile(std::string filename, std::string title, std::string author, std::string album,
-        MediaType type) :
-    filename(filename), title(title), author(author), album(album), type(type) {
+        int duration, MediaType type) :
+    filename(filename), title(title), author(author), album(album), duration(duration), type(type) {
 
 }
 
@@ -53,6 +52,10 @@ const std::string& MediaFile::getAuthor() const noexcept {
 
 const std::string& MediaFile::getAlbum() const noexcept {
     return album;
+}
+
+int MediaFile::getDuration() const noexcept {
+    return duration;
 }
 
 MediaType MediaFile::getType() const noexcept {
