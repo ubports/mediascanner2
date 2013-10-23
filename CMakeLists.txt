@@ -8,8 +8,7 @@ endif()
 option(full_warnings "All possible compiler warnings." OFF)
 
 include(FindPkgConfig)
-pkg_search_module(GST gstreamer-1.0 REQUIRED)
-pkg_search_module(GST_PB gstreamer-pbutils-1.0 REQUIRED)
+pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
 pkg_search_module(SQLITE sqlite3 REQUIRED)
 pkg_search_module(UNITY unity REQUIRED)
 
@@ -27,10 +26,9 @@ set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 add_executable(watcher watchertest.cc)
 
 add_definitions(${GST_CFLAGS})
-add_definitions(${GST_PB_CFLAGS})
 add_executable(scannerdaemon scannerdaemon.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
 FileTypeDetector.cc metadataextractor.cc Scanner.cc utils.cc)
-target_link_libraries(scannerdaemon ${GST_PB_LDFLAGS} ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
+target_link_libraries(scannerdaemon ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
 #add_executable(metadataextractor metadataextractor.cc)
 #target_link_libraries(metadataextractor ${GST_LDFLAGS})

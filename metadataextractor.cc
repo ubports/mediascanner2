@@ -18,6 +18,8 @@
  */
 
 #include<gst/gst.h>
+#include<gst/pbutils/gstdiscoverer.h>
+
 #include<cstdio>
 #include<string>
 #include<stdexcept>
@@ -53,78 +55,57 @@ print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data) {
     }
 }
 
-static void on_new_pad (GstElement * /*dec*/, GstPad * pad, GstElement * fakesink) {
-    GstPad *sinkpad;
-
-    sinkpad = gst_element_get_static_pad (fakesink, "sink");
-    if (!gst_pad_is_linked (sinkpad)) {
-        if (gst_pad_link (pad, sinkpad) != GST_PAD_LINK_OK)
-            g_error ("Failed to link pads!");
-    }
-    gst_object_unref (sinkpad);
-}
-
 int getMetadata(const std::string &filename, std::string &title, std::string &author,
         std::string &album) {
     struct metadata md;
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
-    GstElement *pipe, *dec, *sink;
-    GstMessage *msg;
 
-    pipe = gst_pipeline_new ("pipeline");
+    GstDiscoverer *discoverer;
+    GstDiscovererInfo *info;
+    GError *error = NULL;
 
-    dec = gst_element_factory_make ("uridecodebin", NULL);
-    g_object_set (dec, "uri", uri.c_str(), NULL);
-    gst_bin_add (GST_BIN (pipe), dec);
+    // FIXME: we should share the discoverer between uses.
+    discoverer = gst_discoverer_new(GST_SECOND * 25, &error);
+    if (discoverer == NULL) {
+        string errortxt(error->message);
+        g_error_free(error);
 
-    sink = gst_element_factory_make ("fakesink", NULL);
-    gst_bin_add (GST_BIN (pipe), sink);
-    g_signal_connect (dec, "pad-added", G_CALLBACK (on_new_pad), sink);
+        string msg = "Failed to create discoverer: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
 
-    gst_element_set_state (pipe, GST_STATE_PAUSED);
+    info = gst_discoverer_discover_uri(discoverer, uri.c_str(), &error);
+    if (info == NULL) {
+        string errortxt(error->message);
+        g_error_free(error);
+        g_object_unref(discoverer);
 
-    while (TRUE) {
-      GstTagList *tags = NULL;
-
-      msg = gst_bus_timed_pop_filtered(GST_ELEMENT_BUS (pipe),
-          GST_CLOCK_TIME_NONE, (GstMessageType) (GST_MESSAGE_ASYNC_DONE | GST_MESSAGE_TAG | GST_MESSAGE_ERROR));
-
-      if (GST_MESSAGE_TYPE (msg) != GST_MESSAGE_TAG) /* error or async_done */
-        break;
-
-      gst_message_parse_tag (msg, &tags);
-
-      gst_tag_list_foreach (tags, print_one_tag, &md);
-      gst_tag_list_unref (tags);
-
-      gst_message_unref (msg);
-    };
-    gst_element_set_state (pipe, GST_STATE_NULL);
-    gst_object_unref (pipe);
-
-    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
-        GError *err;
-        gchar *dbg_info;
-        gst_message_parse_error(msg, &err, &dbg_info);
-        string errortxt(err->message);
-        string dbtxt(dbg_info);
-        g_error_free(err);
-        g_free(dbg_info);
-
-        gst_message_unref (msg);
-        string msg = "Extracting metadata of file ";
+        string msg = "Discovery of file ";
         msg += filename;
         msg += " failed: ";
         msg += errortxt;
-        msg += " ";
-        msg += dbg_info;
         throw runtime_error(msg);
     }
+
+    if (gst_discoverer_info_get_result(info) != GST_DISCOVERER_OK) {
+        g_object_unref(info);
+        g_object_unref(discoverer);
+        throw runtime_error("Unable to discover file " + filename);
+    }
+
+    const GstTagList *tags = gst_discoverer_info_get_tags(info);
+    if (tags != NULL) {
+        gst_tag_list_foreach (tags, print_one_tag, &md);
+    }
+
+    g_object_unref(info);
+    g_object_unref(discoverer);
+
     title = md.title;
     author = md.author;
     album = md.album;
-    gst_message_unref (msg);
     return 0;
 }
 
