@@ -112,7 +112,7 @@ void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
-    const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s);";
+    const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s, %s);";
     const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s);";
     const char *query_templ = "SELECT * FROM %s WHERE filename=%s;";
     const size_t bufsize = 1024;
@@ -127,10 +127,12 @@ void MediaStore::insert(const MediaFile &m) {
         title = sqlQuote(m.getTitle());
     string author = sqlQuote(m.getAuthor());
     string album = sqlQuote(m.getAlbum());
+    string duration = to_string(m.getDuration());
 
     if(m.getType() == AudioMedia) {
         snprintf(qcmd, bufsize, query_templ, "music", fname.c_str());
-        snprintf(icmd, bufsize, musicinsert_templ, fname.c_str(), title.c_str(), author.c_str(), album.c_str());
+        snprintf(icmd, bufsize, musicinsert_templ, fname.c_str(), title.c_str(),
+                author.c_str(), album.c_str(), duration.c_str());
     } else if(m.getType() == VideoMedia) {
         snprintf(qcmd, bufsize, query_templ, "video", fname.c_str());
         snprintf(icmd, bufsize, videoinsert_templ, fname.c_str(), title.c_str());
@@ -151,10 +153,10 @@ void MediaStore::insert(const MediaFile &m) {
     }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
-    printf(" author : '%s'\n", m.getAuthor().c_str());
-    printf(" title  : %s\n", title.c_str());
-    printf(" album  : '%s'\n", m.getAlbum().c_str());
-
+    printf(" author   : '%s'\n", m.getAuthor().c_str());
+    printf(" title    : %s\n", title.c_str());
+    printf(" album    : '%s'\n", m.getAlbum().c_str());
+    printf(" duration : %d\n", m.getDuration());
 }
 
 void MediaStore::remove(const string &fname) {

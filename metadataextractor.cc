@@ -40,7 +40,6 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     int i, num;
     string tagname(tag);
 
-    md->duration = 0;
     num = gst_tag_list_get_tag_size (list, tag);
     for (i = 0; i < num; ++i) {
         const GValue *val;
@@ -54,11 +53,6 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
             if(tagname == "album")
                 md->album = g_value_get_string(val);
         }
-        if (G_VALUE_HOLDS_INT64(val)) {
-            if(tagname == GST_TAG_DURATION)
-                md->duration = static_cast<int>(g_value_get_int64(val)/GST_SECOND);
-        }
-
     }
 }
 
@@ -106,7 +100,7 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
     if (tags != NULL) {
         gst_tag_list_foreach (tags, extract_tag_info, &md);
     }
-
+    md.duration = static_cast<int>(gst_discoverer_info_get_duration(info)/GST_SECOND);
     g_object_unref(info);
     g_object_unref(discoverer);
 
