@@ -30,11 +30,11 @@ add_executable(scannerdaemon scannerdaemon.cc SubtreeWatcher.cc MediaFile.cc Med
 FileTypeDetector.cc metadataextractor.cc Scanner.cc utils.cc)
 target_link_libraries(scannerdaemon ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
-#add_executable(metadataextractor metadataextractor.cc)
-#target_link_libraries(metadataextractor ${GST_LDFLAGS})
 add_executable(query query.cpp utils.cc)
 target_link_libraries(query ${SQLITE_LDFLAGS})
 
 include_directories(${UNITY_INCLUDE_DIRS})
 add_executable(scanscope scanscope.cpp)
 target_link_libraries(scanscope ${SQLITE_LDFLAGS} ${UNITY_LDFLAGS})
+
+add_executable(scaletest scaletest.cc)
