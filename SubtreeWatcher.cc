@@ -34,7 +34,7 @@
 
 using namespace std;
 
-SubtreeWatcher::SubtreeWatcher(MediaStore *store) : store(store) {
+SubtreeWatcher::SubtreeWatcher(MediaStore &store) : store(store) {
     inotifyid = inotify_init();
     keep_going = true;
     if(inotifyid == -1) {
@@ -102,21 +102,17 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
-    if(store) {
-        try {
-            MediaFile m(abspath);
-            store->insert(m);
-        } catch(const exception &e) {
-            fprintf(stderr, "Error when adding new file: %s\n", e.what());
-        }
+    try {
+        MediaFile m(abspath);
+        store.insert(m);
+    } catch(const exception &e) {
+        fprintf(stderr, "Error when adding new file: %s\n", e.what());
     }
 }
 
 void SubtreeWatcher::fileDeleted(const string &abspath) {
     printf("File was deleted: %s\n", abspath.c_str());
-    if(store) {
-        store->remove(abspath);
-    }
+    store.remove(abspath);
 }
 
 void SubtreeWatcher::dirAdded(const string &abspath) {

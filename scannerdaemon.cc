@@ -95,7 +95,7 @@ void ScannerDaemon::addDir(const string &dir, const string &id) {
         return;
     }
     unique_ptr<MediaStore> ms(new MediaStore(absname));
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(ms.get()));
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*ms.get()));
     ms->pruneDeleted();
     // Fixme, only traverse once.
     readFiles(*ms.get(), dir, VideoMedia);
