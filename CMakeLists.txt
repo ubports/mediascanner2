@@ -37,4 +37,6 @@ include_directories(${UNITY_INCLUDE_DIRS})
 add_executable(scanscope scanscope.cpp)
 target_link_libraries(scanscope ${SQLITE_LDFLAGS} ${UNITY_LDFLAGS})
 
-add_executable(scaletest scaletest.cc)
+add_executable(scaletest scaletest.cc MediaStore.cc MediaFile.cc utils.cc
+ metadataextractor.cc FileTypeDetector.cc)
+target_link_libraries(scaletest ${SQLITE_LDFLAGS} ${GST_LDFLAGS})

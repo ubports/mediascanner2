@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include"MediaStore.hh"
+#include"MediaFile.hh"
+
 #include<vector>
 #include<string>
 #include<fstream>
@@ -28,6 +31,7 @@ using namespace std;
 #define RNDWORD words[rnd() % words.size()]
 
 int main() {
+    MediaStore store("scaletest");
     ifstream ifile("/usr/share/dict/words");
     string line;
     vector<string> words;
@@ -39,6 +43,7 @@ int main() {
         }
         words.push_back(line);
     }
+    int i=0;
     for(int artistCount=0; artistCount < 1000; artistCount++) {
         string artist = RNDWORD + " " + RNDWORD;
         for(int albumCount=0; albumCount < 3; albumCount++) {
@@ -49,7 +54,11 @@ int main() {
                 for(int i=1; i<numWords; i++) {
                     track += " " + RNDWORD;
                 }
-                printf("%s, %s, %s\n", artist.c_str(), album.c_str(), track.c_str());
+                string fname = to_string(i) + ".mp3";
+                MediaFile mf(fname, track, artist, album, rnd() % 300, AudioMedia);
+                store.insert(mf);
+                i++;
+                //printf("%s, %s, %s\n", artist.c_str(), album.c_str(), track.c_str());
             }
         }
     }
