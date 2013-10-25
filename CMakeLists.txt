@@ -21,5 +21,7 @@ endif()
 
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
+enable_testing()
 
 add_subdirectory(src)
+add_subdirectory(test)
