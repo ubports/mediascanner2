@@ -1,5 +1,3 @@
-
-#add_executable(scanner Scanner.cc FileTypeDetector.cc MediaFile.cc MediaStore.cc scannermain.cc)
 add_executable(watcher watchertest.cc)
 
 add_library(scannerstuff STATIC SubtreeWatcher.cc MediaFile.cc MediaStore.cc

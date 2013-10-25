@@ -1,3 +1,4 @@
+add_definitions(${GST_CFLAGS})
 include_directories(../src)
 
 add_executable(basic basic.cc)

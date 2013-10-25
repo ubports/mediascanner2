@@ -24,6 +24,7 @@
 #include<string>
 #include<unistd.h>
 #include<sys/stat.h>
+#include<gst/gst.h>
 
 using namespace std;
 
@@ -67,23 +68,25 @@ void index_test() {
     subdir += "/testdir";
     string testfile = getenv("SOURCE_DIR");
     testfile += "/test/testfile.ogg";
-    string outfile = subdir + "testfile.ogg";
+    string outfile = subdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(base);
     SubtreeWatcher watcher(store);
     watcher.addDir(subdir);
+    assert(store.size() == 0);
 
     copy_file(testfile, outfile);
     watcher.pumpEvents();
-    // assert that file is in
+    assert(store.size() == 1);
     assert(unlink(outfile.c_str()) == 0);
     watcher.pumpEvents();
-    // assert that file is out
+    assert(store.size() == 0);
 }
 
-int main() {
+int main(int argc, char **argv) {
+    gst_init (&argc, &argv);
 #ifdef NDEBUG
     fprintf(stderr, "NDEBUG defined, tests won't work.\n");
     return 1;
