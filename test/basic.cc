@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include<MediaFile.hh>
 #include<MediaStore.hh>
 #include<SubtreeWatcher.hh>
 #include<cassert>
@@ -25,6 +26,7 @@
 #include<unistd.h>
 #include<sys/stat.h>
 #include<gst/gst.h>
+#include<Scanner.hh>
 
 using namespace std;
 
@@ -112,6 +114,40 @@ void subdir_test() {
     assert(store.size() == 0);
 }
 
+// FIXME move this somewhere in the implementation.
+void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
+    Scanner s;
+    vector<string> files = s.scanFiles(subdir, type);
+    for(auto &i : files) {
+        store.insert(MediaFile(i));
+    }
+}
+
+void scan_test() {
+    string base("index");
+    string dbname = base + "-mediastore.db";
+    string testdir = getenv("TEST_DIR");
+    testdir += "/testdir";
+    string testfile = getenv("SOURCE_DIR");
+    testfile += "/test/testfile.ogg";
+    string outfile = testdir + "/testfile.ogg";
+    unlink(dbname.c_str());
+    clear_dir(testdir);
+    assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    copy_file(testfile, outfile);
+    MediaStore *store = new MediaStore(base);
+    scanFiles(*store, testdir, AudioMedia);
+    assert(store->size() == 1);
+
+    delete store;
+    unlink(outfile.c_str());
+    store = new MediaStore(base);
+    store->pruneDeleted();
+    assert(store->size() == 0);
+    delete store;
+
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
 #ifdef NDEBUG
@@ -121,6 +157,7 @@ int main(int argc, char **argv) {
     init_test();
     index_test();
     subdir_test();
+    scan_test();
     return 0;
 #endif
 }
