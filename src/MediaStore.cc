@@ -201,10 +201,15 @@ void MediaStore::insert(const MediaFile &m) {
 }
 
 void MediaStore::remove(const string &fname) {
-    const char *templ = "DELETE FROM music WHERE filename = '%s';";
+    const char *templ = "DELETE FROM %s WHERE filename = '%s';";
     char cmd[1024];
-    sprintf(cmd, templ, fname.c_str());
+    sprintf(cmd, templ, "music", fname.c_str());
     char *errmsg;
+    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
+        string s = errmsg;
+        throw s;
+    }
+    sprintf(cmd, templ, "video", fname.c_str());
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
         string s = errmsg;
         throw s;
