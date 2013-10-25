@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mozilla/fts3_tokenizer.h"
+#include "../mozilla/fts3_tokenizer.h"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
 #include"utils.hh"
