@@ -62,15 +62,13 @@ void copy_file(const string &src, const string &dst) {
 
 void index_test() {
     string base("index");
-    string fname = base + "-mediastore.db";
-    assert(getenv("TEST_DIR"));
+    string dbname = base + "-mediastore.db";
     string subdir = getenv("TEST_DIR");
     subdir += "/testdir";
-    assert(getenv("SOURCE_DIR"));
     string testfile = getenv("SOURCE_DIR");
     testfile += "/test/testfile.ogg";
     string outfile = subdir + "testfile.ogg";
-    unlink(fname.c_str());
+    unlink(dbname.c_str());
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(base);
