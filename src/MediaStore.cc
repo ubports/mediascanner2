@@ -82,7 +82,7 @@ void create_tables(sqlite3 *db) {
     mTC += "CREATE TRIGGER IF NOT EXISTS music_au AFTER UPDATE ON music BEGIN\n";
     mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
     mTC += "END;\n";
-    mTC += "CREATE TRIGGER music_ai AFTER INSERT ON music BEGIN\n";
+    mTC += "CREATE TRIGGER IF NOT EXISTS music_ai AFTER INSERT ON music BEGIN\n";
     mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
     mTC += "END;";
 
@@ -93,7 +93,7 @@ void create_tables(sqlite3 *db) {
     vTC += "CREATE TRIGGER IF NOT EXISTS video_au AFTER UPDATE ON video BEGIN\n";
     vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
     vTC += "END;\n";
-    vTC += "CREATE TRIGGER video_ai AFTER INSERT ON video BEGIN\n";
+    vTC += "CREATE TRIGGER IF NOT EXISTS video_ai AFTER INSERT ON video BEGIN\n";
     vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
     vTC += "END;";
 //    printf("%s", tC.c_str());
