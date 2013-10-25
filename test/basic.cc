@@ -85,6 +85,33 @@ void index_test() {
     assert(store.size() == 0);
 }
 
+void subdir_test() {
+    string base("index");
+    string dbname = base + "-mediastore.db";
+    string testdir = getenv("TEST_DIR");
+    testdir += "/testdir";
+    string subdir = testdir + "/subdir";
+    string testfile = getenv("SOURCE_DIR");
+    testfile += "/test/testfile.ogg";
+    string outfile = subdir + "/testfile.ogg";
+    unlink(dbname.c_str());
+    clear_dir(testdir);
+    assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    MediaStore store(base);
+    SubtreeWatcher watcher(store);
+    watcher.addDir(testdir);
+    assert(store.size() == 0);
+
+    assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    watcher.pumpEvents();
+    copy_file(testfile, outfile);
+    watcher.pumpEvents();
+    assert(store.size() == 1);
+    assert(unlink(outfile.c_str()) == 0);
+    watcher.pumpEvents();
+    assert(store.size() == 0);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
 #ifdef NDEBUG
@@ -93,6 +120,7 @@ int main(int argc, char **argv) {
 #else
     init_test();
     index_test();
+    subdir_test();
     return 0;
 #endif
 }
