@@ -1,4 +1,4 @@
-project(scantest CXX)
+project(scantest CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
 if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -27,7 +27,7 @@ add_executable(watcher watchertest.cc)
 
 add_definitions(${GST_CFLAGS})
 add_executable(scannerdaemon scannerdaemon.cc SubtreeWatcher.cc MediaFile.cc MediaStore.cc
-FileTypeDetector.cc metadataextractor.cc Scanner.cc utils.cc)
+FileTypeDetector.cc metadataextractor.cc Scanner.cc utils.cc mozilla/fts3_porter.c mozilla/Normalize.c)
 target_link_libraries(scannerdaemon ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
 add_executable(query query.cpp utils.cc)
@@ -38,5 +38,5 @@ add_executable(scanscope scanscope.cpp)
 target_link_libraries(scanscope ${SQLITE_LDFLAGS} ${UNITY_LDFLAGS})
 
 add_executable(scaletest scaletest.cc MediaStore.cc MediaFile.cc utils.cc
- metadataextractor.cc FileTypeDetector.cc)
+ metadataextractor.cc FileTypeDetector.cc mozilla/fts3_porter.c mozilla/Normalize.c)
 target_link_libraries(scaletest ${SQLITE_LDFLAGS} ${GST_LDFLAGS})

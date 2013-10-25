@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mozilla/fts3_tokenizer.h"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
 #include"utils.hh"
@@ -38,6 +39,28 @@ struct MediaStorePrivate {
     sqlite3 *db;
 };
 
+extern "C" void sqlite3Fts3PorterTokenizerModule(
+    sqlite3_tokenizer_module const**ppModule);
+
+int register_tokenizer(sqlite3 *db) {
+    int rc;
+    const sqlite3_tokenizer_module *p = NULL;
+    sqlite3_stmt *pStmt;
+    const char *zSql = "SELECT fts3_tokenizer(?, ?)";
+
+    rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
+    if( rc!=SQLITE_OK ){
+        return rc;
+    }
+
+    sqlite3_bind_text(pStmt, 1, "mozporter", -1, SQLITE_STATIC);
+    sqlite3Fts3PorterTokenizerModule(&p);
+    sqlite3_bind_blob(pStmt, 2, &p, sizeof(p), SQLITE_STATIC);
+    sqlite3_step(pStmt);
+
+    return sqlite3_finalize(pStmt);
+}
+
 static void execute_sql(sqlite3 *db, const string &cmd) {
     char *errmsg;
     sqlite3_exec(db, cmd.c_str(), nullptr, nullptr, &errmsg);
@@ -48,9 +71,9 @@ static void execute_sql(sqlite3 *db, const string &cmd) {
 
 void create_tables(sqlite3 *db) {
     string musicCreate("CREATE TABLE IF NOT EXISTS music (filename TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, duration INT);");
-    string musicFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS music_fts USING fts4(title, artist, album);");
+    string musicFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS music_fts USING fts4(content='music', title, artist, album, tokenize=mozporter);");
     string videoCreate("CREATE TABLE IF NOT EXISTS video (filename TEXT PRIMARY KEY, title TEXT, duration INT);");
-    string videoFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video_fts USING fts4(title);");
+    string videoFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video_fts USING fts4(content='video', title, tokenize=mozporter);");
 
     string mTC("CREATE TRIGGER IF NOT EXISTS music_bu BEFORE UPDATE ON music BEGIN\n");
     mTC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
@@ -91,6 +114,10 @@ MediaStore::MediaStore(const std::string &filename_base) {
     p = new MediaStorePrivate();
     string fname = filename_base + "-mediastore.db";
     if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
+        string s = sqlite3_errmsg(p->db);
+        throw s;
+    }
+    if (register_tokenizer(p->db) != SQLITE_OK) {
         string s = sqlite3_errmsg(p->db);
         throw s;
     }
