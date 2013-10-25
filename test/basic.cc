@@ -18,6 +18,7 @@
  */
 
 #include<MediaStore.hh>
+#include<SubtreeWatcher.hh>
 #include<cassert>
 #include<cstdio>
 #include<string>
@@ -30,6 +31,7 @@ void init_test() {
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
     MediaStore store(base);
+    SubtreeWatcher watcher(store);
 }
 
 int main() {
