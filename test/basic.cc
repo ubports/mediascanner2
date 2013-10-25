@@ -23,6 +23,7 @@
 #include<cstdio>
 #include<string>
 #include<unistd.h>
+#include<sys/stat.h>
 
 using namespace std;
 
@@ -34,12 +35,63 @@ void init_test() {
     SubtreeWatcher watcher(store);
 }
 
+void clear_dir(const string &subdir) {
+    string cmd = "rm -rf " + subdir;
+    system(cmd.c_str()); // Because I like to live dangerously, that's why.
+}
+
+
+void copy_file(const string &src, const string &dst) {
+    FILE* f = fopen(src.c_str(), "r");
+    assert(f);
+    fseek(f, 0, SEEK_END);
+    size_t size = ftell(f);
+
+    char* buf = new char[size];
+
+    fseek(f, 0, SEEK_SET);
+    assert(fread(buf, 1, size, f) == size);
+    fclose(f);
+
+    f = fopen(dst.c_str(), "w");
+    assert(f);
+    assert(fwrite(buf, 1, size, f) == size);
+    fclose(f);
+    delete[] buf;
+}
+
+void index_test() {
+    string base("index");
+    string fname = base + "-mediastore.db";
+    assert(getenv("TEST_DIR"));
+    string subdir = getenv("TEST_DIR");
+    subdir += "/testdir";
+    assert(getenv("SOURCE_DIR"));
+    string testfile = getenv("SOURCE_DIR");
+    testfile += "/test/testfile.ogg";
+    string outfile = subdir + "testfile.ogg";
+    unlink(fname.c_str());
+    clear_dir(subdir);
+    assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    MediaStore store(base);
+    SubtreeWatcher watcher(store);
+    watcher.addDir(subdir);
+
+    copy_file(testfile, outfile);
+    watcher.pumpEvents();
+    // assert that file is in
+    assert(unlink(outfile.c_str()) == 0);
+    watcher.pumpEvents();
+    // assert that file is out
+}
+
 int main() {
 #ifdef NDEBUG
     fprintf(stderr, "NDEBUG defined, tests won't work.\n");
     return 1;
 #else
     init_test();
+    index_test();
     return 0;
 #endif
 }
