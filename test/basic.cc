@@ -148,6 +148,22 @@ void scan_test() {
 
 }
 
+void equality_test() {
+    MediaFile audio1("a", "b", "c", "d", 5, AudioMedia);
+    MediaFile audio2("aa", "b", "c", "d", 5, AudioMedia);
+
+    MediaFile video1("a", "b", "c", "d", 5, VideoMedia);
+    MediaFile video2("aa", "b", "c", "d", 5, VideoMedia);
+
+    assert(audio1 == audio1);
+    assert(video1 == video1);
+
+    assert(audio1 != audio2);
+    assert(audio1 != video1);
+    assert(audio2 != video1);
+    assert(audio2 != video2);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
 #ifdef NDEBUG
@@ -158,6 +174,7 @@ int main(int argc, char **argv) {
     index_test();
     subdir_test();
     scan_test();
+    equality_test();
     return 0;
 #endif
 }

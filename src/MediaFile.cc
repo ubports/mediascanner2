@@ -61,3 +61,12 @@ int MediaFile::getDuration() const noexcept {
 MediaType MediaFile::getType() const noexcept {
     return type;
 }
+
+bool MediaFile::operator==(const MediaFile &other) const {
+    return filename == other.filename && title == other.title && author == other.author &&
+            album == other.album && duration == other.duration && type == other.type;
+}
+
+bool MediaFile::operator!=(const MediaFile &other) const {
+    return !(*this == other);
+}

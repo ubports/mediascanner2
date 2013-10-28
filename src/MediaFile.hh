@@ -36,6 +36,8 @@ public:
     const std::string& getAlbum() const noexcept;
     int getDuration() const noexcept;
     MediaType getType() const noexcept;
+    bool operator==(const MediaFile &other) const;
+    bool operator!=(const MediaFile &other) const;
 
 private:
     std::string filename;
