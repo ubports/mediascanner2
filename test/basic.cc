@@ -173,10 +173,7 @@ void roundtrip_test() {
     MediaStore store(base);
     store.insert(audio);
     store.insert(video);
-    fflush(stdout);
-    fflush(stderr);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
-    printf("%d\n", (int) result.size());
     assert(result.size() == 1);
     assert(result[0] == audio);
     result = store.query("bbb", VideoMedia);
