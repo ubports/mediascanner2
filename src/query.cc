@@ -86,8 +86,8 @@ int main(int argc, char **argv) {
         if(S_ISDIR(statbuf.st_mode)) {
             string dbCandidate("mount-");
             dbCandidate += fname;
-            dbCandidate += "-mediastore.db";
-            if(stat(dbCandidate.c_str(), &statbuf) == 0) {
+            string dbfile = dbCandidate + "-mediastore.db";
+            if(stat(dbfile.c_str(), &statbuf) == 0) {
                 printf("Results from external volume %s\n", fname.c_str());
                 queryDb(dbCandidate, term);
             }
