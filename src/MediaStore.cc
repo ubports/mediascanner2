@@ -23,16 +23,10 @@
 #include"utils.hh"
 #include <sqlite3.h>
 #include <cstdio>
+#include <stdexcept>
+#include<cassert>
 
 using namespace std;
-
-static string low(const string &s) {
-    string ls = s;
-    for(size_t i=0; i<ls.size(); i++) {
-        ls[i] = tolower(ls[i]);
-    }
-    return ls;
-}
 
 struct MediaStorePrivate {
     vector<MediaFile> files;
@@ -216,22 +210,47 @@ void MediaStore::remove(const string &fname) {
     }
 }
 
-static int music_adder(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
+
+static int music_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
+    assert(num_cols == 5);
     vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
-    int duration = 0; // TMP
-    t->push_back(MediaFile(data[0], data[1], data[2], data[3], duration, AudioMedia));
+    string filename(data[0]);
+    string title(data[1]);
+    string author(data[2]);
+    string album(data[3]);
+    int duration = atoi(data[4]);
+    t->push_back(MediaFile(filename, title, author, album, duration, AudioMedia));
     return 0;
 }
 
-vector<MediaFile> MediaStore::query(const std::string &q) {
+static int video_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
+    assert(num_cols == 3);
+    vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
+    string filename(data[0]);
+    string title(data[1]);
+    string author;
+    string album;
+    int duration = atoi(data[2]);
+    t->push_back(MediaFile(filename, title, author, album, duration, VideoMedia));
+    return 0;
+}
+
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
     vector<MediaFile> result;
-    const char *templ = "SELECT * FROM music WHERE title MATCH '%s*';";
+    const char *music_templ = "SELECT * FROM music WHERE rowid IN (SELECT docid FROM music_fts WHERE artist MATCH %s UNION SELECT docid FROM music_fts WHERE title MATCH %s);";
+    const char *video_templ = "SELECT * FROM video WHERE rowid IN (SELECT docid FROM video_fts WHERE title MATCH %s);";
+    int (* callback)(void*,int,char**,char**);
+    string term = sqlQuote(core_term + "*");
     char cmd[1024];
-    sprintf(cmd, templ, q.c_str());
-    char *errmsg;
-    if(sqlite3_exec(p->db, cmd, music_adder, &result, &errmsg) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+    if(type == AudioMedia) {
+        sprintf(cmd, music_templ, term.c_str(), term.c_str());
+        callback = music_adder;
+    } else {
+        sprintf(cmd, video_templ, term.c_str());
+        callback = video_adder;
+    }
+    if(sqlite3_exec(p->db, cmd, callback, &result, nullptr) != SQLITE_OK) {
+        throw runtime_error(sqlite3_errmsg(p->db));
     }
     return result;
 }

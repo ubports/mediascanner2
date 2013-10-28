@@ -20,6 +20,7 @@
 #ifndef MEDIASTORE_HH_
 #define MEDIASTORE_HH_
 
+#include"scannercore.hh"
 #include<vector>
 #include<string>
 
@@ -37,7 +38,7 @@ public:
 
     void insert(const MediaFile &m);
     void remove(const std::string &fname);
-    std::vector<MediaFile> query(const std::string &q);
+    std::vector<MediaFile> query(const std::string &q, MediaType type);
     size_t size() const;
     void pruneDeleted();
 };

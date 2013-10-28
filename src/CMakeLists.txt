@@ -8,8 +8,8 @@ add_definitions(${GST_CFLAGS})
 add_executable(scannerdaemon scannerdaemon.cc)
 target_link_libraries(scannerdaemon scannerstuff ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
-add_executable(query query.cc utils.cc)
-target_link_libraries(query ${SQLITE_LDFLAGS})
+add_executable(query query.cc)
+target_link_libraries(query scannerstuff ${GST_LDFLAGS} ${SQLITE_LDFLAGS})
 
 include_directories(${UNITY_INCLUDE_DIRS})
 add_executable(scanscope scanscope.cc)

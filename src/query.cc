@@ -18,6 +18,8 @@
  */
 
 #include"utils.hh"
+#include"MediaFile.hh"
+#include"MediaStore.hh"
 
 #include<sqlite3.h>
 #include<stdio.h>
@@ -26,43 +28,32 @@
 #include<sys/stat.h>
 #include<dirent.h>
 #include<unistd.h>
+#include<vector>
 
 using namespace std;
 
-int printer(void*/*arg*/, int num_cols, char **data, char **colnames) {
-    for(int i=0; i<num_cols; i++) {
-        printf("%s: %s\n", colnames[i], data[i]);
+void queryDb(const string &file_base, const string &core_term) {
+    MediaStore store(file_base);
+    vector<MediaFile> results;
+    results = store.query(core_term, AudioMedia);
+    if(results.empty()) {
+        printf("No audio matches.\n");
+    } else {
+        printf("Audio matches:\n");
     }
-    return 0;
-}
-
-int queryDb(const string &fname, const string &core_term) {
-    sqlite3 *db;
-    const char *music_templ = "SELECT * FROM music WHERE rowid IN (SELECT docid FROM music_fts WHERE artist MATCH %s UNION SELECT docid FROM music_fts WHERE title MATCH %s);";
-    const char *video_templ = "SELECT * FROM video WHERE rowid IN (SELECT docid FROM video_fts WHERE title MATCH %s);";
-    string term = sqlQuote(core_term + "*");
-    if(sqlite3_open_v2(fname.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
-        printf("%s\n", sqlite3_errmsg(db));
-        return 1;
-    }
-    char cmd[1024];
-    sprintf(cmd, music_templ, term.c_str(), term.c_str());
-    char *err;
-    printf("Music results\n\n");
-    if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
-        printf("%s\n", sqlite3_errmsg(db));
-        return 1;
+    for(const auto &i : results) {
+        printf("Filename: %s\n", i.getFileName().c_str());
     }
 
-    printf("\nVideo results\n\n");
-    sprintf(cmd, video_templ, term.c_str());
-    if(sqlite3_exec(db, cmd, printer, NULL, &err) != SQLITE_OK) {
-        printf("%s\n", sqlite3_errmsg(db));
-        return 1;
+    results = store.query(core_term, VideoMedia);
+    if(results.empty()) {
+        printf("No video matches.\n");
+    } else {
+        printf("Video matches:\n");
     }
-
-    sqlite3_close(db);
-    return 0;
+    for(const auto &i : results) {
+        printf("Filename: %s\n", i.getFileName().c_str());
+    }
 }
 
 int main(int argc, char **argv) {
@@ -70,8 +61,8 @@ int main(int argc, char **argv) {
         printf("%s <term>\n", argv[0]);
         return 1;
     }
-    string audioname = "home-music-mediastore.db";
-    string videoname = "home-video-mediastore.db";
+    string audioname = "home-music";
+    string videoname = "home-video";
     string term = argv[1];
     printf("Results from music directory\n");
     queryDb(audioname, term);
