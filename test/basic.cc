@@ -164,6 +164,34 @@ void equality_test() {
     assert(audio2 != video2);
 }
 
+void roundtrip_test() {
+    MediaFile audio("aaa", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
+    MediaFile video("aaa", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
+    string base("roundtrip");
+    string dbname = base + "-mediastore.db";
+    unlink(dbname.c_str());
+    MediaStore store(base);
+    store.insert(audio);
+    store.insert(video);
+    fflush(stdout);
+    fflush(stderr);
+    vector<MediaFile> result = store.query("bbb", AudioMedia);
+    printf("%d\n", (int) result.size());
+    assert(result.size() == 1);
+    assert(result[0] == audio);
+    result = store.query("bbb", VideoMedia);
+    assert(result.size() == 1);
+    MediaFile &out = result[0];
+    // Video backing store does not store album etc.
+    // Check that they are returned empty.
+    assert(out.getFileName() == video.getFileName());
+    assert(out.getTitle() == video.getTitle());
+    assert(out.getDuration() == video.getDuration());
+    assert(out.getAlbum().empty());
+    assert(out.getAuthor().empty());
+    assert(out.getType() == VideoMedia);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
 #ifdef NDEBUG
@@ -175,6 +203,7 @@ int main(int argc, char **argv) {
     subdir_test();
     scan_test();
     equality_test();
+    roundtrip_test();
     return 0;
 #endif
 }
