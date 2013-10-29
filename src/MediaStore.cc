@@ -59,44 +59,46 @@ static void execute_sql(sqlite3 *db, const string &cmd) {
     char *errmsg;
     sqlite3_exec(db, cmd.c_str(), nullptr, nullptr, &errmsg);
     if(errmsg) {
-        throw string(errmsg);
+        throw runtime_error(errmsg);
     }
 }
 
 void create_tables(sqlite3 *db) {
-    string musicCreate("CREATE TABLE IF NOT EXISTS music (filename TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, duration INT);");
-    string musicFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS music_fts USING fts4(content='music', title, artist, album, tokenize=mozporter);");
-    string videoCreate("CREATE TABLE IF NOT EXISTS video (filename TEXT PRIMARY KEY, title TEXT, duration INT);");
-    string videoFtsCreate("CREATE VIRTUAL TABLE IF NOT EXISTS video_fts USING fts4(content='video', title, tokenize=mozporter);");
+    string mediaCreate(R"(CREATE TABLE mediaroot (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mountpoint TEXT
+);
 
-    string mTC("CREATE TRIGGER IF NOT EXISTS music_bu BEFORE UPDATE ON music BEGIN\n");
-    mTC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
-    mTC += "CREATE TRIGGER IF NOT EXISTS music_bd BEFORE DELETE ON music BEGIN\n";
-    mTC += "  DELETE FROM music_fts WHERE docid=old.rowid;\nEND;\n";
-    mTC += "CREATE TRIGGER IF NOT EXISTS music_au AFTER UPDATE ON music BEGIN\n";
-    mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
-    mTC += "END;\n";
-    mTC += "CREATE TRIGGER IF NOT EXISTS music_ai AFTER INSERT ON music BEGIN\n";
-    mTC += "  INSERT INTO music_fts(docid, title, artist, album) VALUES(new.rowid, new.title, new.artist, new.album);\n";
-    mTC += "END;";
+CREATE TABLE media (
+    filename TEXT PRIMARY KEY NOT NULL,
+    --mediaroot INTEGER REFERENCES mediaroot(id),
+    title TEXT,
+    artist TEXT,    -- Only relevant to audio
+    album TEXT,     -- Only relevant to audio
+    duration INTEGER,
+    type INTEGER   -- 0=Audio, 1=Video
+);
 
-    string vTC("CREATE TRIGGER IF NOT EXISTS video_bu BEFORE UPDATE ON video BEGIN\n");
-    vTC += "  DELETE FROM video_fts WHERE docid=old.rowid;\nEND;\n";
-    vTC += "CREATE TRIGGER IF NOT EXISTS video_bd BEFORE DELETE ON video BEGIN\n";
-    vTC += "  DELETE FROM video_fts WHERE docid=old.rowid;\nEND;\n";
-    vTC += "CREATE TRIGGER IF NOT EXISTS video_au AFTER UPDATE ON video BEGIN\n";
-    vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
-    vTC += "END;\n";
-    vTC += "CREATE TRIGGER IF NOT EXISTS video_ai AFTER INSERT ON video BEGIN\n";
-    vTC += "  INSERT INTO video_fts(docid, title) VALUES(new.rowid, new.title);\n";
-    vTC += "END;";
-//    printf("%s", tC.c_str());
-    execute_sql(db, musicCreate);
-    execute_sql(db, musicFtsCreate);
-    execute_sql(db, videoCreate);
-    execute_sql(db, videoFtsCreate);
-    execute_sql(db, mTC);
-    execute_sql(db, vTC);
+CREATE VIRTUAL TABLE media_fts USING fts4(content="media", title, artist, album, tokenize=mozporter);
+)");
+    string triggerCreate(R"(CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
+  DELETE FROM media_fts WHERE docid=old.rowid;
+END;
+
+CREATE TRIGGER media_au AFTER UPDATE ON media BEGIN
+  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
+END;
+
+CREATE TRIGGER media_bd BEFORE DELETE ON media BEGIN
+  DELETE FROM media_fts WHERE docid=old.rowid;
+END;
+
+CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
+  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
+END;
+)");
+    execute_sql(db, mediaCreate);
+    execute_sql(db, triggerCreate);
 }
 
 int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
@@ -147,9 +149,8 @@ void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
     p->files.push_back(m);
     // SQL injection here.
-    const char *musicinsert_templ = "INSERT INTO music VALUES(%s, %s, %s, %s, %s);";
-    const char *videoinsert_templ = "INSERT INTO video VALUES(%s, %s, %s);";
-    const char *query_templ = "SELECT * FROM %s WHERE filename=%s;";
+    const char *insert_templ = "INSERT INTO media VALUES(%s, %s, %s, %s, %d, %d);";
+    const char *query_templ = "SELECT * FROM media WHERE filename=%s;";
     const size_t bufsize = 1024;
     char qcmd[bufsize];
     char icmd[bufsize];
@@ -162,18 +163,12 @@ void MediaStore::insert(const MediaFile &m) {
         title = sqlQuote(m.getTitle());
     string author = sqlQuote(m.getAuthor());
     string album = sqlQuote(m.getAlbum());
-    string duration = to_string(m.getDuration());
+    int duration = m.getDuration();
+    int type = (int)m.getType();
+    snprintf(qcmd, bufsize, query_templ, fname.c_str());
+    snprintf(icmd, bufsize, insert_templ, fname.c_str(), title.c_str(),
+            author.c_str(), album.c_str(), duration, type);
 
-    if(m.getType() == AudioMedia) {
-        snprintf(qcmd, bufsize, query_templ, "music", fname.c_str());
-        snprintf(icmd, bufsize, musicinsert_templ, fname.c_str(), title.c_str(),
-                author.c_str(), album.c_str(), duration.c_str());
-    } else if(m.getType() == VideoMedia) {
-        snprintf(qcmd, bufsize, query_templ, "video", fname.c_str());
-        snprintf(icmd, bufsize, videoinsert_templ, fname.c_str(), title.c_str(), duration.c_str());
-    } else {
-        return;
-    }
     bool was_in = false;
     if(sqlite3_exec(p->db, qcmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
         string s = errmsg;
@@ -200,56 +195,37 @@ void MediaStore::remove(const string &fname) {
     sprintf(cmd, templ, "music", fname.c_str());
     char *errmsg;
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+        throw runtime_error(errmsg);
     }
     sprintf(cmd, templ, "video", fname.c_str());
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+        throw runtime_error(errmsg);
     }
 }
 
 
-static int music_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
-    assert(num_cols == 5);
+static int media_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
+    assert(num_cols == 6);
     vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
     string filename(data[0]);
     string title(data[1]);
     string author(data[2]);
     string album(data[3]);
     int duration = atoi(data[4]);
-    t->push_back(MediaFile(filename, title, author, album, duration, AudioMedia));
-    return 0;
-}
-
-static int video_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
-    assert(num_cols == 3);
-    vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
-    string filename(data[0]);
-    string title(data[1]);
-    string author;
-    string album;
-    int duration = atoi(data[2]);
-    t->push_back(MediaFile(filename, title, author, album, duration, VideoMedia));
+    MediaType type = (MediaType)atoi(data[5]);
+    t->push_back(MediaFile(filename, title, author, album, duration, type));
     return 0;
 }
 
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
     vector<MediaFile> result;
-    const char *music_templ = "SELECT * FROM music WHERE rowid IN (SELECT docid FROM music_fts WHERE artist MATCH %s UNION SELECT docid FROM music_fts WHERE title MATCH %s);";
-    const char *video_templ = "SELECT * FROM video WHERE rowid IN (SELECT docid FROM video_fts WHERE title MATCH %s);";
-    int (* callback)(void*,int,char**,char**);
+    const char *templ = R"(SELECT * FROM media
+WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH %s)
+AND type == %d;)";
     string term = sqlQuote(core_term + "*");
     char cmd[1024];
-    if(type == AudioMedia) {
-        sprintf(cmd, music_templ, term.c_str(), term.c_str());
-        callback = music_adder;
-    } else {
-        sprintf(cmd, video_templ, term.c_str());
-        callback = video_adder;
-    }
-    if(sqlite3_exec(p->db, cmd, callback, &result, nullptr) != SQLITE_OK) {
+    sprintf(cmd, templ, term.c_str(), (int)type);
+    if(sqlite3_exec(p->db, cmd, media_adder, &result, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
     return result;
