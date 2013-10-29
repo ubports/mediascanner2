@@ -34,7 +34,7 @@ void init_test() {
     string base("basic");
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
-    MediaStore store(base);
+    MediaStore store(fname);
     SubtreeWatcher watcher(store);
 }
 
@@ -74,7 +74,7 @@ void index_test() {
     unlink(dbname.c_str());
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
-    MediaStore store(base);
+    MediaStore store(dbname);
     SubtreeWatcher watcher(store);
     watcher.addDir(subdir);
     assert(store.size() == 0);
@@ -99,7 +99,7 @@ void subdir_test() {
     unlink(dbname.c_str());
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
-    MediaStore store(base);
+    MediaStore store(dbname);
     SubtreeWatcher watcher(store);
     watcher.addDir(testdir);
     assert(store.size() == 0);
@@ -135,13 +135,13 @@ void scan_test() {
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     copy_file(testfile, outfile);
-    MediaStore *store = new MediaStore(base);
+    MediaStore *store = new MediaStore(dbname);
     scanFiles(*store, testdir, AudioMedia);
     assert(store->size() == 1);
 
     delete store;
     unlink(outfile.c_str());
-    store = new MediaStore(base);
+    store = new MediaStore(dbname);
     store->pruneDeleted();
     assert(store->size() == 0);
     delete store;
@@ -166,11 +166,11 @@ void equality_test() {
 
 void roundtrip_test() {
     MediaFile audio("aaa", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
-    MediaFile video("aaa", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
+    MediaFile video("aaa2", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
     string base("roundtrip");
     string dbname = base + "-mediastore.db";
     unlink(dbname.c_str());
-    MediaStore store(base);
+    MediaStore store(dbname);
     store.insert(audio);
     store.insert(video);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
@@ -178,15 +178,7 @@ void roundtrip_test() {
     assert(result[0] == audio);
     result = store.query("bbb", VideoMedia);
     assert(result.size() == 1);
-    MediaFile &out = result[0];
-    // Video backing store does not store album etc.
-    // Check that they are returned empty.
-    assert(out.getFileName() == video.getFileName());
-    assert(out.getTitle() == video.getTitle());
-    assert(out.getDuration() == video.getDuration());
-    assert(out.getAlbum().empty());
-    assert(out.getAuthor().empty());
-    assert(out.getType() == VideoMedia);
+    assert(result[0] == video);
 }
 
 int main(int argc, char **argv) {

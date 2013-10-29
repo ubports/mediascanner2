@@ -29,7 +29,6 @@
 using namespace std;
 
 struct MediaStorePrivate {
-    vector<MediaFile> files;
     sqlite3 *db;
 };
 
@@ -107,10 +106,9 @@ int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*
     return 0;
 }
 
-MediaStore::MediaStore(const std::string &filename_base) {
+MediaStore::MediaStore(const std::string &filename) {
     p = new MediaStorePrivate();
-    string fname = filename_base + "-mediastore.db";
-    if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
+    if(sqlite3_open(filename.c_str(), &p->db) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
     if (register_tokenizer(p->db) != SQLITE_OK) {
@@ -142,8 +140,7 @@ static int yup(void* arg, int /*num_cols*/, char **/*data*/, char ** /*colnames*
 
 void MediaStore::insert(const MediaFile &m) {
     char *errmsg;
-    p->files.push_back(m);
-    // SQL injection here.
+
     const char *insert_templ = "INSERT INTO media VALUES(%s, %s, %s, %s, %d, %d);";
     const char *query_templ = "SELECT * FROM media WHERE filename=%s;";
     const size_t bufsize = 1024;
@@ -191,7 +188,6 @@ void MediaStore::remove(const string &fname) {
         throw runtime_error(errmsg);
     }
 }
-
 
 static int media_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
     assert(num_cols == 6);
