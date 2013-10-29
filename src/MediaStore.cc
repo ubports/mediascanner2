@@ -64,12 +64,12 @@ static void execute_sql(sqlite3 *db, const string &cmd) {
 }
 
 void create_tables(sqlite3 *db) {
-    string mediaCreate(R"(CREATE TABLE mediaroot (
+    string mediaCreate(R"(CREATE TABLE IF NOT EXISTS mediaroot (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     mountpoint TEXT
 );
 
-CREATE TABLE media (
+CREATE TABLE IF NOT EXISTS media (
     filename TEXT PRIMARY KEY NOT NULL,
     --mediaroot INTEGER REFERENCES mediaroot(id),
     title TEXT,
@@ -79,21 +79,22 @@ CREATE TABLE media (
     type INTEGER   -- 0=Audio, 1=Video
 );
 
-CREATE VIRTUAL TABLE media_fts USING fts4(content="media", title, artist, album, tokenize=mozporter);
+CREATE VIRTUAL TABLE IF NOT EXISTS media_fts 
+USING fts4(content="media", title, artist, album, tokenize=mozporter);
 )");
-    string triggerCreate(R"(CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
+    string triggerCreate(R"(CREATE TRIGGER IF NOT EXISTS media_bu BEFORE UPDATE ON media BEGIN
   DELETE FROM media_fts WHERE docid=old.rowid;
 END;
 
-CREATE TRIGGER media_au AFTER UPDATE ON media BEGIN
+CREATE TRIGGER IF NOT EXISTS media_au AFTER UPDATE ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
 
-CREATE TRIGGER media_bd BEFORE DELETE ON media BEGIN
+CREATE TRIGGER IF NOT EXISTS media_bd BEFORE DELETE ON media BEGIN
   DELETE FROM media_fts WHERE docid=old.rowid;
 END;
 
-CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
+CREATE TRIGGER IF NOT EXISTS media_ai AFTER INSERT ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
 )");
@@ -110,12 +111,10 @@ MediaStore::MediaStore(const std::string &filename_base) {
     p = new MediaStorePrivate();
     string fname = filename_base + "-mediastore.db";
     if(sqlite3_open(fname.c_str(), &p->db) != SQLITE_OK) {
-        string s = sqlite3_errmsg(p->db);
-        throw s;
+        throw runtime_error(sqlite3_errmsg(p->db));
     }
     if (register_tokenizer(p->db) != SQLITE_OK) {
-        string s = sqlite3_errmsg(p->db);
-        throw s;
+        throw runtime_error(sqlite3_errmsg(p->db));
     }
     create_tables(p->db);
 }
@@ -128,14 +127,10 @@ MediaStore::~MediaStore() {
 size_t MediaStore::size() const {
     size_t result = 0;
     char *err;
-    if(sqlite3_exec(p->db, "SELECT * FROM music;", incrementer, &result, &err) != SQLITE_OK) {
-        string s = err;
-        throw s;
+    if(sqlite3_exec(p->db, "SELECT * FROM media", incrementer, &result, &err) != SQLITE_OK) {
+        throw runtime_error(err);
     }
-    if(sqlite3_exec(p->db, "SELECT * FROM video;", incrementer, &result, &err) != SQLITE_OK) {
-        string s = err;
-        throw s;
-    }
+
     return result;
 }
 
@@ -171,15 +166,13 @@ void MediaStore::insert(const MediaFile &m) {
 
     bool was_in = false;
     if(sqlite3_exec(p->db, qcmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+        throw runtime_error(errmsg);
     }
     if(was_in) {
         return;
     }
     if(sqlite3_exec(p->db, icmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+        throw runtime_error(errmsg);
     }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
@@ -190,14 +183,10 @@ void MediaStore::insert(const MediaFile &m) {
 }
 
 void MediaStore::remove(const string &fname) {
-    const char *templ = "DELETE FROM %s WHERE filename = '%s';";
+    const char *templ = "DELETE FROM media WHERE filename = %s;";
     char cmd[1024];
-    sprintf(cmd, templ, "music", fname.c_str());
+    sprintf(cmd, templ, sqlQuote(fname).c_str());
     char *errmsg;
-    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        throw runtime_error(errmsg);
-    }
-    sprintf(cmd, templ, "video", fname.c_str());
     if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
         throw runtime_error(errmsg);
     }
@@ -245,11 +234,10 @@ static int deleteChecker(void* arg, int /*num_cols*/, char **data, char ** /*col
 
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
-    const char *query = "SELECT filename FROM music;";
+    const char *query = "SELECT filename FROM media;";
     char *errmsg;
     if(sqlite3_exec(p->db, query, deleteChecker, &deleted, &errmsg) != SQLITE_OK) {
-        string s = errmsg;
-        throw s;
+        throw runtime_error(errmsg);
     }
     printf("%d files deleted from disk.\n", (int)deleted.size());
     for(const auto &i : deleted) {
