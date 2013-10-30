@@ -46,7 +46,7 @@ private:
 
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
-    void addDir(const string &dir, const string &id);
+    void addDir(const string &dir);
     void removeDir(const string &dir);
     void pumpEvents();
     void addMountedVolumes();
@@ -82,18 +82,16 @@ ScannerDaemon::ScannerDaemon() {
     store = move(tmp);
     setupMountWatcher();
     addMountedVolumes();
-    addDir(musicdir, "home-music");
-    addDir(videodir, "home-video");
+    addDir(musicdir);
+    addDir(videodir);
 }
 
 ScannerDaemon::~ScannerDaemon() {
     close(mountfd);
 }
 
-void ScannerDaemon::addDir(const string &dir, const string &id) {
+void ScannerDaemon::addDir(const string &dir) {
     assert(dir[0] == '/');
-    assert(!id.empty());
-    string absname = cachedir + "/" + id;
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
@@ -202,13 +200,12 @@ void ScannerDaemon::pumpEvents() {
             string directory = mountDir;
             string filename(event->name);
             string abspath = directory + '/' + filename;
-            string mountId = "mount-" + filename;
             struct stat statbuf;
             stat(abspath.c_str(), &statbuf);
             if(S_ISDIR(statbuf.st_mode)) {
                 if(event->mask & IN_CREATE) {
                     printf("Volume %s was mounted.\n", abspath.c_str());
-                    addDir(abspath, mountId);
+                    addDir(abspath);
                 } else if(event->mask & IN_DELETE){
                     printf("Volume %s was unmounted.\n", abspath.c_str());
                     removeDir(abspath);
@@ -230,13 +227,12 @@ void ScannerDaemon::addMountedVolumes() {
     while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
         struct stat statbuf;
         string fname = entry.get()->d_name;
-        if(fname == "." || fname == "..") // Maybe ignore all entries starting with a period?
+        if(fname[0] == '.')
             continue;
         string fullpath = mountDir + "/" + fname;
-        string mountId = "mount-" + fname;
         stat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
-            addDir(fullpath, mountId);
+            addDir(fullpath);
         }
     }
 }
