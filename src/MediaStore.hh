@@ -32,7 +32,7 @@ private:
     MediaStorePrivate *p;
 
 public:
-    MediaStore(const std::string &filename);
+    MediaStore(const std::string &filename, const std::string &retireprefix="");
     MediaStore(const MediaStore &other) = delete;
     ~MediaStore();
 
@@ -44,6 +44,5 @@ public:
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
 };
-
 
 #endif

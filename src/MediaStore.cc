@@ -116,7 +116,7 @@ int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*
     return 0;
 }
 
-MediaStore::MediaStore(const std::string &filename) {
+MediaStore::MediaStore(const std::string &filename, const std::string &retireprefix) {
     p = new MediaStorePrivate();
     if(sqlite3_open(filename.c_str(), &p->db) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
@@ -125,6 +125,8 @@ MediaStore::MediaStore(const std::string &filename) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
     create_tables(p->db);
+    if(!retireprefix.empty())
+        archiveItems(retireprefix);
 }
 
 MediaStore::~MediaStore() {

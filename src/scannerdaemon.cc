@@ -54,8 +54,8 @@ private:
     int mountfd;
     string mountDir;
     string cachedir;
+    unique_ptr<MediaStore> store;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
-    map<string, unique_ptr<MediaStore>> stores;
 };
 
 ScannerDaemon::ScannerDaemon() {
@@ -78,6 +78,8 @@ ScannerDaemon::ScannerDaemon() {
         throw runtime_error(msg);
     }
     mountDir = string("/media/") + getlogin();
+    unique_ptr<MediaStore> tmp(new MediaStore(cachedir + "/mediastore.db", "/media/"));
+    store = move(tmp);
     setupMountWatcher();
     addMountedVolumes();
     addDir(musicdir, "home-music");
@@ -95,23 +97,21 @@ void ScannerDaemon::addDir(const string &dir, const string &id) {
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    unique_ptr<MediaStore> ms(new MediaStore(absname));
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*ms.get()));
-    ms->pruneDeleted();
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get()));
+    store->restoreItems(dir);
+    store->pruneDeleted();
     // Fixme, only traverse once.
-    readFiles(*ms.get(), dir, VideoMedia);
-    readFiles(*ms.get(), dir, AudioMedia);
+    readFiles(*store.get(), dir, VideoMedia);
+    readFiles(*store.get(), dir, AudioMedia);
     sw->addDir(dir);
     subtrees[dir] = move(sw);
-    stores[dir] = move(ms);
 }
 
 void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
     assert(subtrees.find(dir) != subtrees.end());
-    assert(stores.find(dir) != stores.end());
     subtrees.erase(dir);
-    stores.erase(dir);
+
 }
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
