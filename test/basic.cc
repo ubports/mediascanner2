@@ -181,6 +181,28 @@ void roundtrip_test() {
     assert(result[0] == video);
 }
 
+void unmount_test() {
+    MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
+    string base("unmount");
+    string dbname = base + "-mediastore.db";
+    unlink(dbname.c_str());
+    MediaStore store(dbname);
+    store.insert(audio1);
+    store.insert(audio2);
+    vector<MediaFile> result = store.query("bbb", AudioMedia);
+    assert(result.size() == 2);
+
+    store.archiveItems("/media/username");
+    result = store.query("bbb", AudioMedia);
+    assert(result.size() == 1);
+    assert(result[0] == audio2);
+
+    store.restoreItems("/media/username");
+    result = store.query("bbb", AudioMedia);
+    assert(result.size() == 2);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
 #ifdef NDEBUG
@@ -193,6 +215,7 @@ int main(int argc, char **argv) {
     scan_test();
     equality_test();
     roundtrip_test();
+    unmount_test();
     return 0;
 #endif
 }
