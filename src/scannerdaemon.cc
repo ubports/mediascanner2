@@ -78,7 +78,7 @@ ScannerDaemon::ScannerDaemon() {
         throw runtime_error(msg);
     }
     mountDir = string("/media/") + getlogin();
-    unique_ptr<MediaStore> tmp(new MediaStore(cachedir + "/mediastore.db", "/media/"));
+    unique_ptr<MediaStore> tmp(new MediaStore(cachedir + "/mediastore.db", MS_READ_WRITE, "/media/"));
     store = move(tmp);
     setupMountWatcher();
     addMountedVolumes();

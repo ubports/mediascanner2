@@ -33,7 +33,7 @@
 using namespace std;
 
 void queryDb(const string &db_file, const string &core_term) {
-    MediaStore store(db_file, false);
+    MediaStore store(db_file, MS_READ_ONLY);
     vector<MediaFile> results;
     results = store.query(core_term, AudioMedia);
     if(results.empty()) {

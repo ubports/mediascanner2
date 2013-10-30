@@ -116,8 +116,8 @@ int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*
     return 0;
 }
 
-MediaStore::MediaStore(const std::string &filename, bool readWrite, const std::string &retireprefix) {
-    int sqliteFlags = readWrite ? SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE : SQLITE_OPEN_READONLY;
+MediaStore::MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix) {
+    int sqliteFlags = access == MS_READ_WRITE ? SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE : SQLITE_OPEN_READONLY;
     p = new MediaStorePrivate();
     if(sqlite3_open_v2(filename.c_str(), &p->db, sqliteFlags, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
@@ -125,7 +125,7 @@ MediaStore::MediaStore(const std::string &filename, bool readWrite, const std::s
     if (register_tokenizer(p->db) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
-    if(readWrite) {
+    if(access == MS_READ_WRITE) {
         create_tables(p->db);
         if(!retireprefix.empty())
             archiveItems(retireprefix);
