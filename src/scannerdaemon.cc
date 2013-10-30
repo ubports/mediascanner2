@@ -73,7 +73,9 @@ ScannerDaemon::ScannerDaemon() {
     errno = 0;
     ec = mkdir(cachedir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
     if(ec < 0 && errno != EEXIST) {
-        throw runtime_error("Could not create cache dir.");
+        string msg("Could not create cache dir: ");
+        msg += strerror(errno);
+        throw runtime_error(msg);
     }
     mountDir = string("/media/") + getlogin();
     setupMountWatcher();
