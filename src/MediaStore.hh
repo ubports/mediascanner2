@@ -32,7 +32,7 @@ private:
     MediaStorePrivate *p;
 
 public:
-    MediaStore(const std::string &filename, const std::string &retireprefix="");
+    MediaStore(const std::string &filename, bool readWrite, const std::string &retireprefix="");
     MediaStore(const MediaStore &other) = delete;
     ~MediaStore();
 

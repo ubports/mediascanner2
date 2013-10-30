@@ -34,7 +34,7 @@ void init_test() {
     string base("basic");
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
-    MediaStore store(fname);
+    MediaStore store(fname, true);
     SubtreeWatcher watcher(store);
 }
 
@@ -74,7 +74,7 @@ void index_test() {
     unlink(dbname.c_str());
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
-    MediaStore store(dbname);
+    MediaStore store(dbname, true);
     SubtreeWatcher watcher(store);
     watcher.addDir(subdir);
     assert(store.size() == 0);
@@ -99,7 +99,7 @@ void subdir_test() {
     unlink(dbname.c_str());
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
-    MediaStore store(dbname);
+    MediaStore store(dbname, true);
     SubtreeWatcher watcher(store);
     watcher.addDir(testdir);
     assert(store.size() == 0);
@@ -135,13 +135,13 @@ void scan_test() {
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     copy_file(testfile, outfile);
-    MediaStore *store = new MediaStore(dbname);
+    MediaStore *store = new MediaStore(dbname, true);
     scanFiles(*store, testdir, AudioMedia);
     assert(store->size() == 1);
 
     delete store;
     unlink(outfile.c_str());
-    store = new MediaStore(dbname);
+    store = new MediaStore(dbname, true);
     store->pruneDeleted();
     assert(store->size() == 0);
     delete store;
@@ -170,7 +170,7 @@ void roundtrip_test() {
     string base("roundtrip");
     string dbname = base + "-mediastore.db";
     unlink(dbname.c_str());
-    MediaStore store(dbname);
+    MediaStore store(dbname, true);
     store.insert(audio);
     store.insert(video);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
@@ -187,7 +187,7 @@ void unmount_test() {
     string base("unmount");
     string dbname = base + "-mediastore.db";
     unlink(dbname.c_str());
-    MediaStore store(dbname);
+    MediaStore store(dbname, true);
     store.insert(audio1);
     store.insert(audio2);
     vector<MediaFile> result = store.query("bbb", AudioMedia);

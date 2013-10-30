@@ -59,7 +59,7 @@ int queryDb(const string &fname, const string &core_term) {
 }
 
 int createDb(const string &base) {
-    MediaStore store(base);
+    MediaStore store(base, true);
     ifstream ifile("/usr/share/dict/words");
     string line;
     vector<string> words;
