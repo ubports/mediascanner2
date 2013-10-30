@@ -73,8 +73,7 @@ ScannerDaemon::ScannerDaemon() {
     errno = 0;
     ec = mkdir(cachedir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
     if(ec < 0 && errno != EEXIST) {
-        string msg("Could not create cache dir.");
-        throw msg;
+        throw runtime_error("Could not create cache dir.");
     }
     mountDir = string("/media/") + getlogin();
     setupMountWatcher();
@@ -144,7 +143,7 @@ int ScannerDaemon::run() {
         if(rval < 0) {
             string msg("Select failed: ");
             msg += strerror(errno);
-            throw msg;
+            throw runtime_error(msg);
         }
         if(FD_ISSET(kbdfd, &fds)) {
             return 0;
@@ -162,14 +161,14 @@ void ScannerDaemon::setupMountWatcher() {
     if(mountfd < 0) {
         string msg("Could not init inotify: ");
         msg += strerror(errno);
-        throw msg;
+        throw runtime_error(msg);
     }
     int wd = inotify_add_watch(mountfd, mountDir.c_str(),
             IN_CREATE |  IN_DELETE | IN_ONLYDIR);
     if(wd == -1) {
         string msg("Could not create inotify watch object: ");
         msg += strerror(errno);
-        throw msg;
+        throw runtime_error(msg);
     }
 }
 
