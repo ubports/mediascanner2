@@ -41,6 +41,8 @@ public:
     std::vector<MediaFile> query(const std::string &q, MediaType type);
     size_t size() const;
     void pruneDeleted();
+    void archiveItems(const std::string &prefix);
+    void restoreItems(const std::string &prefix);
 };
 
 

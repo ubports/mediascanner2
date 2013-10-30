@@ -78,6 +78,16 @@ CREATE TABLE IF NOT EXISTS media (
     type INTEGER   -- 0=Audio, 1=Video
 );
 
+CREATE TABLE IF NOT EXISTS media_attic (
+    filename TEXT PRIMARY KEY NOT NULL,
+    --mediaroot INTEGER REFERENCES mediaroot(id),
+    title TEXT,
+    artist TEXT,    -- Only relevant to audio
+    album TEXT,     -- Only relevant to audio
+    duration INTEGER,
+    type INTEGER   -- 0=Audio, 1=Video
+);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS media_fts 
 USING fts4(content="media", title, artist, album, tokenize=mozporter);
 )");
@@ -241,3 +251,37 @@ void MediaStore::pruneDeleted() {
     }
 }
 
+void MediaStore::archiveItems(const std::string &prefix) {
+    const char *templ = R"(BEGIN TRANSACTION;
+INSERT INTO media_attic SELECT * FROM media WHERE filename LIKE %s;
+DELETE FROM media WHERE filename LIKE %s;
+COMMIT;
+)";
+    string cond = sqlQuote(prefix + "%");
+    const size_t bufsize = 1024;
+    char cmd[bufsize];
+    snprintf(cmd, bufsize, templ, cond.c_str(), cond.c_str());
+    char *errmsg;
+    if(sqlite3_exec(p->db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
+        sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
+        throw runtime_error(errmsg);
+    }
+}
+
+void MediaStore::restoreItems(const std::string &prefix) {
+    const char *templ = R"(BEGIN TRANSACTION;
+INSERT INTO media SELECT * FROM media_attic WHERE filename LIKE %s;
+DELETE FROM media_attic WHERE filename LIKE %s;
+COMMIT;
+)";
+    string cond = sqlQuote(prefix + "%");
+    const size_t bufsize = 1024;
+    char cmd[bufsize];
+    snprintf(cmd, bufsize, templ, cond.c_str(), cond.c_str());
+    char *errmsg;
+    if(sqlite3_exec(p->db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
+        sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
+        throw runtime_error(errmsg);
+    }
+
+}
