@@ -66,8 +66,7 @@ void copy_file(const string &src, const string &dst) {
 }
 
 void index_test() {
-    string base("index");
-    string dbname = base + "-mediastore.db";
+    string dbname("index-mediastore.db");
     string subdir = getenv("TEST_DIR");
     subdir += "/testdir";
     string testfile = getenv("SOURCE_DIR");
@@ -103,8 +102,7 @@ void extract_test() {
 }
 
 void subdir_test() {
-    string base("index");
-    string dbname = base + "-mediastore.db";
+    string dbname("subdir-mediastore.db");
     string testdir = getenv("TEST_DIR");
     testdir += "/testdir";
     string subdir = testdir + "/subdir";
@@ -139,8 +137,7 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
 }
 
 void scan_test() {
-    string base("index");
-    string dbname = base + "-mediastore.db";
+    string dbname("scan-mediastore.db");
     string testdir = getenv("TEST_DIR");
     testdir += "/testdir";
     string testfile = getenv("SOURCE_DIR");
@@ -182,8 +179,7 @@ void equality_test() {
 void roundtrip_test() {
     MediaFile audio("aaa", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
     MediaFile video("aaa2", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
-    string base("roundtrip");
-    string dbname = base + "-mediastore.db";
+    string dbname("roundtrip-mediastore.db");
     unlink(dbname.c_str());
     MediaStore store(dbname, MS_READ_WRITE);
     store.insert(audio);
@@ -199,8 +195,7 @@ void roundtrip_test() {
 void unmount_test() {
     MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
     MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
-    string base("unmount");
-    string dbname = base + "-mediastore.db";
+    string dbname("unmount-mediastore.db");
     unlink(dbname.c_str());
     MediaStore store(dbname, MS_READ_WRITE);
     store.insert(audio1);
