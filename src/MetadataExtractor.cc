@@ -69,10 +69,17 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 int MetadataExtractor::getMetadata(const std::string &filename, std::string &title,
         std::string &author, std::string &album, int &duration) {
     struct metadata md;
-    // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
-    string uri = "file://" + filename;
-
     GError *error = NULL;
+    gchar *uristr = gst_filename_to_uri(filename.c_str(), &error);
+    if(error) {
+        string msg("Could not build URI: ");
+        msg += error->message;
+        g_error_free(error);
+        throw runtime_error(msg);
+    }
+    string uri(uristr);
+    g_free(uristr);
+
 
     // FIXME: possibly share the discoverer between uses.
     unique_ptr<GstDiscoverer, void(*)(GstDiscoverer *)> discoverer(gst_discoverer_new(GST_SECOND * 25, &error),
