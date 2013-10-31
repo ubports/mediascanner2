@@ -18,7 +18,10 @@
  */
 
 #include"FileTypeDetector.hh"
+#include<string.h>
+#include<gio/gio.h>
 #include<cstdio>
+#include<memory>
 
 bool endsWith(const std::string &text, const std::string &end) {
     auto loc = text.rfind(end);
@@ -28,16 +31,30 @@ bool endsWith(const std::string &text, const std::string &end) {
 }
 
 MediaType FileTypeDetector::detect(const std::string &fname) {
-    std::string mine = fname;
-    for(size_t i=0; i<mine.size(); i++) {
-        mine[i] = tolower(mine[i]);
+    std::unique_ptr<GFile, void(*)(void *)> file(
+        g_file_new_for_path(fname.c_str()), g_object_unref);
+    if (!file) {
+        return UnknownMedia;
     }
-    if(endsWith(mine, ".mp3") || endsWith(mine, ".ogg") ||
-       endsWith(mine, ".flac") || endsWith(mine, ".wav")) {
+
+    std::unique_ptr<GFileInfo, void(*)(void *)> info(
+        g_file_query_info(
+            file.get(), G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+            G_FILE_QUERY_INFO_NONE, /* cancellable */ NULL, /* error */NULL),
+        g_object_unref);
+    if (!info) {
+        return UnknownMedia;
+    }
+
+    const char *content_type = g_file_info_get_content_type(info.get());
+    if (!content_type) {
+        return UnknownMedia;
+    }
+
+    if (!strncmp(content_type, "audio/", strlen("audio/"))) {
         return AudioMedia;
     }
-    if(endsWith(mine, ".avi") || endsWith(mine, ".mkv") ||
-       endsWith(mine, ".mov") || endsWith(mine, ".mpg")) {
+    if (!strncmp(content_type, "video/", strlen("video/"))) {
         return VideoMedia;
     }
     return UnknownMedia;
