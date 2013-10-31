@@ -23,7 +23,7 @@
 #include<string>
 #include"scannercore.hh"
 
-class FileTypeDetector {
+class FileTypeDetector final {
 public:
     MediaType detect(const std::string &fname);
 };

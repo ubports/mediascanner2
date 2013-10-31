@@ -25,7 +25,7 @@
 
 class MediaStore;
 
-class SubtreeWatcher {
+class SubtreeWatcher final {
 private:
     MediaStore &store; // Hackhackhack, in real code replace with callback object or something.
     int inotifyid;

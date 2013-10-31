@@ -32,7 +32,7 @@ enum OpenType {
     MS_READ_WRITE
 };
 
-class MediaStore {
+class MediaStore final {
 private:
     MediaStorePrivate *p;
 
