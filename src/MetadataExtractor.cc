@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include"MetadataExtractor.hh"
+
 #include<gst/gst.h>
 #include<gst/pbutils/gstdiscoverer.h>
 
@@ -64,8 +66,8 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-int getMetadata(const std::string &filename, std::string &title, std::string &author,
-        std::string &album, int &duration) {
+int MetadataExtractor::getMetadata(const std::string &filename, std::string &title,
+        std::string &author, std::string &album, int &duration) {
     struct metadata md;
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
