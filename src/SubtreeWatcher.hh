@@ -24,10 +24,12 @@
 #include<map>
 
 class MediaStore;
+class MetadataExtractor;
 
 class SubtreeWatcher {
 private:
     MediaStore &store; // Hackhackhack, in real code replace with callback object or something.
+    MetadataExtractor &extractor;
     int inotifyid;
     // Ideally use boost::bimap or something instead of these two separate objects.
     std::map<int, std::string> wd2str;
@@ -44,7 +46,7 @@ private:
     bool removeDir(const std::string &abspath);
 
 public:
-    SubtreeWatcher(MediaStore &store);
+    SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor);
     ~SubtreeWatcher();
 
     void addDir(const std::string &path);

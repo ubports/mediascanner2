@@ -19,6 +19,7 @@
 
 #include<MediaFile.hh>
 #include<MediaStore.hh>
+#include "metadataextractor.hh"
 #include<SubtreeWatcher.hh>
 #include<cassert>
 #include<cstdio>
@@ -35,7 +36,8 @@ void init_test() {
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
     MediaStore store(fname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
 }
 
 void clear_dir(const string &subdir) {
@@ -75,7 +77,8 @@ void index_test() {
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(dbname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
     watcher.addDir(subdir);
     assert(store.size() == 0);
 
@@ -100,7 +103,8 @@ void subdir_test() {
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(dbname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
     watcher.addDir(testdir);
     assert(store.size() == 0);
 
@@ -117,9 +121,10 @@ void subdir_test() {
 // FIXME move this somewhere in the implementation.
 void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
+    MetadataExtractor extractor;
     vector<string> files = s.scanFiles(subdir, type);
     for(auto &i : files) {
-        store.insert(MediaFile(i));
+        store.insert(extractor.extract(i));
     }
 }
 

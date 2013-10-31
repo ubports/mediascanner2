@@ -21,6 +21,7 @@
 #include"MediaStore.hh"
 #include"Scanner.hh"
 #include"MediaFile.hh"
+#include "metadataextractor.hh"
 
 #include<cstdio>
 #include<gst/gst.h>
@@ -55,6 +56,7 @@ private:
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
+    unique_ptr<MetadataExtractor> extractor;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
 };
 
@@ -80,6 +82,7 @@ ScannerDaemon::ScannerDaemon() {
     mountDir = string("/media/") + getlogin();
     unique_ptr<MediaStore> tmp(new MediaStore(cachedir + "/mediastore.db", MS_READ_WRITE, "/media/"));
     store = move(tmp);
+    extractor.reset(new MetadataExtractor());
     setupMountWatcher();
     addMountedVolumes();
     addDir(musicdir);
@@ -95,7 +98,7 @@ void ScannerDaemon::addDir(const string &dir) {
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get()));
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get()));
     store->restoreItems(dir);
     store->pruneDeleted();
     // Fixme, only traverse once.
@@ -117,7 +120,7 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
     vector<string> files = s.scanFiles(subdir, type);
     for(auto &i : files) {
         try {
-            store.insert(MediaFile(i));
+            store.insert(extractor->extract(i));
         } catch(const exception &e) {
             fprintf(stderr, "Error when indexing: %s\n", e.what());
         }

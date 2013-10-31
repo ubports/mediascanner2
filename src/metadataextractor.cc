@@ -17,23 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "metadataextractor.hh"
+#include "FileTypeDetector.hh"
+
 #include<gst/gst.h>
-#include<gst/pbutils/gstdiscoverer.h>
+#include<gst/pbutils/pbutils.h>
 
 #include<cstdio>
 #include<string>
 #include<stdexcept>
-#include<gst/pbutils/pbutils.h>
 #include<memory>
 
 using namespace std;
 
-static void discov_unref(GstDiscoverer *t) {
-    g_object_unref(G_OBJECT(t));
-}
+MetadataExtractor::MetadataExtractor(int seconds) :
+    discoverer(NULL, g_object_unref) {
+    GError *error = NULL;
 
-static void info_unref(GstDiscovererInfo *t) {
-    g_object_unref(G_OBJECT(t));
+    discoverer.reset(gst_discoverer_new(GST_SECOND * seconds, &error));
+    if (not discoverer) {
+        string errortxt(error->message);
+        g_error_free(error);
+
+        string msg = "Failed to create discoverer: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
 }
 
 struct metadata {
@@ -64,28 +73,20 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-int getMetadata(const std::string &filename, std::string &title, std::string &author,
-        std::string &album, int &duration) {
-    struct metadata md;
+MediaFile MetadataExtractor::extract(const std::string &filename) {
+    FileTypeDetector d;
+    MediaType media_type = d.detect(filename);
+    if (media_type == UnknownMedia) {
+        throw runtime_error("Tried to create an invalid media type.");
+    }
+
     // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
     string uri = "file://" + filename;
 
     GError *error = NULL;
-
-    // FIXME: possibly share the discoverer between uses.
-    unique_ptr<GstDiscoverer, void(*)(GstDiscoverer *)> discoverer(gst_discoverer_new(GST_SECOND * 25, &error),
-            discov_unref);
-    if (discoverer == NULL) {
-        string errortxt(error->message);
-        g_error_free(error);
-
-        string msg = "Failed to create discoverer: ";
-        msg += errortxt;
-        throw runtime_error(msg);
-    }
-
-    unique_ptr<GstDiscovererInfo, void(*)(GstDiscovererInfo *)> info(gst_discoverer_discover_uri(discoverer.get(),
-            uri.c_str(), &error), info_unref);
+    unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
+        gst_discoverer_discover_uri(discoverer.get(), uri.c_str(), &error),
+        g_object_unref);
     if (info.get() == NULL) {
         string errortxt(error->message);
         g_error_free(error);
@@ -101,15 +102,14 @@ int getMetadata(const std::string &filename, std::string &title, std::string &au
         throw runtime_error("Unable to discover file " + filename);
     }
 
+    struct metadata md;
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
     if (tags != NULL) {
         gst_tag_list_foreach (tags, extract_tag_info, &md);
     }
-    int dur = static_cast<int>(gst_discoverer_info_get_duration(info.get())/GST_SECOND);
+    int duration = static_cast<int>(
+        gst_discoverer_info_get_duration(info.get())/GST_SECOND);
 
-    title = md.title;
-    author = md.author;
-    album = md.album;
-    duration = dur;
-    return 0;
+    return MediaFile(filename, md.title, md.author, md.album,
+                     duration, media_type);
 }
