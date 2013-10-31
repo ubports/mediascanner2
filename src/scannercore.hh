@@ -21,9 +21,10 @@
 #define SCANNERCORE_H
 
 enum MediaType {
+    UnknownMedia,
     AudioMedia,
     VideoMedia,
-    UnknownMedia,
+    AllMedia,
 };
 
 #endif

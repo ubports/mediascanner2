@@ -98,9 +98,7 @@ void ScannerDaemon::addDir(const string &dir) {
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get()));
     store->restoreItems(dir);
     store->pruneDeleted();
-    // Fixme, only traverse once.
-    readFiles(*store.get(), dir, VideoMedia);
-    readFiles(*store.get(), dir, AudioMedia);
+    readFiles(*store.get(), dir, AllMedia);
     sw->addDir(dir);
     subtrees[dir] = move(sw);
 }

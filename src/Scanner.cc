@@ -52,8 +52,13 @@ vector<string> Scanner::scanFiles(const std::string &root, const MediaType type)
             continue;
         string fullpath = root + "/" + fname;
         stat(fullpath.c_str(), &statbuf);
-        if(S_ISREG(statbuf.st_mode) && d.detect(fullpath) == type) {
-            result.push_back(fullpath);
+        if(S_ISREG(statbuf.st_mode)) {
+            MediaType detectedType = d.detect(fullpath);
+            if(detectedType != UnknownMedia) {
+                if(type == AllMedia || detectedType == type) {
+                    result.push_back(fullpath);
+                }
+            }
         } else if(S_ISDIR(statbuf.st_mode)) {
             vector<string> subdir = scanFiles(fullpath, type);
             result.insert(result.end(), subdir.begin(), subdir.end());
