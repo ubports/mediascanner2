@@ -22,7 +22,7 @@
 
 #include<string>
 
-class MetadataExtractor {
+class MetadataExtractor final {
 
 public:
     int getMetadata(const std::string &filename, std::string &title, std::string &author,

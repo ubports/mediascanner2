@@ -24,7 +24,7 @@
 #include<vector>
 #include"scannercore.hh"
 
-class Scanner {
+class Scanner final {
 public:
     Scanner();
     ~Scanner();
