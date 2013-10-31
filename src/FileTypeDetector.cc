@@ -23,13 +23,6 @@
 #include<cstdio>
 #include<memory>
 
-bool endsWith(const std::string &text, const std::string &end) {
-    auto loc = text.rfind(end);
-    if(loc == std::string::npos)
-        return false;
-    return true; // Should check that the match was at the end of the string.
-}
-
 MediaType FileTypeDetector::detect(const std::string &fname) {
     std::unique_ptr<GFile, void(*)(void *)> file(
         g_file_new_for_path(fname.c_str()), g_object_unref);
