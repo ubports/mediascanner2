@@ -77,7 +77,7 @@ void SubtreeWatcher::addDir(const string &root) {
         while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
         struct stat statbuf;
         string fname = entry.get()->d_name;
-        if(fname == "." || fname == "..") // Maybe ignore all entries starting with a period?
+        if(fname[0] == '.') // Ignore hidden entries and also "." and "..".
             continue;
         string fullpath = root + "/" + fname;
         stat(fullpath.c_str(), &statbuf);
