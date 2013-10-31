@@ -166,6 +166,10 @@ void ScannerDaemon::setupMountWatcher() {
     int wd = inotify_add_watch(mountfd, mountDir.c_str(),
             IN_CREATE |  IN_DELETE | IN_ONLYDIR);
     if(wd == -1) {
+        if (errno == ENOENT) {
+            printf("Mount directory does not exist\n");
+            return;
+        }
         string msg("Could not create inotify watch object: ");
         msg += strerror(errno);
         throw runtime_error(msg);
