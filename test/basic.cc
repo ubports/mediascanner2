@@ -20,6 +20,8 @@
 #include<MediaFile.hh>
 #include<MediaStore.hh>
 #include<SubtreeWatcher.hh>
+#include<MetadataExtractor.hh>
+
 #include<cassert>
 #include<cstdio>
 #include<string>
@@ -85,6 +87,19 @@ void index_test() {
     assert(unlink(outfile.c_str()) == 0);
     watcher.pumpEvents();
     assert(store.size() == 0);
+}
+
+void extract_test() {
+    MetadataExtractor e;
+    string testfile = getenv("SOURCE_DIR");
+    testfile += "/test/testfile.ogg";
+    string title, author, album;
+    int duration;
+    e.getMetadata(testfile, title, author, album, duration);
+    assert(title == "track1");
+    assert(author == "artist1");
+    assert(album == "album1");
+    assert(duration == 5);
 }
 
 void subdir_test() {
@@ -210,6 +225,7 @@ int main(int argc, char **argv) {
     return 1;
 #else
     init_test();
+    extract_test();
     index_test();
     subdir_test();
     scan_test();
