@@ -18,10 +18,10 @@
  */
 
 #include"FileTypeDetector.hh"
-#include<string.h>
 #include<gio/gio.h>
 #include<cstdio>
 #include<memory>
+
 
 MediaType FileTypeDetector::detect(const std::string &fname) {
     std::unique_ptr<GFile, void(*)(void *)> file(
@@ -39,15 +39,15 @@ MediaType FileTypeDetector::detect(const std::string &fname) {
         return UnknownMedia;
     }
 
-    const char *content_type = g_file_info_get_content_type(info.get());
-    if (!content_type) {
+    std::string content_type(g_file_info_get_content_type(info.get()));
+    if (content_type.empty()) {
         return UnknownMedia;
     }
 
-    if (!strncmp(content_type, "audio/", strlen("audio/"))) {
+    if (content_type.find("audio/") == 0) {
         return AudioMedia;
     }
-    if (!strncmp(content_type, "video/", strlen("video/"))) {
+    if (content_type.find("video/") == 0) {
         return VideoMedia;
     }
     return UnknownMedia;
