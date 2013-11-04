@@ -20,6 +20,7 @@
 #include"SubtreeWatcher.hh"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
+#include "MetadataExtractor.hh"
 
 #include<sys/select.h>
 #include<stdexcept>
@@ -34,7 +35,7 @@
 
 using namespace std;
 
-SubtreeWatcher::SubtreeWatcher(MediaStore &store) : store(store) {
+SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) : store(store), extractor(extractor) {
     inotifyid = inotify_init();
     keep_going = true;
     if(inotifyid == -1) {
@@ -103,7 +104,7 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
     try {
-        MediaFile m(abspath);
+        MediaFile m = extractor.extract(abspath);
         store.insert(m);
     } catch(const exception &e) {
         fprintf(stderr, "Error when adding new file: %s\n", e.what());

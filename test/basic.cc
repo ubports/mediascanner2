@@ -19,8 +19,8 @@
 
 #include<MediaFile.hh>
 #include<MediaStore.hh>
-#include<SubtreeWatcher.hh>
 #include<MetadataExtractor.hh>
+#include<SubtreeWatcher.hh>
 
 #include<cassert>
 #include<cstdio>
@@ -37,7 +37,8 @@ void init_test() {
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
     MediaStore store(fname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
 }
 
 void clear_dir(const string &subdir) {
@@ -76,7 +77,8 @@ void index_test() {
     clear_dir(subdir);
     assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(dbname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
     watcher.addDir(subdir);
     assert(store.size() == 0);
 
@@ -92,13 +94,11 @@ void extract_test() {
     MetadataExtractor e;
     string testfile = getenv("SOURCE_DIR");
     testfile += "/test/testfile.ogg";
-    string title, author, album;
-    int duration;
-    e.getMetadata(testfile, title, author, album, duration);
-    assert(title == "track1");
-    assert(author == "artist1");
-    assert(album == "album1");
-    assert(duration == 5);
+    MediaFile file = e.extract(testfile);
+    assert(file.getTitle() == "track1");
+    assert(file.getAuthor() == "artist1");
+    assert(file.getAlbum() == "album1");
+    assert(file.getDuration() == 5);
 }
 
 void subdir_test() {
@@ -113,7 +113,8 @@ void subdir_test() {
     clear_dir(testdir);
     assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
     MediaStore store(dbname, MS_READ_WRITE);
-    SubtreeWatcher watcher(store);
+    MetadataExtractor extractor;
+    SubtreeWatcher watcher(store, extractor);
     watcher.addDir(testdir);
     assert(store.size() == 0);
 
@@ -130,9 +131,10 @@ void subdir_test() {
 // FIXME move this somewhere in the implementation.
 void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
+    MetadataExtractor extractor;
     vector<string> files = s.scanFiles(subdir, type);
     for(auto &i : files) {
-        store.insert(MediaFile(i));
+        store.insert(extractor.extract(i));
     }
 }
 
