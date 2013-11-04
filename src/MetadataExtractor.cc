@@ -17,8 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include"MediaFile.hh"
 #include"MetadataExtractor.hh"
-#include "FileTypeDetector.hh"
+#include"FileTypeDetector.hh"
 
 #include<gst/gst.h>
 #include<gst/pbutils/pbutils.h>
@@ -89,10 +90,17 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
         throw runtime_error("Tried to create an invalid media type.");
     }
 
-    // FIXME: Need to do quoting. Files with %'s in their names seem to confuse gstreamer.
-    string uri = "file://" + filename;
+    GError *error = nullptr;
+    gchar *uristr = gst_filename_to_uri(filename.c_str(), &error);
+    if(error) {
+        string msg("Could not build URI: ");
+        msg += error->message;
+        g_error_free(error);
+        throw runtime_error(msg);
+    }
+    string uri(uristr);
+    g_free(uristr);
 
-    GError *error = NULL;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
         gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
         g_object_unref);

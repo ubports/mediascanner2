@@ -20,9 +20,9 @@
 #ifndef METADATAEXTRACTOR_H
 #define METADATAEXTRACTOR_H
 
-#include "MediaFile.hh"
 #include<string>
 
+class MediaFile;
 struct MetadataExtractorPrivate;
 
 class MetadataExtractor final {
