@@ -28,6 +28,10 @@
 
 using namespace std;
 
+// Increment this whenever changing db schema.
+// It will cause dbstore to rebuild its tables.
+static const int schemaVersion = 0;
+
 struct MediaStorePrivate {
     sqlite3 *db;
 };
@@ -55,20 +59,43 @@ int register_tokenizer(sqlite3 *db) {
 }
 
 static void execute_sql(sqlite3 *db, const string &cmd) {
-    char *errmsg;
-    sqlite3_exec(db, cmd.c_str(), nullptr, nullptr, &errmsg);
-    if(errmsg) {
+    char *errmsg = nullptr;
+    if(sqlite3_exec(db, cmd.c_str(), nullptr, nullptr, &errmsg) != SQLITE_OK) {
         throw runtime_error(errmsg);
     }
 }
 
-void create_tables(sqlite3 *db) {
-    string mediaCreate(R"(CREATE TABLE IF NOT EXISTS mediaroot (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    mountpoint TEXT
-);
+static int versionGetter(void* arg, int /*num_cols*/, char **data, char **/*colnames*/) {
+    int *v = reinterpret_cast<int*>(arg);
+    *v = atoi(data[0]);
+    return 0;
+}
 
-CREATE TABLE IF NOT EXISTS media (
+static int getSchemaVersion(sqlite3 *db) {
+    int version = -1;
+    string query("SELECT version FROM schemaVersion;");
+    sqlite3_exec(db, query.c_str(), versionGetter, &version, nullptr);
+    return version;
+}
+
+void deleteTables(sqlite3 *db) {
+    string deleteCmd(R"(DROP TABLE IF EXISTS media;
+DROP TABLE IF EXISTS media_attic;
+DROP TABLE IF EXISTS schemaVersion;
+)");
+    execute_sql(db, deleteCmd);
+}
+
+void createTables(sqlite3 *db) {
+    string mediaCreate(R"(
+--CREATE TABLE mediaroot (
+--    id INTEGER PRIMARY KEY AUTOINCREMENT,
+--    mountpoint TEXT
+--);
+
+CREATE TABLE schemaVersion (version INTEGER);
+
+CREATE TABLE media (
     filename TEXT PRIMARY KEY NOT NULL,
     --mediaroot INTEGER REFERENCES mediaroot(id),
     title TEXT,
@@ -78,7 +105,7 @@ CREATE TABLE IF NOT EXISTS media (
     type INTEGER   -- 0=Audio, 1=Video
 );
 
-CREATE TABLE IF NOT EXISTS media_attic (
+CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
     --mediaroot INTEGER REFERENCES mediaroot(id),
     title TEXT,
@@ -88,27 +115,33 @@ CREATE TABLE IF NOT EXISTS media_attic (
     type INTEGER   -- 0=Audio, 1=Video
 );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS media_fts 
+CREATE VIRTUAL TABLE media_fts 
 USING fts4(content="media", title, artist, album, tokenize=mozporter);
 )");
-    string triggerCreate(R"(CREATE TRIGGER IF NOT EXISTS media_bu BEFORE UPDATE ON media BEGIN
+
+    string triggerCreate(R"(CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
   DELETE FROM media_fts WHERE docid=old.rowid;
 END;
 
-CREATE TRIGGER IF NOT EXISTS media_au AFTER UPDATE ON media BEGIN
+CREATE TRIGGER media_au AFTER UPDATE ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
 
-CREATE TRIGGER IF NOT EXISTS media_bd BEFORE DELETE ON media BEGIN
+CREATE TRIGGER media_bd BEFORE DELETE ON media BEGIN
   DELETE FROM media_fts WHERE docid=old.rowid;
 END;
 
-CREATE TRIGGER IF NOT EXISTS media_ai AFTER INSERT ON media BEGIN
+CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
 )");
+    string versionStore("INSERT INTO schemaVersion VALUES (");
+    versionStore += to_string(schemaVersion);
+    versionStore += ");";
+
     execute_sql(db, mediaCreate);
     execute_sql(db, triggerCreate);
+    execute_sql(db, versionStore);
 }
 
 int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
@@ -125,10 +158,18 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
     if (register_tokenizer(p->db) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
+    int detectedSchemaVersion = getSchemaVersion(p->db);
     if(access == MS_READ_WRITE) {
-        create_tables(p->db);
+        if(detectedSchemaVersion != schemaVersion) {
+            deleteTables(p->db);
+            createTables(p->db);
+        }
         if(!retireprefix.empty())
             archiveItems(retireprefix);
+    } else {
+        if(detectedSchemaVersion != schemaVersion) {
+            throw runtime_error("Tried to open a db with an unsupported schema version.");
+        }
     }
 }
 
