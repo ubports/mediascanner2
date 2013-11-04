@@ -30,12 +30,17 @@
 
 using namespace std;
 
-MetadataExtractor::MetadataExtractor(int seconds) :
-    discoverer(NULL, g_object_unref) {
+struct MetadataExtractorPrivate {
+    std::unique_ptr<GstDiscoverer,void(*)(void *)> discoverer;
+    MetadataExtractorPrivate() : discoverer(nullptr, g_object_unref) {};
+};
+
+MetadataExtractor::MetadataExtractor(int seconds) {
+    p = new MetadataExtractorPrivate();
     GError *error = NULL;
 
-    discoverer.reset(gst_discoverer_new(GST_SECOND * seconds, &error));
-    if (not discoverer) {
+    p->discoverer.reset(gst_discoverer_new(GST_SECOND * seconds, &error));
+    if (not p->discoverer) {
         string errortxt(error->message);
         g_error_free(error);
 
@@ -43,6 +48,10 @@ MetadataExtractor::MetadataExtractor(int seconds) :
         msg += errortxt;
         throw runtime_error(msg);
     }
+}
+
+MetadataExtractor::~MetadataExtractor() {
+    delete p;
 }
 
 struct metadata {
@@ -85,7 +94,7 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
 
     GError *error = NULL;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
-        gst_discoverer_discover_uri(discoverer.get(), uri.c_str(), &error),
+        gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
         g_object_unref);
     if (info.get() == NULL) {
         string errortxt(error->message);

@@ -22,17 +22,19 @@
 
 #include "MediaFile.hh"
 #include<string>
-#include<memory>
 
-typedef struct _GstDiscoverer GstDiscoverer;
+struct MetadataExtractorPrivate;
 
 class MetadataExtractor final {
 public:
     MetadataExtractor(int seconds=25);
+    ~MetadataExtractor();
+    MetadataExtractor& operator=(MetadataExtractor &o) = delete;
 
     MediaFile extract(const std::string &filename);
+
 private:
-    std::unique_ptr<GstDiscoverer,void(*)(void *)> discoverer;
+    MetadataExtractorPrivate *p;
 };
 
 #endif
