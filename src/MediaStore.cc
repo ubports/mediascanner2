@@ -88,16 +88,10 @@ DROP TABLE IF EXISTS schemaVersion;
 
 void createTables(sqlite3 *db) {
     string mediaCreate(R"(
---CREATE TABLE mediaroot (
---    id INTEGER PRIMARY KEY AUTOINCREMENT,
---    mountpoint TEXT
---);
-
 CREATE TABLE schemaVersion (version INTEGER);
 
 CREATE TABLE media (
     filename TEXT PRIMARY KEY NOT NULL,
-    --mediaroot INTEGER REFERENCES mediaroot(id),
     title TEXT,
     artist TEXT,    -- Only relevant to audio
     album TEXT,     -- Only relevant to audio
@@ -107,7 +101,6 @@ CREATE TABLE media (
 
 CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
-    --mediaroot INTEGER REFERENCES mediaroot(id),
     title TEXT,
     artist TEXT,    -- Only relevant to audio
     album TEXT,     -- Only relevant to audio
