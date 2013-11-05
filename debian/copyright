@@ -5,7 +5,7 @@ Source: https://launchpad.net/thumbnailer
 Files: mozilla/fts*
 Copyright: Public Domain
 
-Files mozilla/Normalize.c
+Files: mozilla/Normalize.c
 Copyright: Not stated
 Licence: MPL-2.0
  This Source Code Form is subject to the terms of the Mozilla Public

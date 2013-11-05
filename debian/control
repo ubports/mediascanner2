@@ -6,10 +6,13 @@ Standards-Version: 3.9.4
 Build-Depends: cmake,
                debhelper (>= 9),
                libsqlite3-dev,
-               libglib-2.0-dev,
+               libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
                libgstreamer1.0-dev,
-
+               gstreamer1.0-plugins-base,
+               gstreamer1.0-plugins-good,
+# For "old style" scope
+               libunity-dev,
 Homepage: https://launchpad.net/mediascanner
 # if you don't have have commit access to this branch but would like to upload
 # directly to Ubuntu, don't worry: your changes will be merged back into the

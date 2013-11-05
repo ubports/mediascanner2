@@ -11,7 +11,7 @@ target_link_libraries(scannerdaemon scannerstuff
 ${GST_LDFLAGS} ${GIO_LDFLAGS} ${SQLITE_LDFLAGS})
 
 install(TARGETS scannerdaemon
-RUNTIME DESTINATION bin
+RUNTIME DESTINATION usr/bin
 )
 
 add_executable(query query.cc)
