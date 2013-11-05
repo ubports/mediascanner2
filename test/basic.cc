@@ -22,13 +22,22 @@
 #include<MetadataExtractor.hh>
 #include<SubtreeWatcher.hh>
 
-#include<cassert>
 #include<cstdio>
 #include<string>
 #include<unistd.h>
 #include<sys/stat.h>
 #include<gst/gst.h>
 #include<Scanner.hh>
+
+static void error_exit(const char *file, const int line, const char *funcname) {
+    fflush(stdout);
+    fflush(stderr);
+    fprintf(stderr, "Assertion failed, file %s, line %d, function %s.\n", file, line, funcname);
+    fflush(stderr);
+    exit(1);
+}
+
+#define assert(x) if(!(x)) error_exit(__FILE__, __LINE__, __PRETTY_FUNCTION__)
 
 using namespace std;
 
@@ -217,10 +226,7 @@ void unmount_test() {
 
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
-#ifdef NDEBUG
-    fprintf(stderr, "NDEBUG defined, tests won't work.\n");
-    return 1;
-#else
+
     init_test();
     extract_test();
     index_test();
@@ -230,5 +236,4 @@ int main(int argc, char **argv) {
     roundtrip_test();
     unmount_test();
     return 0;
-#endif
 }
