@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export DPKG_GENSYMBOLS_CHECK_LEVEL=4
+
+# http://ccache.samba.org/manual.html#_precompiled_headers
+export CCACHE_SLOPPINESS=time_macros
+
+%:
+	dh $@ --parallel --fail-missing

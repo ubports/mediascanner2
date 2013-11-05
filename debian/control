@@ -1,0 +1,28 @@
+Source: scantest
+Section: libdevel
+Priority: optional
+Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Standards-Version: 3.9.4
+Build-Depends: cmake,
+               debhelper (>= 9),
+               libsqlite3-dev,
+               libglib-2.0-dev,
+               libgstreamer-plugins-base1.0-dev,
+               libgstreamer1.0-dev,
+
+Homepage: https://launchpad.net/mediascanner
+# if you don't have have commit access to this branch but would like to upload
+# directly to Ubuntu, don't worry: your changes will be merged back into the
+# upstream branch
+#Vcs-Bzr: lp:mediascanner
+
+Package: scantest
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends},
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+Description: locate media and make it queryable
+ Mediascanner browses through your files,
+ finds all media files, extracts their metadata
+ and allows users to perform queries on them.
