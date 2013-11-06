@@ -24,6 +24,7 @@
 #include<utils.hh>
 #include<FileTypeDetector.hh>
 
+#include<stdexcept>
 #include<cstdio>
 #include<string>
 #include<unistd.h>
@@ -119,6 +120,10 @@ TEST_F(ScanTest, extract) {
     ASSERT_EQ(file.getDate(), "2013");
     ASSERT_EQ(file.getTrackNumber(), 1);
     ASSERT_EQ(file.getDuration(), 5);
+
+    string nomediafile = getenv("SOURCE_DIR");
+    nomediafile += "/CMakeLists.txt";
+    ASSERT_THROW(e.extract(nomediafile), runtime_error);
 }
 
 TEST_F(ScanTest, subdir) {
