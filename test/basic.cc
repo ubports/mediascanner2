@@ -107,6 +107,8 @@ void extract_test() {
     assert(file.getTitle() == "track1");
     assert(file.getAuthor() == "artist1");
     assert(file.getAlbum() == "album1");
+    assert(file.getDate() == "2013");
+    assert(file.getTrackNumber() == 1);
     assert(file.getDuration() == 5);
 }
 
