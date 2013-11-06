@@ -22,6 +22,7 @@
 #include<MetadataExtractor.hh>
 #include<SubtreeWatcher.hh>
 #include<utils.hh>
+#include<FileTypeDetector.hh>
 
 #include<cstdio>
 #include<string>
@@ -238,6 +239,17 @@ TEST_F(ScanTest, unmount) {
     store.restoreItems("/media/username");
     result = store.query("bbb", AudioMedia);
     ASSERT_EQ(result.size(), 2);
+}
+
+TEST_F(ScanTest, detector) {
+    FileTypeDetector d;
+    string testfile = getenv("SOURCE_DIR");
+    testfile += "/test/testfile.ogg";
+    string nomediafile = getenv("SOURCE_DIR");
+    nomediafile += "/CMakeLists.txt";
+    ASSERT_EQ(d.detect(testfile), AudioMedia);
+    ASSERT_EQ(d.detect("/a/non/existing/file"), UnknownMedia);
+    ASSERT_EQ(d.detect(nomediafile), UnknownMedia);
 }
 
 TEST_F(ScanTest, utils) {
