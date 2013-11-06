@@ -109,9 +109,12 @@ TEST_F(ScanTest, extract) {
     string testfile = getenv("SOURCE_DIR");
     testfile += "/test/testfile.ogg";
     MediaFile file = e.extract(testfile);
+
     ASSERT_EQ(file.getTitle(), "track1");
     ASSERT_EQ(file.getAuthor(), "artist1");
     ASSERT_EQ(file.getAlbum(), "album1");
+    ASSERT_EQ(file.getDate(), "2013");
+    ASSERT_EQ(file.getTrackNumber(), 1);
     ASSERT_EQ(file.getDuration(), 5);
 }
 

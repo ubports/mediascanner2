@@ -55,15 +55,9 @@ MetadataExtractor::~MetadataExtractor() {
     delete p;
 }
 
-struct metadata {
-    string author;
-    string title;
-    string album;
-};
-
 static void
 extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data) {
-    struct metadata *md = (struct metadata*) user_data;
+    MediaFile *mf = (MediaFile *) user_data;
     int i, num;
     string tagname(tag);
 
@@ -72,14 +66,26 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
         const GValue *val;
 
         val = gst_tag_list_get_value_index (list, tag, i);
-        if (G_VALUE_HOLDS_STRING (val)) {
-            if(tagname == "artist")
-                md->author = g_value_get_string(val);
-            if(tagname == "title")
-                md->title = g_value_get_string(val);
-            if(tagname == "album")
-                md->album = g_value_get_string(val);
+        if (G_VALUE_HOLDS_STRING(val)) {
+            if (tagname == GST_TAG_ARTIST)
+                mf->setAuthor(g_value_get_string(val));
+            else if (tagname == GST_TAG_TITLE)
+                mf->setTitle(g_value_get_string(val));
+            else if (tagname == GST_TAG_ALBUM)
+                mf->setAlbum(g_value_get_string(val));
+        } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
+            if (tagname == GST_TAG_DATE_TIME) {
+                GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));
+                char *dt_string = gst_date_time_to_iso8601_string(dt);
+                mf->setDate(dt_string);
+                g_free(dt_string);
+            }
+        } else if (G_VALUE_HOLDS_UINT(val)) {
+            if (tagname == GST_TAG_TRACK_NUMBER) {
+                mf->setTrackNumber(g_value_get_uint(val));
+            }
         }
+
     }
 }
 
@@ -89,6 +95,9 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
     if (media_type == UnknownMedia) {
         throw runtime_error("Tried to create an invalid media type.");
     }
+
+    MediaFile mf(filename);
+    mf.setType(media_type);
 
     GError *error = nullptr;
     gchar *uristr = gst_filename_to_uri(filename.c_str(), &error);
@@ -119,14 +128,12 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
         throw runtime_error("Unable to discover file " + filename);
     }
 
-    struct metadata md;
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
     if (tags != NULL) {
-        gst_tag_list_foreach (tags, extract_tag_info, &md);
+        gst_tag_list_foreach(tags, extract_tag_info, &mf);
     }
-    int duration = static_cast<int>(
-        gst_discoverer_info_get_duration(info.get())/GST_SECOND);
+    mf.setDuration(static_cast<int>(
+        gst_discoverer_info_get_duration(info.get())/GST_SECOND));
 
-    return MediaFile(filename, md.title, md.author, md.album,
-                     duration, media_type);
+    return mf;
 }

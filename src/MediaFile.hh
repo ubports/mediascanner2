@@ -25,6 +25,7 @@
 
 class MediaFile final {
 public:
+    MediaFile(std::string filename) : filename(filename) {}
     MediaFile(std::string filename, std::string title, std::string author, std::string album,
             int duration, MediaType type);
     MediaFile() = delete;
@@ -33,16 +34,28 @@ public:
     const std::string& getTitle() const noexcept;
     const std::string& getAuthor() const noexcept;
     const std::string& getAlbum() const noexcept;
+    const std::string& getDate() const noexcept;
+    int getTrackNumber() const noexcept;
     int getDuration() const noexcept;
     MediaType getType() const noexcept;
     bool operator==(const MediaFile &other) const;
     bool operator!=(const MediaFile &other) const;
+
+    void setTitle(const std::string& title) noexcept;
+    void setAuthor(const std::string& author) noexcept;
+    void setAlbum(const std::string& album) noexcept;
+    void setDate(const std::string& date) noexcept;
+    void setTrackNumber(int track_number) noexcept;
+    void setDuration(int duration) noexcept;
+    void setType(MediaType type) noexcept;
 
 private:
     std::string filename;
     std::string title;
     std::string author;
     std::string album;
+    std::string date; // ISO date string.  Should this be time since epoch?
+    int track_number;
     int duration; // In seconds.
     MediaType type;
 };
