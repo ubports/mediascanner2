@@ -61,7 +61,7 @@ TEST_F(ScanTest, init) {
 
 void clear_dir(const string &subdir) {
     string cmd = "rm -rf " + subdir;
-    system(cmd.c_str()); // Because I like to live dangerously, that's why.
+    ASSERT_EQ(system(cmd.c_str()), 0); // Because I like to live dangerously, that's why.
 }
 
 
