@@ -31,37 +31,55 @@
 #include<cstring>
 #include<cerrno>
 #include<string>
+#include<map>
 #include<memory>
 
 using namespace std;
 
-SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) : store(store), extractor(extractor) {
-    inotifyid = inotify_init();
-    keep_going = true;
-    if(inotifyid == -1) {
+struct SubtreeWatcherPrivate {
+    MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
+    MetadataExtractor &extractor;
+    int inotifyid;
+    // Ideally use boost::bimap or something instead of these two separate objects.
+    std::map<int, std::string> wd2str;
+    std::map<std::string, int> str2wd;
+    bool keep_going;
+
+    static const int BUFSIZE=4096;
+    SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor) :
+        store(store), extractor(extractor), inotifyid(inotify_init()),
+        keep_going(true) {
+    }
+
+};
+
+SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) {
+    p = new SubtreeWatcherPrivate(store, extractor);
+    if(p->inotifyid == -1) {
         string msg("Could not init inotify: ");
         msg += strerror(errno);
+        delete p;
         throw runtime_error(msg);
     }
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
-    for(auto &i : wd2str) {
-        inotify_rm_watch(inotifyid, i.first);
+    for(auto &i : p->wd2str) {
+        inotify_rm_watch(p->inotifyid, i.first);
     }
-    close(inotifyid);
+    close(p->inotifyid);
 }
 
 void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
-    if(str2wd.find(root) != str2wd.end())
+    if(p->str2wd.find(root) != p->str2wd.end())
         return;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
     if(!dir) {
         return;
     }
-    int wd = inotify_add_watch(inotifyid, root.c_str(),
+    int wd = inotify_add_watch(p->inotifyid, root.c_str(),
             IN_CREATE | IN_DELETE_SELF | IN_DELETE | IN_CLOSE_WRITE |
             IN_MOVED_FROM | IN_MOVED_TO | IN_ONLYDIR);
     if(wd == -1) {
@@ -69,9 +87,10 @@ void SubtreeWatcher::addDir(const string &root) {
         msg += strerror(errno);
         throw runtime_error(msg);
     }
-    wd2str[wd] = root;
-    str2wd[root] = wd;
-    printf("Watching subdirectory %s, %ld watches in total.\n", root.c_str(), (long)wd2str.size());
+    p->wd2str[wd] = root;
+    p->str2wd[root] = wd;
+    printf("Watching subdirectory %s, %ld watches in total.\n", root.c_str(),
+            (long)p->wd2str.size());
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
                     free);
     struct dirent *de;
@@ -89,23 +108,24 @@ void SubtreeWatcher::addDir(const string &root) {
 }
 
 bool SubtreeWatcher::removeDir(const string &abspath) {
-    if(str2wd.find(abspath) == str2wd.end())
+    if(p->str2wd.find(abspath) == p->str2wd.end())
         return false;
-    int wd = str2wd[abspath];
-    inotify_rm_watch(inotifyid, wd);
-    wd2str.erase(wd);
-    str2wd.erase(abspath);
-    printf("Stopped watching %s, %ld directories remain.\n", abspath.c_str(), (long)wd2str.size());
-    if(wd2str.empty())
-        keep_going = false;
+    int wd = p->str2wd[abspath];
+    inotify_rm_watch(p->inotifyid, wd);
+    p->wd2str.erase(wd);
+    p->str2wd.erase(abspath);
+    printf("Stopped watching %s, %ld directories remain.\n", abspath.c_str(),
+            (long)p->wd2str.size());
+    if(p->wd2str.empty())
+        p->keep_going = false;
     return true;
 }
 
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
     try {
-        MediaFile m = extractor.extract(abspath);
-        store.insert(m);
+        MediaFile m = p->extractor.extract(abspath);
+        p->store.insert(m);
     } catch(const exception &e) {
         fprintf(stderr, "Error when adding new file: %s\n", e.what());
     }
@@ -113,7 +133,7 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
 
 void SubtreeWatcher::fileDeleted(const string &abspath) {
     printf("File was deleted: %s\n", abspath.c_str());
-    store.remove(abspath);
+    p->store.remove(abspath);
 }
 
 void SubtreeWatcher::dirAdded(const string &abspath) {
@@ -128,21 +148,21 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 
 
 void SubtreeWatcher::pumpEvents() {
-    char buf[BUFSIZE];
-    if(wd2str.empty())
+    char buf[p->BUFSIZE];
+    if(p->wd2str.empty())
         return;
     while(true) {
         fd_set reads;
         FD_ZERO(&reads);
-        FD_SET(inotifyid, &reads);
+        FD_SET(p->inotifyid, &reads);
         struct timeval timeout;
         timeout.tv_sec = 0;
         timeout.tv_usec = 0;
-        if(select(inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
+        if(select(p->inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
             return;
         }
         ssize_t num_read;
-        num_read = read(inotifyid, buf, BUFSIZE);
+        num_read = read(p->inotifyid, buf, p->BUFSIZE);
         if(num_read == 0) {
             printf("Inotify returned 0.\n");
             break;
@@ -151,9 +171,9 @@ void SubtreeWatcher::pumpEvents() {
             printf("Read error.\n");
             break;
         }
-        for(char *p = buf; p < buf + num_read;) {
-            struct inotify_event *event = (struct inotify_event *) p;
-            string directory = wd2str[event->wd];
+        for(char *d = buf; d < buf + num_read;) {
+            struct inotify_event *event = (struct inotify_event *) d;
+            string directory = p->wd2str[event->wd];
             string filename(event->name);
             string abspath = directory + '/' + filename;
             bool is_dir = false;
@@ -177,18 +197,22 @@ void SubtreeWatcher::pumpEvents() {
                 if(is_file)
                     fileAdded(abspath);
             } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
-                if(str2wd.find(abspath) != str2wd.end())
+                if(p->str2wd.find(abspath) != p->str2wd.end())
                     dirRemoved(abspath);
                 else
                     fileDeleted(abspath);
             } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
                 removeDir(abspath);
             }
-            p += sizeof(struct inotify_event) + event->len;
+            d += sizeof(struct inotify_event) + event->len;
         }
     }
 }
 
+int SubtreeWatcher::getFd() const {
+    return p->inotifyid;
+}
+
 int SubtreeWatcher::directoryCount() const {
-    return (int) wd2str.size();
+    return (int) p->wd2str.size();
 }

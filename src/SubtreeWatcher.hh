@@ -21,23 +21,16 @@
 #define SUBTREEWATCHER_HH_
 
 #include<string>
-#include<map>
 
 class MediaStore;
 class MetadataExtractor;
 
+struct SubtreeWatcherPrivate;
+
 class SubtreeWatcher final {
 private:
-    MediaStore &store; // Hackhackhack, in real code replace with callback object or something.
-    MetadataExtractor &extractor;
-    int inotifyid;
-    // Ideally use boost::bimap or something instead of these two separate objects.
-    std::map<int, std::string> wd2str;
-    std::map<std::string, int> str2wd;
-    bool keep_going;
 
-    static const int BUFSIZE=4096;
-
+    SubtreeWatcherPrivate *p;
     void fileAdded(const std::string &abspath);
     void fileDeleted(const std::string &abspath);
     void dirAdded(const std::string &abspath);
@@ -51,7 +44,7 @@ public:
 
     void addDir(const std::string &path);
     void pumpEvents();
-    int getFd() const { return inotifyid; }
+    int getFd() const;
     int directoryCount() const;
 };
 
