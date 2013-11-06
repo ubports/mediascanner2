@@ -29,6 +29,7 @@ class MetadataExtractor final {
 public:
     MetadataExtractor(int seconds=25);
     ~MetadataExtractor();
+    MetadataExtractor(const MetadataExtractor&) = delete;
     MetadataExtractor& operator=(MetadataExtractor &o) = delete;
 
     MediaFile extract(const std::string &filename);
