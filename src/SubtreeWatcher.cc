@@ -51,6 +51,13 @@ struct SubtreeWatcherPrivate {
         keep_going(true) {
     }
 
+    ~SubtreeWatcherPrivate() {
+        for(auto &i : wd2str) {
+            inotify_rm_watch(inotifyid, i.first);
+        }
+        close(inotifyid);
+    }
+
 };
 
 SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) {
@@ -64,10 +71,6 @@ SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) 
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
-    for(auto &i : p->wd2str) {
-        inotify_rm_watch(p->inotifyid, i.first);
-    }
-    close(p->inotifyid);
     delete p;
 }
 
