@@ -36,6 +36,8 @@
 
 using namespace std;
 
+static const int BUFSIZE=4096;
+
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
@@ -45,7 +47,6 @@ struct SubtreeWatcherPrivate {
     std::map<std::string, int> str2wd;
     bool keep_going;
 
-    static const int BUFSIZE=4096;
     SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor) :
         store(store), extractor(extractor), inotifyid(inotify_init()),
         keep_going(true) {
@@ -152,7 +153,7 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 
 
 void SubtreeWatcher::pumpEvents() {
-    char buf[p->BUFSIZE];
+    char buf[BUFSIZE];
     if(p->wd2str.empty())
         return;
     while(true) {
@@ -166,7 +167,7 @@ void SubtreeWatcher::pumpEvents() {
             return;
         }
         ssize_t num_read;
-        num_read = read(p->inotifyid, buf, p->BUFSIZE);
+        num_read = read(p->inotifyid, buf, BUFSIZE);
         if(num_read == 0) {
             printf("Inotify returned 0.\n");
             break;
