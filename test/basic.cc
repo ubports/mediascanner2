@@ -239,6 +239,10 @@ TEST_F(ScanTest, utils) {
     string correct = {" a b c  d  e f"};
     string result = filenameToTitle(source);
     ASSERT_EQ(correct, result);
+
+    string unquoted(R"(It's a living.)");
+    string quoted(R"('It''s a living.')");
+    ASSERT_EQ(sqlQuote(unquoted), quoted);
 }
 
 int main(int argc, char **argv) {
