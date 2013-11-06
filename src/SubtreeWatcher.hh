@@ -52,6 +52,7 @@ public:
     void addDir(const std::string &path);
     void pumpEvents();
     int getFd() const { return inotifyid; }
+    int directoryCount() const;
 };
 
 

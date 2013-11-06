@@ -188,3 +188,7 @@ void SubtreeWatcher::pumpEvents() {
         }
     }
 }
+
+int SubtreeWatcher::directoryCount() const {
+    return (int) wd2str.size();
+}

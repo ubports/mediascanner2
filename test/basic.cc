@@ -134,17 +134,23 @@ TEST_F(ScanTest, subdir) {
     MediaStore store(dbname, MS_READ_WRITE);
     MetadataExtractor extractor;
     SubtreeWatcher watcher(store, extractor);
+    ASSERT_EQ(watcher.directoryCount(), 0);
     watcher.addDir(testdir);
+    ASSERT_EQ(watcher.directoryCount(), 1);
     ASSERT_EQ(store.size(), 0);
 
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     watcher.pumpEvents();
+    ASSERT_EQ(watcher.directoryCount(), 2);
     copy_file(testfile, outfile);
     watcher.pumpEvents();
     ASSERT_EQ(store.size(), 1);
     ASSERT_EQ(unlink(outfile.c_str()), 0);
     watcher.pumpEvents();
     ASSERT_EQ(store.size(), 0);
+    ASSERT_EQ(rmdir(subdir.c_str()), 0);
+    watcher.pumpEvents();
+    ASSERT_EQ(watcher.directoryCount(), 1);
 }
 
 // FIXME move this somewhere in the implementation.
