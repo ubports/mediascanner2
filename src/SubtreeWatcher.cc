@@ -68,6 +68,7 @@ SubtreeWatcher::~SubtreeWatcher() {
         inotify_rm_watch(p->inotifyid, i.first);
     }
     close(p->inotifyid);
+    delete p;
 }
 
 void SubtreeWatcher::addDir(const string &root) {
