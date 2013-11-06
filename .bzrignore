@@ -2,3 +2,5 @@ build
 .project
 .cproject
 .settings
+buildopt
+buildcoverage
