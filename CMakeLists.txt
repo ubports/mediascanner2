@@ -2,7 +2,7 @@ project(scantest CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
 if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
-   message(FATAL_ERROR "In-tree build attempt detected, aborting. Set your build dir outside your source dir, delete CMakeCache.txt from source root and try again.")
+  message(FATAL_ERROR "In-tree build attempt detected, aborting. Set your build dir outside your source dir, delete CMakeCache.txt from source root and try again.")
 endif()
 
 option(full_warnings "All possible compiler warnings." OFF)

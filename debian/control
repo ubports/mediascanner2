@@ -9,6 +9,7 @@ Build-Depends: cmake,
                libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
                libgstreamer1.0-dev,
+# For unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
 # For "old style" scope
@@ -25,7 +26,9 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-Description: locate media and make it queryable
+         gstreamer1.0-plugins-base,
+         gstreamer1.0-plugins-good,
+Description: locate media files and makes them queryable
  Mediascanner browses through your files,
  finds all media files, extracts their metadata
  and allows users to perform queries on them.
