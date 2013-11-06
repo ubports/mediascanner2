@@ -28,20 +28,25 @@
 #include<sys/stat.h>
 #include<gst/gst.h>
 #include<Scanner.hh>
-
-static void error_exit(const char *file, const int line, const char *funcname) {
-    fflush(stdout);
-    fflush(stderr);
-    fprintf(stderr, "Assertion failed, file %s, line %d, function %s.\n", file, line, funcname);
-    fflush(stderr);
-    exit(1);
-}
-
-#define assert(x) if(!(x)) error_exit(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#include "gtest/gtest.h"
 
 using namespace std;
+class ScanTest : public ::testing::Test {
+ protected:
+  ScanTest() {
+  }
 
-void init_test() {
+  virtual ~ScanTest() {
+  }
+
+  virtual void SetUp() {
+  }
+
+  virtual void TearDown() {
+  }
+};
+
+TEST_F(ScanTest, init) {
     string base("basic");
     string fname = base + "-mediastore.db";
     unlink(fname.c_str());
@@ -58,24 +63,24 @@ void clear_dir(const string &subdir) {
 
 void copy_file(const string &src, const string &dst) {
     FILE* f = fopen(src.c_str(), "r");
-    assert(f);
+    ASSERT_TRUE(f);
     fseek(f, 0, SEEK_END);
     size_t size = ftell(f);
 
     char* buf = new char[size];
 
     fseek(f, 0, SEEK_SET);
-    assert(fread(buf, 1, size, f) == size);
+    ASSERT_EQ(fread(buf, 1, size, f), size);
     fclose(f);
 
     f = fopen(dst.c_str(), "w");
-    assert(f);
-    assert(fwrite(buf, 1, size, f) == size);
+    ASSERT_TRUE(f);
+    ASSERT_EQ(fwrite(buf, 1, size, f), size);
     fclose(f);
     delete[] buf;
 }
 
-void index_test() {
+TEST_F(ScanTest, index) {
     string dbname("index-mediastore.db");
     string subdir = getenv("TEST_DIR");
     subdir += "/testdir";
@@ -84,33 +89,33 @@ void index_test() {
     string outfile = subdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(subdir);
-    assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(dbname, MS_READ_WRITE);
     MetadataExtractor extractor;
     SubtreeWatcher watcher(store, extractor);
     watcher.addDir(subdir);
-    assert(store.size() == 0);
+    ASSERT_EQ(store.size(), 0);
 
     copy_file(testfile, outfile);
     watcher.pumpEvents();
-    assert(store.size() == 1);
-    assert(unlink(outfile.c_str()) == 0);
+    ASSERT_EQ(store.size(), 1);
+    ASSERT_EQ(unlink(outfile.c_str()), 0);
     watcher.pumpEvents();
-    assert(store.size() == 0);
+    ASSERT_EQ(store.size(), 0);
 }
 
-void extract_test() {
+TEST_F(ScanTest, extract) {
     MetadataExtractor e;
     string testfile = getenv("SOURCE_DIR");
     testfile += "/test/testfile.ogg";
     MediaFile file = e.extract(testfile);
-    assert(file.getTitle() == "track1");
-    assert(file.getAuthor() == "artist1");
-    assert(file.getAlbum() == "album1");
-    assert(file.getDuration() == 5);
+    ASSERT_EQ(file.getTitle(), "track1");
+    ASSERT_EQ(file.getAuthor(), "artist1");
+    ASSERT_EQ(file.getAlbum(), "album1");
+    ASSERT_EQ(file.getDuration(), 5);
 }
 
-void subdir_test() {
+TEST_F(ScanTest, subdir) {
     string dbname("subdir-mediastore.db");
     string testdir = getenv("TEST_DIR");
     testdir += "/testdir";
@@ -120,21 +125,21 @@ void subdir_test() {
     string outfile = subdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(testdir);
-    assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(dbname, MS_READ_WRITE);
     MetadataExtractor extractor;
     SubtreeWatcher watcher(store, extractor);
     watcher.addDir(testdir);
-    assert(store.size() == 0);
+    ASSERT_EQ(store.size(), 0);
 
-    assert(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     watcher.pumpEvents();
     copy_file(testfile, outfile);
     watcher.pumpEvents();
-    assert(store.size() == 1);
-    assert(unlink(outfile.c_str()) == 0);
+    ASSERT_EQ(store.size(), 1);
+    ASSERT_EQ(unlink(outfile.c_str()), 0);
     watcher.pumpEvents();
-    assert(store.size() == 0);
+    ASSERT_EQ(store.size(), 0);
 }
 
 // FIXME move this somewhere in the implementation.
@@ -147,7 +152,7 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     }
 }
 
-void scan_test() {
+TEST_F(ScanTest, scan) {
     string dbname("scan-mediastore.db");
     string testdir = getenv("TEST_DIR");
     testdir += "/testdir";
@@ -156,38 +161,38 @@ void scan_test() {
     string outfile = testdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(testdir);
-    assert(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) >= 0);
+    ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     copy_file(testfile, outfile);
     MediaStore *store = new MediaStore(dbname, MS_READ_WRITE);
     scanFiles(*store, testdir, AudioMedia);
-    assert(store->size() == 1);
+    ASSERT_EQ(store->size(), 1);
 
     delete store;
     unlink(outfile.c_str());
     store = new MediaStore(dbname, MS_READ_WRITE);
     store->pruneDeleted();
-    assert(store->size() == 0);
+    ASSERT_EQ(store->size(), 0);
     delete store;
 
 }
 
-void equality_test() {
+TEST_F(ScanTest, equality) {
     MediaFile audio1("a", "b", "c", "d", 5, AudioMedia);
     MediaFile audio2("aa", "b", "c", "d", 5, AudioMedia);
 
     MediaFile video1("a", "b", "c", "d", 5, VideoMedia);
     MediaFile video2("aa", "b", "c", "d", 5, VideoMedia);
 
-    assert(audio1 == audio1);
-    assert(video1 == video1);
+    ASSERT_EQ(audio1, audio1);
+    ASSERT_EQ(video1, video1);
 
-    assert(audio1 != audio2);
-    assert(audio1 != video1);
-    assert(audio2 != video1);
-    assert(audio2 != video2);
+    ASSERT_NE(audio1, audio2);
+    ASSERT_NE(audio1, video1);
+    ASSERT_NE(audio2, video1);
+    ASSERT_NE(audio2, video2);
 }
 
-void roundtrip_test() {
+TEST_F(ScanTest, roundtrip) {
     MediaFile audio("aaa", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
     MediaFile video("aaa2", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
     string dbname("roundtrip-mediastore.db");
@@ -196,14 +201,14 @@ void roundtrip_test() {
     store.insert(audio);
     store.insert(video);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
-    assert(result.size() == 1);
-    assert(result[0] == audio);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0], audio);
     result = store.query("bbb", VideoMedia);
-    assert(result.size() == 1);
-    assert(result[0] == video);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0], video);
 }
 
-void unmount_test() {
+TEST_F(ScanTest, unmount) {
     MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
     MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
     string dbname("unmount-mediastore.db");
@@ -212,28 +217,20 @@ void unmount_test() {
     store.insert(audio1);
     store.insert(audio2);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
-    assert(result.size() == 2);
+    ASSERT_EQ(result.size(), 2);
 
     store.archiveItems("/media/username");
     result = store.query("bbb", AudioMedia);
-    assert(result.size() == 1);
-    assert(result[0] == audio2);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0], audio2);
 
     store.restoreItems("/media/username");
     result = store.query("bbb", AudioMedia);
-    assert(result.size() == 2);
+    ASSERT_EQ(result.size(), 2);
 }
 
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
-
-    init_test();
-    extract_test();
-    index_test();
-    subdir_test();
-    scan_test();
-    equality_test();
-    roundtrip_test();
-    unmount_test();
-    return 0;
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
