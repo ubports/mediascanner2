@@ -48,7 +48,7 @@ std::string filenameToTitle(const std::string &filename) {
         if(suffix_dot == std::string::npos) {
             result = filename;
         } else {
-            result = filename.substr(0, suffix_dot-1);
+            result = filename.substr(0, suffix_dot);
         }
     } else {
         if(suffix_dot == std::string::npos) {

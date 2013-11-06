@@ -21,6 +21,7 @@
 #include<MediaStore.hh>
 #include<MetadataExtractor.hh>
 #include<SubtreeWatcher.hh>
+#include<utils.hh>
 
 #include<cstdio>
 #include<string>
@@ -31,6 +32,7 @@
 #include "gtest/gtest.h"
 
 using namespace std;
+
 class ScanTest : public ::testing::Test {
  protected:
   ScanTest() {
@@ -230,6 +232,13 @@ TEST_F(ScanTest, unmount) {
     store.restoreItems("/media/username");
     result = store.query("bbb", AudioMedia);
     ASSERT_EQ(result.size(), 2);
+}
+
+TEST_F(ScanTest, utils) {
+    string source("_a.b(c)[d]{e}f.mp3");
+    string correct = {" a b c  d  e f"};
+    string result = filenameToTitle(source);
+    ASSERT_EQ(correct, result);
 }
 
 int main(int argc, char **argv) {
