@@ -36,8 +36,6 @@
 
 using namespace std;
 
-static const int BUFSIZE=4096;
-
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
@@ -153,6 +151,7 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 
 
 void SubtreeWatcher::pumpEvents() {
+    const int BUFSIZE=4096;
     char buf[BUFSIZE];
     if(p->wd2str.empty())
         return;
