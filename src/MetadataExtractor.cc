@@ -73,6 +73,8 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
                 mf->setTitle(g_value_get_string(val));
             else if (tagname == GST_TAG_ALBUM)
                 mf->setAlbum(g_value_get_string(val));
+            else if (tagname == GST_TAG_ALBUM_ARTIST)
+                mf->setAlbumArtist(g_value_get_string(val));
         } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
             if (tagname == GST_TAG_DATE_TIME) {
                 GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));

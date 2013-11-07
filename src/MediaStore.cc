@@ -31,7 +31,7 @@ using namespace std;
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 0;
+static const int schemaVersion = 1;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -93,8 +93,11 @@ CREATE TABLE schemaVersion (version INTEGER);
 CREATE TABLE media (
     filename TEXT PRIMARY KEY NOT NULL,
     title TEXT,
-    artist TEXT,    -- Only relevant to audio
-    album TEXT,     -- Only relevant to audio
+    date TEXT,
+    artist TEXT,       -- Only relevant to audio
+    album TEXT,        -- Only relevant to audio
+    album_artist TEXT, -- Only relevant to audio
+    track_number INTEGER, -- Only relevant to audio
     duration INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
 );
@@ -102,8 +105,11 @@ CREATE TABLE media (
 CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
     title TEXT,
+    date TEXT,
     artist TEXT,    -- Only relevant to audio
     album TEXT,     -- Only relevant to audio
+    album_artist TEXT, -- Only relevant to audio
+    track_number INTEGER, -- Only relevant to audio
     duration INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
 );
@@ -129,7 +135,7 @@ END;
 )");
     execute_sql(db, schema);
 
-    Statement version(db, "INSERT INTO schemaVersion(version) VALUES (?)");
+    Statement version(db, "INSERT INTO schemaVersion (version) VALUES (?)");
     version.bind(1, schemaVersion);
     version.step();
 }
@@ -170,17 +176,23 @@ size_t MediaStore::size() const {
 }
 
 void MediaStore::insert(const MediaFile &m) {
-    Statement query(p->db, "INSERT OR REPLACE INTO media VALUES (?, ?, ?, ?, ?, ?)");
+    Statement query(p->db, "INSERT OR REPLACE INTO media (filename, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     string fname = m.getFileName();
     string title = m.getTitle();
     if(title.empty())
         title = filenameToTitle(fname);
     query.bind(1, fname);
     query.bind(2, title);
-    query.bind(3, m.getAuthor());
-    query.bind(4, m.getAlbum());
-    query.bind(5, m.getDuration());
-    query.bind(6, (int)m.getType());
+    query.bind(3, m.getDate());
+    query.bind(4, m.getAuthor());
+    query.bind(5, m.getAlbum());
+    string album_artist = m.getAlbumArtist();
+    if (album_artist.empty())
+        album_artist = m.getAuthor();
+    query.bind(6, album_artist);
+    query.bind(7, m.getTrackNumber());
+    query.bind(8, m.getDuration());
+    query.bind(9, (int)m.getType());
     query.step();
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -198,7 +210,7 @@ void MediaStore::remove(const string &fname) {
 }
 
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
-    Statement query(p->db, R"(SELECT * FROM media
+    Statement query(p->db, R"(SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
 AND type == ?)");
     vector<MediaFile> result;
@@ -208,11 +220,14 @@ AND type == ?)");
     while (query.step()) {
         string filename = query.getText(0);
         string title = query.getText(1);
-        string author = query.getText(2);
-        string album = query.getText(3);
-        int duration = query.getInt(4);
-        MediaType type = (MediaType)query.getInt(5);
-        result.push_back(MediaFile(filename, title, author, album, duration, type));
+        string date = query.getText(2);
+        string author = query.getText(3);
+        string album = query.getText(4);
+        string album_artist = query.getText(5);
+        int track_number = query.getInt(6);
+        int duration = query.getInt(7);
+        MediaType type = (MediaType)query.getInt(8);
+        result.push_back(MediaFile(filename, title, date, author, album, album_artist, track_number, duration, type));
     }
     return result;
 }

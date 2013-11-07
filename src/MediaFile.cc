@@ -22,9 +22,9 @@
 
 using namespace std;
 
-MediaFile::MediaFile(std::string filename, std::string title, std::string author, std::string album,
-        int duration, MediaType type) :
-    filename(filename), title(title), author(author), album(album), duration(duration), type(type) {
+MediaFile::MediaFile(std::string filename, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
+        int track_number, int duration, MediaType type) :
+    filename(filename), title(title), date(date), author(author), album(album), album_artist(album_artist), track_number(track_number), duration(duration), type(type) {
 
 }
 
@@ -41,6 +41,10 @@ const std::string& MediaFile::getAuthor() const noexcept {
 
 const std::string& MediaFile::getAlbum() const noexcept {
     return album;
+}
+
+const std::string& MediaFile::getAlbumArtist() const noexcept {
+    return album_artist;
 }
 
 const std::string& MediaFile::getDate() const noexcept {
@@ -71,6 +75,10 @@ void MediaFile::setAlbum(const std::string &album) noexcept {
     this->album = album;
 }
 
+void MediaFile::setAlbumArtist(const std::string &album_artist) noexcept {
+    this->album_artist = album_artist;
+}
+
 void MediaFile::setDate(const std::string &date) noexcept {
     this->date = date;
 }
@@ -89,7 +97,7 @@ void MediaFile::setType(MediaType type) noexcept {
 
 bool MediaFile::operator==(const MediaFile &other) const {
     return filename == other.filename && title == other.title && author == other.author &&
-        album == other.album && /*date == other.date && track_number == other.track_number &&*/ duration == other.duration && type == other.type;
+        album == other.album && album_artist == other.album_artist && date == other.date && track_number == other.track_number && duration == other.duration && type == other.type;
 }
 
 bool MediaFile::operator!=(const MediaFile &other) const {

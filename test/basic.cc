@@ -194,11 +194,11 @@ TEST_F(ScanTest, scan) {
 }
 
 TEST_F(ScanTest, equality) {
-    MediaFile audio1("a", "b", "c", "d", 5, AudioMedia);
-    MediaFile audio2("aa", "b", "c", "d", 5, AudioMedia);
+    MediaFile audio1("a", "1900", "b", "c", "d", "e", 1, 5, AudioMedia);
+    MediaFile audio2("aa", "1900", "b", "c", "d", "e", 1, 5, AudioMedia);
 
-    MediaFile video1("a", "b", "c", "d", 5, VideoMedia);
-    MediaFile video2("aa", "b", "c", "d", 5, VideoMedia);
+    MediaFile video1("a", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
+    MediaFile video2("aa", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
 
     ASSERT_EQ(audio1, audio1);
     ASSERT_EQ(video1, video1);
@@ -210,8 +210,8 @@ TEST_F(ScanTest, equality) {
 }
 
 TEST_F(ScanTest, roundtrip) {
-    MediaFile audio("aaa", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
-    MediaFile video("aaa2", "bbb bbb", "ccc", "ddd", 5, VideoMedia);
+    MediaFile audio("aaa", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
+    MediaFile video("aaa2", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", 0, 5, VideoMedia);
     string dbname("roundtrip-mediastore.db");
     unlink(dbname.c_str());
     MediaStore store(dbname, MS_READ_WRITE);
@@ -226,8 +226,8 @@ TEST_F(ScanTest, roundtrip) {
 }
 
 TEST_F(ScanTest, unmount) {
-    MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "ccc", "ddd", 5, AudioMedia);
+    MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 42, 5, AudioMedia);
     string dbname("unmount-mediastore.db");
     unlink(dbname.c_str());
     MediaStore store(dbname, MS_READ_WRITE);

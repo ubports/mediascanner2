@@ -26,16 +26,17 @@
 class MediaFile final {
 public:
 
-    MediaFile(std::string filename) : filename(filename), title(""), author(""),
-        album(""), date(""), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFile(std::string filename, std::string title, std::string author, std::string album,
-            int duration, MediaType type);
+    MediaFile(std::string filename) : filename(filename), title(""), date(""), author(""),
+        album(""), album_artist(""), track_number(0), duration(0), type(UnknownMedia) {}
+    MediaFile(std::string filename, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
+              int track_number, int duration, MediaType type);
     MediaFile() = delete;
 
     const std::string& getFileName() const noexcept;
     const std::string& getTitle() const noexcept;
     const std::string& getAuthor() const noexcept;
     const std::string& getAlbum() const noexcept;
+    const std::string& getAlbumArtist() const noexcept;
     const std::string& getDate() const noexcept;
     int getTrackNumber() const noexcept;
     int getDuration() const noexcept;
@@ -46,6 +47,7 @@ public:
     void setTitle(const std::string& title) noexcept;
     void setAuthor(const std::string& author) noexcept;
     void setAlbum(const std::string& album) noexcept;
+    void setAlbumArtist(const std::string& album_artist) noexcept;
     void setDate(const std::string& date) noexcept;
     void setTrackNumber(int track_number) noexcept;
     void setDuration(int duration) noexcept;
@@ -54,9 +56,10 @@ public:
 private:
     std::string filename;
     std::string title;
+    std::string date; // ISO date string.  Should this be time since epoch?
     std::string author;
     std::string album;
-    std::string date; // ISO date string.  Should this be time since epoch?
+    std::string album_artist;
     int track_number;
     int duration; // In seconds.
     MediaType type;
