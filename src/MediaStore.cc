@@ -225,52 +225,39 @@ void MediaStore::remove(const string &fname) {
     del.step();
 }
 
-static int media_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
-    assert(num_cols == 6);
-    vector<MediaFile> *t = reinterpret_cast<vector<MediaFile> *> (arg);
-    string filename(data[0]);
-    string title(data[1]);
-    string author(data[2]);
-    string album(data[3]);
-    int duration = atoi(data[4]);
-    MediaType type = (MediaType)atoi(data[5]);
-    t->push_back(MediaFile(filename, title, author, album, duration, type));
-    return 0;
-}
-
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
+    Statement query(p->db, R"(SELECT * FROM media
+WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
+AND type == ?)");
     vector<MediaFile> result;
-    const char *templ = R"(SELECT * FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH %s)
-AND type == %d;)";
-    string term = sqlQuote(core_term + "*");
-    char cmd[1024];
-    sprintf(cmd, templ, term.c_str(), (int)type);
-    if(sqlite3_exec(p->db, cmd, media_adder, &result, nullptr) != SQLITE_OK) {
-        throw runtime_error(sqlite3_errmsg(p->db));
+
+    query.bind(1, core_term + "*");
+    query.bind(2, (int)type);
+    while (query.step()) {
+        string filename = query.getText(0);
+        string title = query.getText(1);
+        string author = query.getText(2);
+        string album = query.getText(3);
+        int duration = query.getInt(4);
+        MediaType type = (MediaType)query.getInt(5);
+        result.push_back(MediaFile(filename, title, author, album, duration, type));
     }
     return result;
 }
 
-static int deleteChecker(void* arg, int /*num_cols*/, char **data, char ** /*colnames*/) {
-    vector<string> *t = reinterpret_cast<vector<string>*> (arg);
-    const char *fname = data[0];
-    FILE *f = fopen(fname, "r");
-    if(f) {
-        fclose(f);
-    } else {
-        t->push_back(fname);
-    }
-    return 0;
-}
-
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
-    const char *query = "SELECT filename FROM media;";
-    char *errmsg;
-    if(sqlite3_exec(p->db, query, deleteChecker, &deleted, &errmsg) != SQLITE_OK) {
-        throw runtime_error(errmsg);
+    Statement query(p->db, "SELECT filename FROM media");
+    while (query.step()) {
+        const string filename = query.getText(0);
+        FILE *f = fopen(filename.c_str(), "r");
+        if(f) {
+            fclose(f);
+        } else {
+            deleted.push_back(filename);
+        }
     }
+    query.finalize();
     printf("%d files deleted from disk.\n", (int)deleted.size());
     for(const auto &i : deleted) {
         remove(i);
