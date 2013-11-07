@@ -87,7 +87,7 @@ DROP TABLE IF EXISTS schemaVersion;
 }
 
 void createTables(sqlite3 *db) {
-    string mediaCreate(R"(
+    string schema(R"(
 CREATE TABLE schemaVersion (version INTEGER);
 
 CREATE TABLE media (
@@ -109,10 +109,9 @@ CREATE TABLE media_attic (
 );
 
 CREATE VIRTUAL TABLE media_fts 
-USING fts4(content="media", title, artist, album, tokenize=mozporter);
-)");
+USING fts4(content='media', title, artist, album, tokenize=mozporter);
 
-    string triggerCreate(R"(CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
+CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
   DELETE FROM media_fts WHERE docid=old.rowid;
 END;
 
@@ -128,13 +127,11 @@ CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
 )");
-    string versionStore("INSERT INTO schemaVersion VALUES (");
-    versionStore += to_string(schemaVersion);
-    versionStore += ");";
+    execute_sql(db, schema);
 
-    execute_sql(db, mediaCreate);
-    execute_sql(db, triggerCreate);
-    execute_sql(db, versionStore);
+    Statement version(db, "INSERT INTO schemaVersion(version) VALUES (?)");
+    version.bind(1, schemaVersion);
+    version.step();
 }
 
 MediaStore::MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix) {
