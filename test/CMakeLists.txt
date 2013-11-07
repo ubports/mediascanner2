@@ -27,5 +27,5 @@ set_property(TEST basic PROPERTY ENVIRONMENT "TEST_DIR=${CMAKE_CURRENT_BINARY_DI
 set_property(TEST basic APPEND PROPERTY ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
 add_executable(sqliteutilstest sqliteutilstest.cc)
-target_link_libraries(sqliteutilstest gtest ${SQLITE_LDFLAGS} -pthread)
+target_link_libraries(sqliteutilstest gtest ${CMAKE_THREAD_LIBS_INIT} ${SQLITE_LDFLAGS})
 add_test(sqliteutilstest sqliteutilstest)
