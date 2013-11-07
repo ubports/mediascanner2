@@ -172,45 +172,20 @@ size_t MediaStore::size() const {
     return count.getInt(0);
 }
 
-static int yup(void* arg, int /*num_cols*/, char **/*data*/, char ** /*colnames*/) {
-    bool *t = reinterpret_cast<bool *> (arg);
-    *t = true;
-    return 0;
-}
-
 void MediaStore::insert(const MediaFile &m) {
-    char *errmsg;
+    Statement query(p->db, "INSERT OR REPLACE INTO media VALUES (?, ?, ?, ?, ?, ?)");
+    string fname = m.getFileName();
+    string title = m.getTitle();
+    if(title.empty())
+        title = filenameToTitle(fname);
+    query.bind(1, fname);
+    query.bind(2, title);
+    query.bind(3, m.getAuthor());
+    query.bind(4, m.getAlbum());
+    query.bind(5, m.getDuration());
+    query.bind(6, (int)m.getType());
+    query.step();
 
-    const char *insert_templ = "INSERT INTO media VALUES(%s, %s, %s, %s, %d, %d);";
-    const char *query_templ = "SELECT * FROM media WHERE filename=%s;";
-    const size_t bufsize = 1024;
-    char qcmd[bufsize];
-    char icmd[bufsize];
-
-    string fname = sqlQuote(m.getFileName());
-    string title;
-    if(m.getTitle().empty())
-        title = sqlQuote(filenameToTitle(m.getFileName()));
-    else
-        title = sqlQuote(m.getTitle());
-    string author = sqlQuote(m.getAuthor());
-    string album = sqlQuote(m.getAlbum());
-    int duration = m.getDuration();
-    int type = (int)m.getType();
-    snprintf(qcmd, bufsize, query_templ, fname.c_str());
-    snprintf(icmd, bufsize, insert_templ, fname.c_str(), title.c_str(),
-            author.c_str(), album.c_str(), duration, type);
-
-    bool was_in = false;
-    if(sqlite3_exec(p->db, qcmd, yup, &was_in, &errmsg ) != SQLITE_OK) {
-        throw runtime_error(errmsg);
-    }
-    if(was_in) {
-        return;
-    }
-    if(sqlite3_exec(p->db, icmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        throw runtime_error(errmsg);
-    }
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
     printf(" author   : '%s'\n", m.getAuthor().c_str());
