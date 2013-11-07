@@ -20,6 +20,7 @@
 #include "../mozilla/fts3_tokenizer.h"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
+#include "sqliteutils.hh"
 #include"utils.hh"
 #include <sqlite3.h>
 #include <cstdio>
@@ -65,16 +66,15 @@ static void execute_sql(sqlite3 *db, const string &cmd) {
     }
 }
 
-static int versionGetter(void* arg, int /*num_cols*/, char **data, char **/*colnames*/) {
-    int *v = reinterpret_cast<int*>(arg);
-    *v = atoi(data[0]);
-    return 0;
-}
-
 static int getSchemaVersion(sqlite3 *db) {
     int version = -1;
-    string query("SELECT version FROM schemaVersion;");
-    sqlite3_exec(db, query.c_str(), versionGetter, &version, nullptr);
+    try {
+        Statement select(db, "SELECT version FROM schemaVersion");
+        if (select.step())
+            version = select.getInt(0);
+    } catch (const exception &e) {
+        /* schemaVersion table might not exist */
+    }
     return version;
 }
 
@@ -137,11 +137,6 @@ END;
     execute_sql(db, versionStore);
 }
 
-int incrementer(void* arg, int /*num_cols*/, char **/*data*/, char **/*colnames*/) {
-    (*((size_t*) arg))++;
-    return 0;
-}
-
 MediaStore::MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix) {
     int sqliteFlags = access == MS_READ_WRITE ? SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE : SQLITE_OPEN_READONLY;
     p = new MediaStorePrivate();
@@ -172,13 +167,9 @@ MediaStore::~MediaStore() {
 }
 
 size_t MediaStore::size() const {
-    size_t result = 0;
-    char *err;
-    if(sqlite3_exec(p->db, "SELECT * FROM media", incrementer, &result, &err) != SQLITE_OK) {
-        throw runtime_error(err);
-    }
-
-    return result;
+    Statement count(p->db, "SELECT COUNT(*) FROM media");
+    count.step();
+    return count.getInt(0);
 }
 
 static int yup(void* arg, int /*num_cols*/, char **/*data*/, char ** /*colnames*/) {
@@ -229,13 +220,9 @@ void MediaStore::insert(const MediaFile &m) {
 }
 
 void MediaStore::remove(const string &fname) {
-    const char *templ = "DELETE FROM media WHERE filename = %s;";
-    char cmd[1024];
-    sprintf(cmd, templ, sqlQuote(fname).c_str());
-    char *errmsg;
-    if(sqlite3_exec(p->db, cmd, NULL, NULL, &errmsg) != SQLITE_OK) {
-        throw runtime_error(errmsg);
-    }
+    Statement del(p->db, "DELETE FROM media WHERE filename = ?");
+    del.bind(1, fname);
+    del.step();
 }
 
 static int media_adder(void* arg, int num_cols, char **data, char ** /*colnames*/) {
