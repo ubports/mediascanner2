@@ -1,8 +1,16 @@
 add_executable(watcher watchertest.cc)
 
-add_library(scannerstuff STATIC SubtreeWatcher.cc MediaFile.cc MediaStore.cc
-FileTypeDetector.cc MetadataExtractor.cc Scanner.cc utils.cc
- ../mozilla/fts3_porter.c ../mozilla/Normalize.c)
+add_library(scannerstuff STATIC
+  SubtreeWatcher.cc
+  MediaFile.cc
+  Album.cc
+  MediaStore.cc
+  FileTypeDetector.cc
+  MetadataExtractor.cc
+  Scanner.cc
+  utils.cc
+  ../mozilla/fts3_porter.c
+  ../mozilla/Normalize.c)
 
 add_definitions(${GST_CFLAGS})
 add_definitions(${GIO_CFLAGS})

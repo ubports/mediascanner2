@@ -26,6 +26,7 @@
 
 struct MediaStorePrivate;
 class MediaFile;
+class Album;
 
 enum OpenType {
     MS_READ_ONLY,
@@ -45,6 +46,8 @@ public:
     void insert(const MediaFile &m);
     void remove(const std::string &fname);
     std::vector<MediaFile> query(const std::string &q, MediaType type);
+    std::vector<Album> queryAlbums(const std::string &core_term);
+    std::vector<MediaFile> getAlbumSongs(const Album& album);
     size_t size() const;
     void pruneDeleted();
     void archiveItems(const std::string &prefix);

@@ -20,6 +20,7 @@
 #include "../mozilla/fts3_tokenizer.h"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
+#include "Album.hh"
 #include "sqliteutils.hh"
 #include"utils.hh"
 #include <sqlite3.h>
@@ -31,7 +32,7 @@ using namespace std;
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 1;
+static const int schemaVersion = 2;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -101,6 +102,8 @@ CREATE TABLE media (
     duration INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
 );
+
+CREATE INDEX media_album_album_artist_idx ON media(album, album_artist);
 
 CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
@@ -209,27 +212,61 @@ void MediaStore::remove(const string &fname) {
     del.step();
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
-    Statement query(p->db, R"(SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
-AND type == ?)");
+static vector<MediaFile> collect_media(Statement &query) {
     vector<MediaFile> result;
-
-    query.bind(1, core_term + "*");
-    query.bind(2, (int)type);
     while (query.step()) {
-        string filename = query.getText(0);
-        string title = query.getText(1);
-        string date = query.getText(2);
-        string author = query.getText(3);
-        string album = query.getText(4);
-        string album_artist = query.getText(5);
+        const string filename = query.getText(0);
+        const string title = query.getText(1);
+        const string date = query.getText(2);
+        const string author = query.getText(3);
+        const string album = query.getText(4);
+        const string album_artist = query.getText(5);
         int track_number = query.getInt(6);
         int duration = query.getInt(7);
         MediaType type = (MediaType)query.getInt(8);
         result.push_back(MediaFile(filename, title, date, author, album, album_artist, track_number, duration, type));
     }
     return result;
+}
+
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
+    Statement query(p->db, R"(
+SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
+WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
+AND type == ?
+)");
+    query.bind(1, core_term + "*");
+    query.bind(2, (int)type);
+    return collect_media(query);
+}
+
+vector<Album> MediaStore::queryAlbums(const std::string &core_term) {
+    Statement query(p->db, R"(
+SELECT album, album_artist FROM media
+WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
+AND type == ? AND album <> ''
+GROUP BY album, album_artist
+)");
+    query.bind(1, core_term + "*");
+    query.bind(2, (int)AudioMedia);
+    vector<Album> albums;
+    while (query.step()) {
+        const string album = query.getText(0);
+        const string album_artist = query.getText(1);
+        albums.push_back(Album(album, album_artist));
+    }
+    return albums;
+}
+
+vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) {
+    Statement query(p->db, R"(
+SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
+WHERE album = ? AND album_artist = ? AND type = ?
+ORDER BY track_number
+)");
+    query.bind(1, album.getTitle());
+    query.bind(2, album.getArtist());
+    return collect_media(query);
 }
 
 void MediaStore::pruneDeleted() {
