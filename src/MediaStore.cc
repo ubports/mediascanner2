@@ -243,7 +243,7 @@ AND type == ?
 vector<Album> MediaStore::queryAlbums(const std::string &core_term) {
     Statement query(p->db, R"(
 SELECT album, album_artist FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
+WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND album <> ''
 GROUP BY album, album_artist
 )");
@@ -266,6 +266,7 @@ ORDER BY track_number
 )");
     query.bind(1, album.getTitle());
     query.bind(2, album.getArtist());
+    query.bind(3, (int)AudioMedia);
     return collect_media(query);
 }
 

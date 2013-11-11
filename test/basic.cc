@@ -18,6 +18,7 @@
  */
 
 #include<MediaFile.hh>
+#include <Album.hh>
 #include<MediaStore.hh>
 #include<MetadataExtractor.hh>
 #include<SubtreeWatcher.hh>
@@ -267,6 +268,56 @@ TEST_F(ScanTest, utils) {
     string quoted(R"('It''s a living.')");
     ASSERT_EQ(sqlQuote(unquoted), quoted);
 }
+
+TEST_F(ScanTest, queryAlbums) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/fname.ogg", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", 1, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+
+    // Query a track title
+    vector<Album> albums = store.queryAlbums("TitleOne");
+    ASSERT_EQ(albums.size(), 1);
+    EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
+    EXPECT_EQ(albums[0].getArtist(), "Various Artists");
+
+    // Query an album name
+    albums = store.queryAlbums("AlbumTwo");
+    ASSERT_EQ(albums.size(), 1);
+    EXPECT_EQ(albums[0].getTitle(), "AlbumTwo");
+    EXPECT_EQ(albums[0].getArtist(), "ArtistFour");
+
+    // Query an artist name
+    albums = store.queryAlbums("ArtistTwo");
+    ASSERT_EQ(albums.size(), 1);
+    EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
+    EXPECT_EQ(albums[0].getArtist(), "Various Artists");
+}
+
+TEST_F(ScanTest, getAlbumSongs) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    vector<MediaFile> tracks = store.getAlbumSongs(
+        Album("AlbumOne", "Various Artists"));
+    ASSERT_EQ(tracks.size(), 3);
+    EXPECT_EQ(tracks[0].getTitle(), "TitleOne");
+    EXPECT_EQ(tracks[1].getTitle(), "TitleTwo");
+    EXPECT_EQ(tracks[2].getTitle(), "TitleThree");
+}
+
 
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
