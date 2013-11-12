@@ -22,7 +22,8 @@
 
 #include<string>
 #include<vector>
-#include"scannercore.hh"
+
+#include <mediascanner/scannercore.hh>
 
 class Scanner final {
 public:

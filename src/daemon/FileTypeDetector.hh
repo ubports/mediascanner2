@@ -20,8 +20,8 @@
 #ifndef FILETYPEDETECTOR_HH
 #define FILETYPEDETECTOR_HH
 
-#include<string>
-#include"scannercore.hh"
+#include <string>
+#include <mediascanner/scannercore.hh>
 
 class FileTypeDetector final {
 public:

@@ -20,7 +20,7 @@ add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 include_directories(../src)
 
 add_executable(basic basic.cc)
-target_link_libraries(basic mediascanner2 gtest ${CMAKE_THREAD_LIBS_INIT}
+target_link_libraries(basic mediascanner2 scannerstuff gtest ${CMAKE_THREAD_LIBS_INIT}
 ${MEDIASCANNER_LDFLAGS} ${GST_LDFLAGS})
 add_test(basic basic)
 set_property(TEST basic PROPERTY ENVIRONMENT "TEST_DIR=${CMAKE_CURRENT_BINARY_DIR}")

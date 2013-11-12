@@ -18,7 +18,6 @@
  */
 
 #include "MediaFile.hh"
-#include "FileTypeDetector.hh"
 
 using namespace std;
 

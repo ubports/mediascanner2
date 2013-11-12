@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include"SubtreeWatcher.hh"
-#include"MediaStore.hh"
-#include"MediaFile.hh"
+#include "../mediascanner/MediaStore.hh"
+#include "../mediascanner/MediaFile.hh"
 #include "MetadataExtractor.hh"
+#include "SubtreeWatcher.hh"
 
 #include<sys/select.h>
 #include<stdexcept>

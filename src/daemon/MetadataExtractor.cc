@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include"MediaFile.hh"
-#include"MetadataExtractor.hh"
-#include"FileTypeDetector.hh"
+#include "../mediascanner/MediaFile.hh"
+#include "MetadataExtractor.hh"
+#include "FileTypeDetector.hh"
 
 #include<gst/gst.h>
 #include<gst/pbutils/pbutils.h>

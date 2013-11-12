@@ -20,11 +20,11 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/Album.hh>
 #include <mediascanner/MediaStore.hh>
-#include <mediascanner/MetadataExtractor.hh>
-#include <mediascanner/SubtreeWatcher.hh>
 #include <mediascanner/utils.hh>
-#include <mediascanner/FileTypeDetector.hh>
-#include <mediascanner/Scanner.hh>
+#include <daemon/MetadataExtractor.hh>
+#include <daemon/SubtreeWatcher.hh>
+#include <daemon/FileTypeDetector.hh>
+#include <daemon/Scanner.hh>
 
 #include<stdexcept>
 #include<cstdio>
