@@ -1,15 +1,9 @@
 add_subdirectory(mediascanner)
+add_subdirectory(daemon)
 
 add_executable(watcher watchertest.cc)
 
-add_definitions(${MEDIASCANNER_CFLAGS})
-
-add_executable(scannerdaemon scannerdaemon.cc)
-target_link_libraries(scannerdaemon mediascanner2 ${MEDIASCANNER_LDFLAGS})
-
-install(TARGETS scannerdaemon
-RUNTIME DESTINATION usr/bin
-)
+add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 
 add_executable(query query.cc)
 target_link_libraries(query mediascanner2

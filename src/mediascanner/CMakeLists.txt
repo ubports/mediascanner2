@@ -10,4 +10,4 @@ add_library(mediascanner2 STATIC
   mozilla/fts3_porter.c
   mozilla/Normalize.c)
 
-add_definitions(${MEDIASCANNER_CFLAGS})
+add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
