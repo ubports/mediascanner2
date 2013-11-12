@@ -19,6 +19,7 @@ target_link_libraries(scannerdaemon
   ${GST_LDFLAGS}
 )
 
-install(TARGETS scannerdaemon
-RUNTIME DESTINATION usr/bin
+install(
+  TARGETS scannerdaemon
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
