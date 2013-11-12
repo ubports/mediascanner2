@@ -13,7 +13,7 @@ pkg_check_modules(MEDIASCANNER REQUIRED
   sqlite3
 )
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
-pkg_search_module(UNITY unity REQUIRED)
+pkg_check_modules(UNITY unity REQUIRED)
 find_package(Threads REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra -std=c99")
@@ -28,5 +28,7 @@ include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 enable_testing()
 
-add_subdirectory(src)
+add_subdirectory(src/mediascanner)
+add_subdirectory(src/daemon)
+add_subdirectory(src/utils)
 add_subdirectory(test)
