@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include<MediaFile.hh>
-#include <Album.hh>
-#include<MediaStore.hh>
-#include<MetadataExtractor.hh>
-#include<SubtreeWatcher.hh>
-#include<utils.hh>
-#include<FileTypeDetector.hh>
+#include <mediascanner/MediaFile.hh>
+#include <mediascanner/Album.hh>
+#include <mediascanner/MediaStore.hh>
+#include <mediascanner/MetadataExtractor.hh>
+#include <mediascanner/SubtreeWatcher.hh>
+#include <mediascanner/utils.hh>
+#include <mediascanner/FileTypeDetector.hh>
+#include <mediascanner/Scanner.hh>
 
 #include<stdexcept>
 #include<cstdio>
@@ -31,8 +32,7 @@
 #include<unistd.h>
 #include<sys/stat.h>
 #include<gst/gst.h>
-#include<Scanner.hh>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace std;
 

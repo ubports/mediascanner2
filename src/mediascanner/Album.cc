@@ -17,29 +17,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ALBUM_HH
-#define ALBUM_HH
+#include "Album.hh"
 
-#include <string>
+using namespace std;
 
-class Album final {
-public:
+Album::Album(const std::string &title, const std::string &artist)
+    : title(title), artist(artist) {
+}
 
-    Album(const std::string &title, const std::string &artist);
-    Album() = delete;
+const std::string& Album::getTitle() const noexcept {
+    return title;
+}
 
-    const std::string& getTitle() const noexcept;
-    const std::string& getArtist() const noexcept;
-    bool operator==(const Album &other) const;
-    bool operator!=(const Album &other) const;
+const std::string& Album::getArtist() const noexcept {
+    return artist;
+}
 
-    void setTitle(const std::string& album) noexcept;
-    void setArtist(const std::string& album_artist) noexcept;
+void Album::setTitle(const std::string &title) noexcept {
+    this->title = title;
+}
 
-private:
-    std::string title;
-    std::string artist;
-};
+void Album::setArtist(const std::string &artist) noexcept {
+    this->artist = artist;
+}
 
-#endif
+bool Album::operator==(const Album &other) const {
+    return title == other.title && artist == other.artist;
+}
 
+bool Album::operator!=(const Album &other) const {
+    return !(*this == other);
+}

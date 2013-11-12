@@ -18,7 +18,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "../src/sqliteutils.hh"
+#include <mediascanner/sqliteutils.hh>
 
 using namespace std;
 

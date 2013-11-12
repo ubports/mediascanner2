@@ -8,6 +8,12 @@ endif()
 option(full_warnings "All possible compiler warnings." OFF)
 
 include(FindPkgConfig)
+pkg_check_modules(MEDIASCANNER REQUIRED
+  gio-2.0
+  gstreamer-1.0
+  gstreamer-pbutils-1.0
+  sqlite3
+)
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
 pkg_search_module(GIO gio-2.0 REQUIRED)
 pkg_search_module(SQLITE sqlite3 REQUIRED)

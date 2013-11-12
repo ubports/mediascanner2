@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include"MediaStore.hh"
-#include"MediaFile.hh"
-#include "utils.hh"
+#include "mediascanner/MediaStore.hh"
+#include "mediascanner/MediaFile.hh"
+#include "mediascanner/utils.hh"
 
 #include<vector>
 #include<string>
