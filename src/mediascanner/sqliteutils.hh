@@ -50,6 +50,12 @@ public:
             throw std::runtime_error(sqlite3_errstr(rc));
     }
 
+    void bind(int pos, void *blob, int length) {
+        rc = sqlite3_bind_blob(statement, pos, blob, length, SQLITE_STATIC);
+        if (rc != SQLITE_OK)
+            throw std::runtime_error(sqlite3_errstr(rc));
+    }
+
     bool step() {
         rc = sqlite3_step(statement);
         switch (rc) {

@@ -41,23 +41,15 @@ struct MediaStorePrivate {
 extern "C" void sqlite3Fts3PorterTokenizerModule(
     sqlite3_tokenizer_module const**ppModule);
 
-int register_tokenizer(sqlite3 *db) {
-    int rc;
+static void register_tokenizer(sqlite3 *db) {
+    Statement query(db, "SELECT fts3_tokenizer(?, ?)");
+
+    query.bind(1, "mozporter");
     const sqlite3_tokenizer_module *p = NULL;
-    sqlite3_stmt *pStmt;
-    const char *zSql = "SELECT fts3_tokenizer(?, ?)";
-
-    rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
-    if( rc!=SQLITE_OK ){
-        return rc;
-    }
-
-    sqlite3_bind_text(pStmt, 1, "mozporter", -1, SQLITE_STATIC);
     sqlite3Fts3PorterTokenizerModule(&p);
-    sqlite3_bind_blob(pStmt, 2, &p, sizeof(p), SQLITE_STATIC);
-    sqlite3_step(pStmt);
+    query.bind(2, &p, sizeof(p));
 
-    return sqlite3_finalize(pStmt);
+    query.step();
 }
 
 static void execute_sql(sqlite3 *db, const string &cmd) {
@@ -149,9 +141,7 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
     if(sqlite3_open_v2(filename.c_str(), &p->db, sqliteFlags, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
-    if (register_tokenizer(p->db) != SQLITE_OK) {
-        throw runtime_error(sqlite3_errmsg(p->db));
-    }
+    register_tokenizer(p->db);
     int detectedSchemaVersion = getSchemaVersion(p->db);
     if(access == MS_READ_WRITE) {
         if(detectedSchemaVersion != schemaVersion) {
