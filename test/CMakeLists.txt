@@ -20,11 +20,12 @@ endif()
 add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 include_directories(../src)
 
+add_definitions(-DTEST_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+add_definitions(-DSOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
 add_executable(basic basic.cc)
 target_link_libraries(basic mediascanner scannerstuff gtest)
 add_test(basic basic)
-set_property(TEST basic PROPERTY ENVIRONMENT "TEST_DIR=${CMAKE_CURRENT_BINARY_DIR}")
-set_property(TEST basic APPEND PROPERTY ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
 add_executable(sqliteutilstest sqliteutilstest.cc)
 target_link_libraries(sqliteutilstest gtest ${MEDIASCANNER_LIBRARIES})

@@ -87,10 +87,8 @@ void copy_file(const string &src, const string &dst) {
 
 TEST_F(ScanTest, index) {
     string dbname("index-mediastore.db");
-    string subdir = getenv("TEST_DIR");
-    subdir += "/testdir";
-    string testfile = getenv("SOURCE_DIR");
-    testfile += "/test/testfile.ogg";
+    string subdir = TEST_DIR "/testdir";
+    string testfile = SOURCE_DIR "/test/testfile.ogg";
     string outfile = subdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(subdir);
@@ -111,8 +109,7 @@ TEST_F(ScanTest, index) {
 
 TEST_F(ScanTest, extract) {
     MetadataExtractor e;
-    string testfile = getenv("SOURCE_DIR");
-    testfile += "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/test/testfile.ogg";
     MediaFile file = e.extract(testfile);
 
     ASSERT_EQ(file.getTitle(), "track1");
@@ -122,18 +119,15 @@ TEST_F(ScanTest, extract) {
     ASSERT_EQ(file.getTrackNumber(), 1);
     ASSERT_EQ(file.getDuration(), 5);
 
-    string nomediafile = getenv("SOURCE_DIR");
-    nomediafile += "/CMakeLists.txt";
+    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
     ASSERT_THROW(e.extract(nomediafile), runtime_error);
 }
 
 TEST_F(ScanTest, subdir) {
     string dbname("subdir-mediastore.db");
-    string testdir = getenv("TEST_DIR");
-    testdir += "/testdir";
+    string testdir = TEST_DIR "/testdir";
     string subdir = testdir + "/subdir";
-    string testfile = getenv("SOURCE_DIR");
-    testfile += "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/test/testfile.ogg";
     string outfile = subdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(testdir);
@@ -172,10 +166,8 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
 
 TEST_F(ScanTest, scan) {
     string dbname("scan-mediastore.db");
-    string testdir = getenv("TEST_DIR");
-    testdir += "/testdir";
-    string testfile = getenv("SOURCE_DIR");
-    testfile += "/test/testfile.ogg";
+    string testdir = TEST_DIR "/testdir";
+    string testfile = SOURCE_DIR "/test/testfile.ogg";
     string outfile = testdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(testdir);
@@ -249,10 +241,8 @@ TEST_F(ScanTest, unmount) {
 
 TEST_F(ScanTest, detector) {
     FileTypeDetector d;
-    string testfile = getenv("SOURCE_DIR");
-    testfile += "/test/testfile.ogg";
-    string nomediafile = getenv("SOURCE_DIR");
-    nomediafile += "/CMakeLists.txt";
+    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
     ASSERT_EQ(d.detect(testfile), AudioMedia);
     ASSERT_EQ(d.detect("/a/non/existing/file"), UnknownMedia);
     ASSERT_EQ(d.detect(nomediafile), UnknownMedia);
