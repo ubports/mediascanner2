@@ -7,6 +7,7 @@ add_library(scannerstuff STATIC
   SubtreeWatcher.cc
   Scanner.cc
 )
+target_link_libraries(scannerstuff ${GST_LIBRARIES})
 
 add_executable(scannerdaemon
   scannerdaemon.cc
@@ -15,8 +16,6 @@ add_executable(scannerdaemon
 target_link_libraries(scannerdaemon
   mediascanner
   scannerstuff
-  ${MEDIASCANNER_LDFLAGS}
-  ${GST_LDFLAGS}
 )
 
 install(

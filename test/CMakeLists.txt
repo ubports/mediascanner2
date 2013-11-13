@@ -10,6 +10,7 @@ ${GTEST_SRC_DIR}/gtest-all.cc
 )
 
 set_target_properties(gtest PROPERTIES INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIR})
+target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 
 # Clang complains about unused private field 'pretty_' in gtest-internal-inl.h.
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -20,12 +21,11 @@ add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 include_directories(../src)
 
 add_executable(basic basic.cc)
-target_link_libraries(basic mediascanner scannerstuff gtest ${CMAKE_THREAD_LIBS_INIT}
-${MEDIASCANNER_LDFLAGS} ${GST_LDFLAGS})
+target_link_libraries(basic mediascanner scannerstuff gtest)
 add_test(basic basic)
 set_property(TEST basic PROPERTY ENVIRONMENT "TEST_DIR=${CMAKE_CURRENT_BINARY_DIR}")
 set_property(TEST basic APPEND PROPERTY ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
 add_executable(sqliteutilstest sqliteutilstest.cc)
-target_link_libraries(sqliteutilstest gtest ${CMAKE_THREAD_LIBS_INIT} ${MEDIASCANNER_LDFLAGS})
+target_link_libraries(sqliteutilstest gtest ${MEDIASCANNER_LIBRARIES})
 add_test(sqliteutilstest sqliteutilstest)
