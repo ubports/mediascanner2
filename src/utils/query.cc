@@ -17,17 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mediascanner/utils.hh"
 #include "mediascanner/MediaFile.hh"
 #include "mediascanner/MediaStore.hh"
 
-#include<sqlite3.h>
 #include<stdio.h>
 #include<string>
 #include<memory>
-#include<sys/stat.h>
-#include<dirent.h>
-#include<unistd.h>
 #include<vector>
 
 using namespace std;
