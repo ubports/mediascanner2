@@ -13,7 +13,7 @@ add_executable(scannerdaemon
 )
 
 target_link_libraries(scannerdaemon
-  mediascanner2
+  mediascanner
   scannerstuff
   ${MEDIASCANNER_LDFLAGS}
   ${GST_LDFLAGS}

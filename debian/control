@@ -1,15 +1,15 @@
-Source: scantest
-Section: libdevel
+Source: mediascanner
+Section: libs
 Priority: optional
 Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Standards-Version: 3.9.4
 Build-Depends: cmake,
                debhelper (>= 9),
-               libsqlite3-dev,
                libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
                libgstreamer1.0-dev,
                libgtest-dev,
+               libsqlite3-dev,
 # For running unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
@@ -21,15 +21,33 @@ Homepage: https://launchpad.net/mediascanner
 # upstream branch
 #Vcs-Bzr: lp:mediascanner
 
-Package: scantest
+Package: libmediascanner-2.0-0
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         gstreamer1.0-plugins-base,
+Description: Access library for the media scanner's index
+ This library provides convenient and safe access to the media scanner's
+ index files.
+
+Package: mediascanner
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends},
+Depends: gstreamer1.0-plugins-base,
          gstreamer1.0-plugins-good,
-Description: locate media files and makes them queryable
- Mediascanner browses through your files,
- finds all media files, extracts their metadata
- and allows users to perform queries on them.
+         ${misc:Depends},
+         ${shlibs:Depends},
+Description: Media scanner package
+ This package provides the media scanner service.
+
+Package: libmediascanner-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends},
+Depends: libmediascanner-2.0-0 (= ${binary:Version}),
+         ${misc:Depends},
+Description: Development files for libmediascanner
+ This package provides the infrastructure for using the media scanner's
+ access library in C++ based projects.
