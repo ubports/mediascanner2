@@ -27,6 +27,10 @@ add_executable(basic basic.cc)
 target_link_libraries(basic mediascanner scannerstuff gtest)
 add_test(basic basic)
 
-add_executable(sqliteutilstest sqliteutilstest.cc)
-target_link_libraries(sqliteutilstest gtest ${MEDIASCANNER_LIBRARIES})
-add_test(sqliteutilstest sqliteutilstest)
+add_executable(test_mediastore test_mediastore.cc)
+target_link_libraries(test_mediastore mediascanner gtest)
+add_test(test_mediastore test_mediastore)
+
+add_executable(test_sqliteutils test_sqliteutils.cc)
+target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_LIBRARIES})
+add_test(test_sqliteutils test_sqliteutils)
