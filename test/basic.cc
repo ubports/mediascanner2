@@ -100,22 +100,6 @@ TEST_F(ScanTest, index) {
     ASSERT_EQ(store.size(), 0);
 }
 
-TEST_F(ScanTest, extract) {
-    MetadataExtractor e;
-    string testfile = SOURCE_DIR "/media/testfile.ogg";
-    MediaFile file = e.extract(testfile);
-
-    ASSERT_EQ(file.getTitle(), "track1");
-    ASSERT_EQ(file.getAuthor(), "artist1");
-    ASSERT_EQ(file.getAlbum(), "album1");
-    ASSERT_EQ(file.getDate(), "2013");
-    ASSERT_EQ(file.getTrackNumber(), 1);
-    ASSERT_EQ(file.getDuration(), 5);
-
-    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
-    ASSERT_THROW(e.extract(nomediafile), runtime_error);
-}
-
 TEST_F(ScanTest, subdir) {
     string testdir = TEST_DIR "/testdir";
     string subdir = testdir + "/subdir";
@@ -175,15 +159,6 @@ TEST_F(ScanTest, scan) {
     ASSERT_EQ(store->size(), 0);
     delete store;
 
-}
-
-TEST_F(ScanTest, detector) {
-    FileTypeDetector d;
-    string testfile = SOURCE_DIR "/media/testfile.ogg";
-    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
-    ASSERT_EQ(d.detect(testfile), AudioMedia);
-    ASSERT_EQ(d.detect("/a/non/existing/file"), UnknownMedia);
-    ASSERT_EQ(d.detect(nomediafile), UnknownMedia);
 }
 
 int main(int argc, char **argv) {

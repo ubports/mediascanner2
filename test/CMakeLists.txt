@@ -31,6 +31,10 @@ add_executable(test_mediastore test_mediastore.cc)
 target_link_libraries(test_mediastore mediascanner gtest)
 add_test(test_mediastore test_mediastore)
 
+add_executable(test_metadataextractor test_metadataextractor.cc)
+target_link_libraries(test_metadataextractor mediascanner scannerstuff gtest)
+add_test(test_metadataextractor test_metadataextractor)
+
 add_executable(test_sqliteutils test_sqliteutils.cc)
 target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_LIBRARIES})
 add_test(test_sqliteutils test_sqliteutils)
