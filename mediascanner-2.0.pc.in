@@ -1,0 +1,6 @@
+Name: mediascanner-2.0
+Description: Access library for the media scanner's index
+Version: @MEDIASCANNER_VERSION@
+Requires.private: gio-2.0 sqlite3
+Libs: -L@CMAKE_INSTALL_FULL_LIBDIR@ -lmediascanner-2.0
+Cflags: -I@CMAKE_INSTALL_FULL_INCLUDEDIR@/mediascanner-2.0

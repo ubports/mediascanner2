@@ -26,5 +26,5 @@ install(FILES
   MediaFile.hh
   MediaStore.hh
   scannercore.hh
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mediascanner"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mediascanner-2.0/mediascanner"
 )
