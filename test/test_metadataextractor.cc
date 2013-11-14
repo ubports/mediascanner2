@@ -53,15 +53,35 @@ TEST_F(MetadataExtractorTest, extract) {
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     MediaFile file = e.extract(testfile);
 
-    ASSERT_EQ(file.getTitle(), "track1");
-    ASSERT_EQ(file.getAuthor(), "artist1");
-    ASSERT_EQ(file.getAlbum(), "album1");
-    ASSERT_EQ(file.getDate(), "2013");
-    ASSERT_EQ(file.getTrackNumber(), 1);
-    ASSERT_EQ(file.getDuration(), 5);
+    EXPECT_EQ(file.getType(), AudioMedia);
+    EXPECT_EQ(file.getTitle(), "track1");
+    EXPECT_EQ(file.getAuthor(), "artist1");
+    EXPECT_EQ(file.getAlbum(), "album1");
+    EXPECT_EQ(file.getDate(), "2013");
+    EXPECT_EQ(file.getTrackNumber(), 1);
+    EXPECT_EQ(file.getDuration(), 5);
+}
 
+TEST_F(MetadataExtractorTest, extract_video) {
+    MetadataExtractor e;
+
+    MediaFile file = e.extract(SOURCE_DIR "/media/testvideo_480p.ogv");
+    EXPECT_EQ(file.getType(), VideoMedia);
+    EXPECT_EQ(file.getDuration(), 1);
+
+    file = e.extract(SOURCE_DIR "/media/testvideo_720p.ogv");
+    EXPECT_EQ(file.getType(), VideoMedia);
+    EXPECT_EQ(file.getDuration(), 1);
+
+    file = e.extract(SOURCE_DIR "/media/testvideo_1080p.ogv");
+    EXPECT_EQ(file.getType(), VideoMedia);
+    EXPECT_EQ(file.getDuration(), 1);
+}
+
+TEST_F(MetadataExtractorTest, extract_notmedia) {
+    MetadataExtractor e;
     string nomediafile = SOURCE_DIR "/CMakeLists.txt";
-    ASSERT_THROW(e.extract(nomediafile), runtime_error);
+    EXPECT_THROW(e.extract(nomediafile), runtime_error);
 }
 
 TEST_F(MetadataExtractorTest, detector) {
