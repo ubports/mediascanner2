@@ -82,7 +82,7 @@ void copy_file(const string &src, const string &dst) {
 
 TEST_F(ScanTest, index) {
     string subdir = TEST_DIR "/testdir";
-    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
     string outfile = subdir + "/testfile.ogg";
     clear_dir(subdir);
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
@@ -102,7 +102,7 @@ TEST_F(ScanTest, index) {
 
 TEST_F(ScanTest, extract) {
     MetadataExtractor e;
-    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
     MediaFile file = e.extract(testfile);
 
     ASSERT_EQ(file.getTitle(), "track1");
@@ -119,7 +119,7 @@ TEST_F(ScanTest, extract) {
 TEST_F(ScanTest, subdir) {
     string testdir = TEST_DIR "/testdir";
     string subdir = testdir + "/subdir";
-    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
     string outfile = subdir + "/testfile.ogg";
     clear_dir(testdir);
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
@@ -158,7 +158,7 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
 TEST_F(ScanTest, scan) {
     string dbname("scan-mediastore.db");
     string testdir = TEST_DIR "/testdir";
-    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
     string outfile = testdir + "/testfile.ogg";
     unlink(dbname.c_str());
     clear_dir(testdir);
@@ -179,7 +179,7 @@ TEST_F(ScanTest, scan) {
 
 TEST_F(ScanTest, detector) {
     FileTypeDetector d;
-    string testfile = SOURCE_DIR "/test/testfile.ogg";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
     string nomediafile = SOURCE_DIR "/CMakeLists.txt";
     ASSERT_EQ(d.detect(testfile), AudioMedia);
     ASSERT_EQ(d.detect("/a/non/existing/file"), UnknownMedia);
