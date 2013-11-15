@@ -4,3 +4,12 @@ build
 .settings
 buildopt
 buildcoverage
+./obj-*
+debian/files
+debian/libmediascanner-2.0-0
+debian/libmediascanner-dev
+debian/mediascanner
+debian/tmp
+debian/*.debhelper
+debian/*.log
+debian/*.substvars
