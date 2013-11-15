@@ -34,10 +34,19 @@ License: LGPL-3
 
 Files: src/mediascanner/mozilla/fts*
 Copyright: Public Domain
+License:
+ The author disclaims copyright to this source code.  In place of
+ a legal notice, here is a blessing:
+ .
+    May you do good and not evil.
+    May you find forgiveness for yourself and forgive others.
+    May you share freely, never taking more than you give.
+
+
 
 Files: src/mediascanner/mozilla/Normalize.c
 Copyright: Not stated
-Licence: MPL-2.0
+License: MPL-2.0
  This Source Code Form is subject to the terms of the Mozilla Public
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
