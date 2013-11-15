@@ -36,5 +36,5 @@ add_subdirectory(src/utils)
 add_subdirectory(test)
 
 configure_file(mediascanner-2.0.pc.in mediascanner-2.0.pc)
-install(FILES mediascanner-2.0.pc
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mediascanner-2.0.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
