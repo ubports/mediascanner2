@@ -64,6 +64,11 @@ TEST_F(MediaStoreTest, equality) {
     ASSERT_NE(audio2, video2);
 }
 
+TEST_F(MediaStoreTest, mediafile_uri) {
+    MediaFile media("/path/to/file.ogg");
+    ASSERT_EQ(media.getUri(), "file:///path/to/file.ogg");
+}
+
 TEST_F(MediaStoreTest, roundtrip) {
     MediaFile audio("aaa", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
     MediaFile video("aaa2", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", 0, 5, VideoMedia);

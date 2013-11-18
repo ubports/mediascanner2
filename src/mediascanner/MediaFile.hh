@@ -53,6 +53,8 @@ public:
     void setDuration(int duration) noexcept;
     void setType(MediaType type) noexcept;
 
+    std::string getUri() const;
+
 private:
     std::string filename;
     std::string title;

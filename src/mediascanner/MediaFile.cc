@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
+#include <glib.h>
 #include "MediaFile.hh"
 
 using namespace std;
@@ -30,6 +32,7 @@ MediaFile::MediaFile(std::string filename, std::string title, std::string date, 
 const std::string& MediaFile::getFileName() const noexcept {
     return filename;
 }
+
 const std::string& MediaFile::getTitle() const noexcept {
     return title;
 }
@@ -101,4 +104,18 @@ bool MediaFile::operator==(const MediaFile &other) const {
 
 bool MediaFile::operator!=(const MediaFile &other) const {
     return !(*this == other);
+}
+
+std::string MediaFile::getUri() const {
+    GError *error = NULL;
+    char *uristr = g_filename_to_uri(filename.c_str(), "", &error);
+    if (error) {
+        string msg("Could not build URI: ");
+        msg += error->message;
+        g_error_free(error);
+        throw runtime_error(msg);
+    }
+    string uri(uristr);
+    g_free(uristr);
+    return uri;
 }

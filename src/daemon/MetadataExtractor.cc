@@ -101,17 +101,8 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
     MediaFile mf(filename);
     mf.setType(media_type);
 
+    string uri = mf.getUri();
     GError *error = nullptr;
-    gchar *uristr = gst_filename_to_uri(filename.c_str(), &error);
-    if(error) {
-        string msg("Could not build URI: ");
-        msg += error->message;
-        g_error_free(error);
-        throw runtime_error(msg);
-    }
-    string uri(uristr);
-    g_free(uristr);
-
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
         gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
         g_object_unref);
