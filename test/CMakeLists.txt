@@ -20,8 +20,8 @@ endif()
 add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 include_directories(../src)
 
-add_definitions(-DTEST_DIR="${CMAKE_CURRENT_BINARY_DIR}")
-add_definitions(-DSOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+configure_file(test_config.h.in test_config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(basic basic.cc)
 target_link_libraries(basic mediascanner scannerstuff gtest)

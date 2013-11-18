@@ -21,6 +21,8 @@
 #include <daemon/FileTypeDetector.hh>
 #include <daemon/MetadataExtractor.hh>
 
+#include "test_config.h"
+
 #include<stdexcept>
 #include<cstdio>
 #include<string>

@@ -24,6 +24,8 @@
 #include <daemon/FileTypeDetector.hh>
 #include <daemon/Scanner.hh>
 
+#include "test_config.h"
+
 #include<stdexcept>
 #include<cstdio>
 #include<string>
