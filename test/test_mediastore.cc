@@ -83,6 +83,26 @@ TEST_F(MediaStoreTest, roundtrip) {
     ASSERT_EQ(result[0], video);
 }
 
+TEST_F(MediaStoreTest, query_by_album) {
+   MediaFile audio("/path/foo.ogg", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio);
+
+    vector<MediaFile> result = store.query("album", AudioMedia);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0], audio);
+ }
+
+TEST_F(MediaStoreTest, query_by_artist) {
+   MediaFile audio("/path/foo.ogg", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio);
+
+    vector<MediaFile> result = store.query("artist", AudioMedia);
+    ASSERT_EQ(result.size(), 1);
+    ASSERT_EQ(result[0], audio);
+ }
+
 TEST_F(MediaStoreTest, unmount) {
     MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", 1, 5, AudioMedia);
     MediaFile audio2("/home/username/Music/fname.ogg", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 42, 5, AudioMedia);
