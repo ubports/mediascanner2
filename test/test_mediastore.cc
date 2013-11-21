@@ -55,18 +55,18 @@ TEST_F(MediaStoreTest, equality) {
     MediaFile video1("a", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
     MediaFile video2("aa", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
 
-    ASSERT_EQ(audio1, audio1);
-    ASSERT_EQ(video1, video1);
+    EXPECT_EQ(audio1, audio1);
+    EXPECT_EQ(video1, video1);
 
-    ASSERT_NE(audio1, audio2);
-    ASSERT_NE(audio1, video1);
-    ASSERT_NE(audio2, video1);
-    ASSERT_NE(audio2, video2);
+    EXPECT_NE(audio1, audio2);
+    EXPECT_NE(audio1, video1);
+    EXPECT_NE(audio2, video1);
+    EXPECT_NE(audio2, video2);
 }
 
 TEST_F(MediaStoreTest, mediafile_uri) {
     MediaFile media("/path/to/file.ogg");
-    ASSERT_EQ(media.getUri(), "file:///path/to/file.ogg");
+    EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
 }
 
 TEST_F(MediaStoreTest, roundtrip) {
@@ -77,10 +77,10 @@ TEST_F(MediaStoreTest, roundtrip) {
     store.insert(video);
     vector<MediaFile> result = store.query("bbb", AudioMedia);
     ASSERT_EQ(result.size(), 1);
-    ASSERT_EQ(result[0], audio);
+    EXPECT_EQ(result[0], audio);
     result = store.query("bbb", VideoMedia);
     ASSERT_EQ(result.size(), 1);
-    ASSERT_EQ(result[0], video);
+    EXPECT_EQ(result[0], video);
 }
 
 TEST_F(MediaStoreTest, query_by_album) {
@@ -90,7 +90,7 @@ TEST_F(MediaStoreTest, query_by_album) {
 
     vector<MediaFile> result = store.query("album", AudioMedia);
     ASSERT_EQ(result.size(), 1);
-    ASSERT_EQ(result[0], audio);
+    EXPECT_EQ(result[0], audio);
  }
 
 TEST_F(MediaStoreTest, query_by_artist) {
@@ -100,8 +100,30 @@ TEST_F(MediaStoreTest, query_by_artist) {
 
     vector<MediaFile> result = store.query("artist", AudioMedia);
     ASSERT_EQ(result.size(), 1);
-    ASSERT_EQ(result[0], audio);
+    EXPECT_EQ(result[0], audio);
  }
+
+TEST_F(MediaStoreTest, query_ranking) {
+   MediaFile audio1("/path/foo1.ogg", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+   MediaFile audio2("/path/foo2.ogg", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+   MediaFile audio3("/path/foo3.ogg", "title", "1900-01-01", "artist aaa", "album", "albumartist", 3, 5, AudioMedia);
+   MediaFile audio4("/path/foo4.ogg", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
+   MediaFile audio5("/path/foo5.ogg", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
+
+   MediaStore store(":memory:", MS_READ_WRITE);
+   store.insert(audio1);
+   store.insert(audio2);
+   store.insert(audio3);
+   store.insert(audio4);
+   store.insert(audio5);
+
+    vector<MediaFile> result = store.query("aaa", AudioMedia);
+    ASSERT_EQ(result.size(), 4);
+    EXPECT_EQ(result[0], audio5); // Term appears in title, artist and album
+    EXPECT_EQ(result[1], audio2); // title has highest weighting
+    EXPECT_EQ(result[2], audio4); // then album
+    EXPECT_EQ(result[3], audio3); // then artist
+}
 
 TEST_F(MediaStoreTest, unmount) {
     MediaFile audio1("/media/username/dir/fname.ogg", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", 1, 5, AudioMedia);
@@ -115,7 +137,7 @@ TEST_F(MediaStoreTest, unmount) {
     store.archiveItems("/media/username");
     result = store.query("bbb", AudioMedia);
     ASSERT_EQ(result.size(), 1);
-    ASSERT_EQ(result[0], audio2);
+    EXPECT_EQ(result[0], audio2);
 
     store.restoreItems("/media/username");
     result = store.query("bbb", AudioMedia);
@@ -126,11 +148,11 @@ TEST_F(MediaStoreTest, utils) {
     string source("_a.b(c)[d]{e}f.mp3");
     string correct = {" a b c  d  e f"};
     string result = filenameToTitle(source);
-    ASSERT_EQ(correct, result);
+    EXPECT_EQ(correct, result);
 
     string unquoted(R"(It's a living.)");
     string quoted(R"('It''s a living.')");
-    ASSERT_EQ(sqlQuote(unquoted), quoted);
+    EXPECT_EQ(sqlQuote(unquoted), quoted);
 }
 
 TEST_F(MediaStoreTest, queryAlbums) {
