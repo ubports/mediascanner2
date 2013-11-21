@@ -24,9 +24,9 @@
 #include "sqliteutils.hh"
 #include"utils.hh"
 #include <sqlite3.h>
+#include <cstdint>
 #include <cstdio>
 #include <stdexcept>
-#include<cassert>
 
 using namespace std;
 
@@ -50,6 +50,65 @@ static void register_tokenizer(sqlite3 *db) {
     query.bind(2, &p, sizeof(p));
 
     query.step();
+}
+
+/* ranking function adapted from http://sqlite.org/fts3.html#appendix_a */
+static void rankfunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal) {
+    const int32_t *aMatchinfo;      /* Return value of matchinfo() */
+    int32_t nCol;                   /* Number of columns in the table */
+    int32_t nPhrase;                /* Number of phrases in the query */
+    int32_t iPhrase;                /* Current phrase */
+    double score = 0.0;             /* Value to return */
+
+    /* Check that the number of arguments passed to this function is correct.
+    ** If not, jump to wrong_number_args. Set aMatchinfo to point to the array
+    ** of unsigned integer values returned by FTS function matchinfo. Set
+    ** nPhrase to contain the number of reportable phrases in the users full-text
+    ** query, and nCol to the number of columns in the table.
+    */
+    if( nVal<1 ) goto wrong_number_args;
+    aMatchinfo = static_cast<const int32_t*>(sqlite3_value_blob(apVal[0]));
+    nPhrase = aMatchinfo[0];
+    nCol = aMatchinfo[1];
+    if( nVal!=(1+nCol) ) goto wrong_number_args;
+
+    /* Iterate through each phrase in the users query. */
+    for(iPhrase=0; iPhrase<nPhrase; iPhrase++){
+        int32_t iCol;                     /* Current column */
+
+        /* Now iterate through each column in the users query. For each column,
+        ** increment the relevancy score by:
+        **
+        **   (<hit count> / <global hit count>) * <column weight>
+        **
+        ** aPhraseinfo[] points to the start of the data for phrase iPhrase. So
+        ** the hit count and global hit counts for each column are found in 
+        ** aPhraseinfo[iCol*3] and aPhraseinfo[iCol*3+1], respectively.
+        */
+        const int32_t *aPhraseinfo = &aMatchinfo[2 + iPhrase*nCol*3];
+        for(iCol=0; iCol<nCol; iCol++){
+            int32_t nHitCount = aPhraseinfo[3*iCol];
+            int32_t nGlobalHitCount = aPhraseinfo[3*iCol+1];
+            double weight = sqlite3_value_double(apVal[iCol+1]);
+            if( nHitCount>0 ){
+                score += ((double)nHitCount / (double)nGlobalHitCount) * weight;
+            }
+        }
+    }
+
+    sqlite3_result_double(pCtx, score);
+    return;
+
+    /* Jump here if the wrong number of arguments are passed to this function */
+wrong_number_args:
+    sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
+}
+
+static void register_functions(sqlite3 *db) {
+    if (sqlite3_create_function(db, "rank", -1, SQLITE_ANY, NULL,
+                                rankfunc, NULL, NULL) != SQLITE_OK) {
+        throw runtime_error(sqlite3_errmsg(db));
+    }
 }
 
 static void execute_sql(sqlite3 *db, const string &cmd) {
@@ -142,6 +201,7 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
         throw runtime_error(sqlite3_errmsg(p->db));
     }
     register_tokenizer(p->db);
+    register_functions(p->db);
     int detectedSchemaVersion = getSchemaVersion(p->db);
     if(access == MS_READ_WRITE) {
         if(detectedSchemaVersion != schemaVersion) {
@@ -221,9 +281,13 @@ static vector<MediaFile> collect_media(Statement &query) {
 
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
     Statement query(p->db, R"(
-SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE title MATCH ?)
-AND type == ?
+SELECT filename, title, date, artist, album, album_artist, track_number, duration, type
+  FROM media JOIN (
+    SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
+      FROM media_fts WHERE media_fts MATCH ?
+    ) AS ranktable ON (media.rowid = ranktable.docid)
+  WHERE type == ?
+  ORDER BY ranktable.rank DESC
 )");
     query.bind(1, core_term + "*");
     query.bind(2, (int)type);
