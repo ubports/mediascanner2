@@ -17,16 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cerrno>
+#include <cstdint>
+#include <cstring>
+#include <stdexcept>
+
+#include <glib.h>
+#include <sqlite3.h>
+
 #include "mozilla/fts3_tokenizer.h"
 #include"MediaStore.hh"
 #include"MediaFile.hh"
 #include "Album.hh"
 #include "sqliteutils.hh"
 #include"utils.hh"
-#include <sqlite3.h>
-#include <cstdint>
-#include <cstdio>
-#include <stdexcept>
 
 using namespace std;
 
@@ -192,6 +198,29 @@ END;
     Statement version(db, "INSERT INTO schemaVersion (version) VALUES (?)");
     version.bind(1, schemaVersion);
     version.step();
+}
+
+static std::string get_default_database() {
+    std::string cachedir;
+
+    char *env_cachedir = getenv("MEDIASCANNER_CACHEDIR");
+    if (env_cachedir) {
+        cachedir = env_cachedir;
+    } else {
+        cachedir = g_get_user_cache_dir();
+        cachedir += "/mediascanner-test";
+    }
+    if (g_mkdir_with_parents(cachedir.c_str(), S_IRWXU) < 0) {
+        std::string msg("Could not create cache dir: ");
+        msg += strerror(errno);
+        throw runtime_error(msg);
+    }
+    return cachedir + "/mediastore.db";
+}
+
+MediaStore::MediaStore(OpenType access, const std::string &retireprefix)
+    : MediaStore(get_default_database(), access, retireprefix)
+{
 }
 
 MediaStore::MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix) {

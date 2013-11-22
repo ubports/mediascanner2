@@ -38,6 +38,7 @@ private:
     MediaStorePrivate *p;
 
 public:
+    MediaStore(OpenType access, const std::string &retireprefix="");
     MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix="");
     MediaStore(const MediaStore &other) = delete;
     MediaStore operator=(const MediaStore &other) = delete;
