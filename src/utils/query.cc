@@ -27,8 +27,8 @@
 
 using namespace std;
 
-void queryDb(const string &db_file, const string &core_term) {
-    MediaStore store(db_file, MS_READ_ONLY);
+void queryDb(const string &core_term) {
+    MediaStore store(MS_READ_ONLY);
     vector<MediaFile> results;
     results = store.query(core_term, AudioMedia);
     if(results.empty()) {
@@ -52,11 +52,10 @@ void queryDb(const string &db_file, const string &core_term) {
 }
 
 int main(int argc, char **argv) {
-    if(argc < 3) {
-        printf("%s <db file> <term>\n", argv[0]);
+    if(argc < 2) {
+        printf("%s <term>\n", argv[0]);
         return 1;
     }
-    string db_file(argv[1]);
-    string core_term(argv[2]);
-    queryDb(db_file, core_term);
+    string core_term(argv[1]);
+    queryDb(core_term);
 }
