@@ -17,23 +17,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include<sys/select.h>
+#include<sys/stat.h>
+#include<sys/inotify.h>
+#include<unistd.h>
+#include<cstdio>
+#include<cerrno>
+#include<cstring>
+#include<map>
+#include<memory>
+#include<cassert>
+
+#include<glib.h>
+#include<gst/gst.h>
+
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
-
-#include<cstdio>
-#include<gst/gst.h>
-#include<sys/select.h>
-#include<sys/stat.h>
-#include<sys/inotify.h>
-#include<cerrno>
-#include<cstring>
-#include<unistd.h>
-#include<map>
-#include<memory>
-#include<cassert>
 
 using namespace std;
 
@@ -61,32 +63,20 @@ private:
 };
 
 ScannerDaemon::ScannerDaemon() {
-    string homedir = "/home/";
-    homedir += getlogin();
-    string musicdir = homedir + "/Music";
-    string videodir = homedir + "/Videos";
-    char *env_cachedir = getenv("MEDIASCANNER_CACHEDIR");
-    if(env_cachedir) {
-        cachedir = env_cachedir;
-    } else {
-        cachedir = homedir + "/.cache/mediascanner-test";
-    }
-    int ec;
-    errno = 0;
-    ec = mkdir(cachedir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
-    if(ec < 0 && errno != EEXIST) {
-        string msg("Could not create cache dir: ");
-        msg += strerror(errno);
-        throw runtime_error(msg);
-    }
     mountDir = string("/media/") + getlogin();
-    unique_ptr<MediaStore> tmp(new MediaStore(cachedir + "/mediastore.db", MS_READ_WRITE, "/media/"));
+    unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
     setupMountWatcher();
     addMountedVolumes();
-    addDir(musicdir);
-    addDir(videodir);
+
+    const char *musicdir = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
+    if (musicdir)
+        addDir(musicdir);
+
+    const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
+    if (videodir)
+        addDir(videodir);
 }
 
 ScannerDaemon::~ScannerDaemon() {
