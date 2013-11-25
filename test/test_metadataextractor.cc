@@ -50,6 +50,30 @@ TEST_F(MetadataExtractorTest, init) {
     MetadataExtractor extractor;
 }
 
+TEST_F(MetadataExtractorTest, detect_audio) {
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+    MediaFile media = e.detect(testfile);
+    EXPECT_EQ(media.getType(), AudioMedia);
+    EXPECT_EQ(media.getContentType(), "audio/ogg");
+    EXPECT_NE(media.getETag(), "");
+}
+
+TEST_F(MetadataExtractorTest, detect_video) {
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/testvideo_480p.ogv";
+    MediaFile media = e.detect(testfile);
+    EXPECT_EQ(media.getType(), VideoMedia);
+    EXPECT_EQ(media.getContentType(), "video/ogg");
+    EXPECT_NE(media.getETag(), "");
+}
+
+TEST_F(MetadataExtractorTest, detect_notmedia) {
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/CMakeLists.txt";
+    EXPECT_THROW(e.detect(testfile), runtime_error);
+}
+
 TEST_F(MetadataExtractorTest, extract) {
     MetadataExtractor e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
@@ -84,15 +108,6 @@ TEST_F(MetadataExtractorTest, extract_notmedia) {
     MetadataExtractor e;
     string nomediafile = SOURCE_DIR "/CMakeLists.txt";
     EXPECT_THROW(e.extract(nomediafile), runtime_error);
-}
-
-TEST_F(MetadataExtractorTest, detector) {
-    FileTypeDetector d;
-    string testfile = SOURCE_DIR "/media/testfile.ogg";
-    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
-    ASSERT_EQ(d.detect(testfile), AudioMedia);
-    ASSERT_EQ(d.detect("/a/non/existing/file"), UnknownMedia);
-    ASSERT_EQ(d.detect(nomediafile), UnknownMedia);
 }
 
 int main(int argc, char **argv) {

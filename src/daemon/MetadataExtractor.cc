@@ -56,7 +56,7 @@ MetadataExtractor::~MetadataExtractor() {
     delete p;
 }
 
-MediaFile MetadataExtractor::stat(const std::string &filename) {
+MediaFile MetadataExtractor::detect(const std::string &filename) {
     std::unique_ptr<GFile, void(*)(void *)> file(
         g_file_new_for_path(filename.c_str()), g_object_unref);
     if (!file) {
@@ -67,7 +67,7 @@ MediaFile MetadataExtractor::stat(const std::string &filename) {
     std::unique_ptr<GFileInfo, void(*)(void *)> info(
         g_file_query_info(
             file.get(),
-            G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
+            G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
             G_FILE_ATTRIBUTE_ETAG_VALUE,
             G_FILE_QUERY_INFO_NONE, /* cancellable */ NULL, &error),
         g_object_unref);
@@ -82,7 +82,8 @@ MediaFile MetadataExtractor::stat(const std::string &filename) {
         throw runtime_error(msg);
     }
 
-    string content_type(g_file_info_get_content_type(info.get()));
+    string content_type(g_file_info_get_attribute_string(
+        info.get(), G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE));
     string etag(g_file_info_get_etag(info.get()));
     if (content_type.empty()) {
         throw runtime_error("Could not determine content type.");
@@ -139,7 +140,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 }
 
 MediaFile MetadataExtractor::extract(const std::string &filename) {
-    MediaFile mf = stat(filename);
+    MediaFile mf = detect(filename);
 
     string uri = mf.getUri();
     GError *error = nullptr;
