@@ -26,13 +26,15 @@
 class MediaFile final {
 public:
 
-    MediaFile(std::string filename) : filename(filename), title(""), date(""), author(""),
+    MediaFile(std::string filename) : filename(filename), content_type(""), etag(""), title(""), date(""), author(""),
         album(""), album_artist(""), track_number(0), duration(0), type(UnknownMedia) {}
     MediaFile(std::string filename, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
               int track_number, int duration, MediaType type);
     MediaFile() = delete;
 
     const std::string& getFileName() const noexcept;
+    const std::string& getContentType() const noexcept;
+    const std::string& getETag() const noexcept;
     const std::string& getTitle() const noexcept;
     const std::string& getAuthor() const noexcept;
     const std::string& getAlbum() const noexcept;
@@ -44,6 +46,8 @@ public:
     bool operator==(const MediaFile &other) const;
     bool operator!=(const MediaFile &other) const;
 
+    void setContentType(const std::string& content_type) noexcept;
+    void setETag(const std::string& etag) noexcept;
     void setTitle(const std::string& title) noexcept;
     void setAuthor(const std::string& author) noexcept;
     void setAlbum(const std::string& album) noexcept;
@@ -57,6 +61,8 @@ public:
 
 private:
     std::string filename;
+    std::string content_type;
+    std::string etag;
     std::string title;
     std::string date; // ISO date string.  Should this be time since epoch?
     std::string author;
