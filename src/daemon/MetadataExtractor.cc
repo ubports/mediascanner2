@@ -19,10 +19,11 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "MetadataExtractor.hh"
-#include "FileTypeDetector.hh"
 
-#include<gst/gst.h>
-#include<gst/pbutils/pbutils.h>
+#include <glib-object.h>
+#include <gio/gio.h>
+#include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
 
 #include<cstdio>
 #include<string>
@@ -53,6 +54,52 @@ MetadataExtractor::MetadataExtractor(int seconds) {
 
 MetadataExtractor::~MetadataExtractor() {
     delete p;
+}
+
+MediaFile MetadataExtractor::stat(const std::string &filename) {
+    std::unique_ptr<GFile, void(*)(void *)> file(
+        g_file_new_for_path(filename.c_str()), g_object_unref);
+    if (!file) {
+        throw runtime_error("Could not create file object");
+    }
+
+    GError *error = nullptr;
+    std::unique_ptr<GFileInfo, void(*)(void *)> info(
+        g_file_query_info(
+            file.get(),
+            G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE ","
+            G_FILE_ATTRIBUTE_ETAG_VALUE,
+            G_FILE_QUERY_INFO_NONE, /* cancellable */ NULL, &error),
+        g_object_unref);
+    if (!info) {
+        string errortxt(error->message);
+        g_error_free(error);
+
+        string msg("Query of file info for ");
+        msg += filename;
+        msg += " failed: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
+
+    string content_type(g_file_info_get_content_type(info.get()));
+    string etag(g_file_info_get_etag(info.get()));
+    if (content_type.empty()) {
+        throw runtime_error("Could not determine content type.");
+    }
+
+    MediaFile mf(filename);
+    if (content_type.find("audio/") == 0) {
+        mf.setType(AudioMedia);
+    } else if (content_type.find("video/") == 0) {
+        mf.setType(VideoMedia);
+    } else {
+        throw runtime_error(string("File ") + filename + " is not audio or video");
+    }
+    mf.setContentType(content_type);
+    mf.setETag(etag);
+
+    return mf;
 }
 
 static void
@@ -92,14 +139,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 }
 
 MediaFile MetadataExtractor::extract(const std::string &filename) {
-    FileTypeDetector d;
-    MediaType media_type = d.detect(filename);
-    if (media_type == UnknownMedia) {
-        throw runtime_error("Tried to create an invalid media type.");
-    }
-
-    MediaFile mf(filename);
-    mf.setType(media_type);
+    MediaFile mf = stat(filename);
 
     string uri = mf.getUri();
     GError *error = nullptr;
