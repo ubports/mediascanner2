@@ -21,7 +21,6 @@
 #include <mediascanner/MediaStore.hh>
 #include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
-#include <daemon/FileTypeDetector.hh>
 #include <daemon/Scanner.hh>
 
 #include "test_config.h"
