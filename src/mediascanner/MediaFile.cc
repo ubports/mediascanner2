@@ -23,9 +23,9 @@
 
 using namespace std;
 
-MediaFile::MediaFile(std::string filename, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
+MediaFile::MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
         int track_number, int duration, MediaType type) :
-    filename(filename), content_type(""), etag(""), title(title), date(date), author(author), album(album), album_artist(album_artist), track_number(track_number), duration(duration), type(type) {
+    filename(filename), content_type(content_type), etag(etag), title(title), date(date), author(author), album(album), album_artist(album_artist), track_number(track_number), duration(duration), type(type) {
 
 }
 

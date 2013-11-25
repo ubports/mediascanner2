@@ -38,7 +38,7 @@ using namespace std;
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 2;
+static const int schemaVersion = 3;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -150,6 +150,8 @@ CREATE TABLE schemaVersion (version INTEGER);
 
 CREATE TABLE media (
     filename TEXT PRIMARY KEY NOT NULL,
+    content_type TEXT,
+    etag TEXT,
     title TEXT,
     date TEXT,
     artist TEXT,       -- Only relevant to audio
@@ -164,6 +166,8 @@ CREATE INDEX media_album_album_artist_idx ON media(album, album_artist);
 
 CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
+    content_type TEXT,
+    etag TEXT,
     title TEXT,
     date TEXT,
     artist TEXT,    -- Only relevant to audio
@@ -258,23 +262,25 @@ size_t MediaStore::size() const {
 }
 
 void MediaStore::insert(const MediaFile &m) {
-    Statement query(p->db, "INSERT OR REPLACE INTO media (filename, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    Statement query(p->db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     string fname = m.getFileName();
     string title = m.getTitle();
     if(title.empty())
         title = filenameToTitle(fname);
     query.bind(1, fname);
-    query.bind(2, title);
-    query.bind(3, m.getDate());
-    query.bind(4, m.getAuthor());
-    query.bind(5, m.getAlbum());
+    query.bind(2, m.getContentType());
+    query.bind(3, m.getETag());
+    query.bind(4, title);
+    query.bind(5, m.getDate());
+    query.bind(6, m.getAuthor());
+    query.bind(7, m.getAlbum());
     string album_artist = m.getAlbumArtist();
     if (album_artist.empty())
         album_artist = m.getAuthor();
-    query.bind(6, album_artist);
-    query.bind(7, m.getTrackNumber());
-    query.bind(8, m.getDuration());
-    query.bind(9, (int)m.getType());
+    query.bind(8, album_artist);
+    query.bind(9, m.getTrackNumber());
+    query.bind(10, m.getDuration());
+    query.bind(11, (int)m.getType());
     query.step();
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -295,22 +301,24 @@ static vector<MediaFile> collect_media(Statement &query) {
     vector<MediaFile> result;
     while (query.step()) {
         const string filename = query.getText(0);
-        const string title = query.getText(1);
-        const string date = query.getText(2);
-        const string author = query.getText(3);
-        const string album = query.getText(4);
-        const string album_artist = query.getText(5);
-        int track_number = query.getInt(6);
-        int duration = query.getInt(7);
-        MediaType type = (MediaType)query.getInt(8);
-        result.push_back(MediaFile(filename, title, date, author, album, album_artist, track_number, duration, type));
+        const string content_type = query.getText(1);
+        const string etag = query.getText(2);
+        const string title = query.getText(3);
+        const string date = query.getText(4);
+        const string author = query.getText(5);
+        const string album = query.getText(6);
+        const string album_artist = query.getText(7);
+        int track_number = query.getInt(8);
+        int duration = query.getInt(9);
+        MediaType type = (MediaType)query.getInt(10);
+        result.push_back(MediaFile(filename, content_type, etag, title, date, author, album, album_artist, track_number, duration, type));
     }
     return result;
 }
 
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
     Statement query(p->db, R"(
-SELECT filename, title, date, artist, album, album_artist, track_number, duration, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
@@ -343,7 +351,7 @@ GROUP BY album, album_artist
 
 vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) {
     Statement query(p->db, R"(
-SELECT filename, title, date, artist, album, album_artist, track_number, duration, type FROM media
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
 ORDER BY track_number
 )");
