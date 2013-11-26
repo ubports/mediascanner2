@@ -204,6 +204,16 @@ TEST_F(MediaStoreTest, getAlbumSongs) {
     EXPECT_EQ(tracks[2].getTitle(), "TitleThree");
 }
 
+TEST_F(MediaStoreTest, getETag) {
+    MediaFile file("/path/file.ogg", "audio/ogg", "etag", "title", "2013", "artist", "album", "artist", 1, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(file);
+
+    EXPECT_EQ(store.getETag("/path/file.ogg"), "etag");
+    EXPECT_EQ(store.getETag("/something-else.mp3"), "");
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

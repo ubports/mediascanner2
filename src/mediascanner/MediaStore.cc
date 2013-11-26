@@ -363,6 +363,19 @@ ORDER BY track_number
     return collect_media(query);
 }
 
+std::string MediaStore::getETag(const std::string &filename) {
+    Statement query(p->db, R"(
+SELECT etag FROM media WHERE filename = ?
+)");
+    query.bind(1, filename);
+    if (query.step()) {
+        return query.getText(0);
+    } else {
+        return "";
+    }
+}
+
+
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
     Statement query(p->db, "SELECT filename FROM media");
