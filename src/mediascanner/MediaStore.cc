@@ -137,7 +137,9 @@ static int getSchemaVersion(sqlite3 *db) {
 }
 
 void deleteTables(sqlite3 *db) {
-    string deleteCmd(R"(DROP TABLE IF EXISTS media;
+    string deleteCmd(R"(
+DROP TABLE IF EXISTS media;
+DROP TABLE IF EXISTS media_fts;
 DROP TABLE IF EXISTS media_attic;
 DROP TABLE IF EXISTS schemaVersion;
 )");
