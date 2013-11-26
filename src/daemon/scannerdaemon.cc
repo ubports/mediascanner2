@@ -108,7 +108,8 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
     vector<MediaFile> files = s.scanFiles(extractor.get(), subdir, type);
     for(auto &media : files) {
         try {
-            store.insert(extractor->extract(media.getFileName()));
+            extractor->extract(media);
+            store.insert(media);
         } catch(const exception &e) {
             fprintf(stderr, "Error when indexing: %s\n", e.what());
         }

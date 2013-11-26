@@ -76,7 +76,8 @@ TEST_F(MetadataExtractorTest, detect_notmedia) {
 TEST_F(MetadataExtractorTest, extract) {
     MetadataExtractor e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
-    MediaFile file = e.extract(testfile);
+    MediaFile file = e.detect(testfile);
+    e.extract(file);
 
     EXPECT_EQ(file.getType(), AudioMedia);
     EXPECT_EQ(file.getTitle(), "track1");
@@ -90,23 +91,20 @@ TEST_F(MetadataExtractorTest, extract) {
 TEST_F(MetadataExtractorTest, extract_video) {
     MetadataExtractor e;
 
-    MediaFile file = e.extract(SOURCE_DIR "/media/testvideo_480p.ogv");
+    MediaFile file = e.detect(SOURCE_DIR "/media/testvideo_480p.ogv");
+    e.extract(file);
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
 
-    file = e.extract(SOURCE_DIR "/media/testvideo_720p.ogv");
+    file = e.detect(SOURCE_DIR "/media/testvideo_720p.ogv");
+    e.extract(file);
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
 
-    file = e.extract(SOURCE_DIR "/media/testvideo_1080p.ogv");
+    file = e.detect(SOURCE_DIR "/media/testvideo_1080p.ogv");
+    e.extract(file);
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
-}
-
-TEST_F(MetadataExtractorTest, extract_notmedia) {
-    MetadataExtractor e;
-    string nomediafile = SOURCE_DIR "/CMakeLists.txt";
-    EXPECT_THROW(e.extract(nomediafile), runtime_error);
 }
 
 int main(int argc, char **argv) {

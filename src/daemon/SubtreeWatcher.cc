@@ -127,7 +127,8 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
     try {
-        MediaFile m = p->extractor.extract(abspath);
+        MediaFile m = p->extractor.detect(abspath);
+        p->extractor.extract(m);
         p->store.insert(m);
     } catch(const exception &e) {
         fprintf(stderr, "Error when adding new file: %s\n", e.what());

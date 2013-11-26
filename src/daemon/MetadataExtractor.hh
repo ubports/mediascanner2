@@ -33,7 +33,7 @@ public:
     MetadataExtractor& operator=(MetadataExtractor &o) = delete;
 
     MediaFile detect(const std::string &filename);
-    MediaFile extract(const std::string &filename);
+    void extract(MediaFile &media);
 
 private:
     MetadataExtractorPrivate *p;

@@ -136,7 +136,8 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     MetadataExtractor extractor;
     vector<MediaFile> files = s.scanFiles(&extractor, subdir, type);
     for(auto &media : files) {
-        store.insert(extractor.extract(media.getFileName()));
+        extractor.extract(media);
+        store.insert(media);
     }
 }
 

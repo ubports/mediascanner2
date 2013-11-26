@@ -139,9 +139,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-MediaFile MetadataExtractor::extract(const std::string &filename) {
-    MediaFile mf = detect(filename);
-
+void MetadataExtractor::extract(MediaFile &mf) {
     string uri = mf.getUri();
     GError *error = nullptr;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
@@ -152,14 +150,14 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
         g_error_free(error);
 
         string msg = "Discovery of file ";
-        msg += filename;
+        msg += mf.getFileName();
         msg += " failed: ";
         msg += errortxt;
         throw runtime_error(msg);
     }
 
     if (gst_discoverer_info_get_result(info.get()) != GST_DISCOVERER_OK) {
-        throw runtime_error("Unable to discover file " + filename);
+        throw runtime_error("Unable to discover file " + mf.getFileName());
     }
 
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
@@ -168,6 +166,4 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
     }
     mf.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
-
-    return mf;
 }
