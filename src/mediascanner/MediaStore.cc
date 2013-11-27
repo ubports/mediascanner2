@@ -381,10 +381,7 @@ void MediaStore::pruneDeleted() {
     Statement query(p->db, "SELECT filename FROM media");
     while (query.step()) {
         const string filename = query.getText(0);
-        FILE *f = fopen(filename.c_str(), "r");
-        if(f) {
-            fclose(f);
-        } else {
+        if (access(filename.c_str(), F_OK) != 0) {
             deleted.push_back(filename);
         }
     }
