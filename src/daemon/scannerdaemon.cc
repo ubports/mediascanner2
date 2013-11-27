@@ -107,6 +107,9 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
     Scanner s;
     vector<MediaFile> files = s.scanFiles(extractor.get(), subdir, type);
     for(auto &media : files) {
+        // If the file is unchanged, skip it.
+        if (media.getETag() == store.getETag(media.getFileName()))
+            continue;
         try {
             extractor->extract(media);
             store.insert(media);
