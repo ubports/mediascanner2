@@ -1,5 +1,6 @@
 add_library(mediascanner SHARED
   MediaFile.cc
+  MediaFileBuilder.cc
   Album.cc
   MediaStore.cc
   utils.cc
