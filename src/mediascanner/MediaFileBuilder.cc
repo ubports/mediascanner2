@@ -35,7 +35,16 @@ MediaFile MediaFileBuilder::build() const {
         throw std::invalid_argument("Date is not set in builder.");
     if(!author_set)
         throw std::invalid_argument("Author is not set in builder.");
-    return MediaFile("dummy");
+    if(!album_set)
+        throw std::invalid_argument("Album is not set in builder.");
+    if(!album_artist_set)
+        throw std::invalid_argument("Album artist is not set in builder.");
+    if(!track_number_set)
+        throw std::invalid_argument("Track number is not set in builder.");
+    if(!duration_set)
+        throw std::invalid_argument("Duration is not set in builder.");
+    return MediaFile(filename, title, date, author, album, album_artist,
+            track_number, duration, type);
 }
 
 void MediaFileBuilder::setType(MediaType t) {
@@ -71,4 +80,32 @@ void MediaFileBuilder::setAuthor(const std::string &a) {
         throw std::invalid_argument("Tried to set author when it was already set.");
     author = a;
     author_set = true;
+}
+
+void MediaFileBuilder::setAlbum(const std::string &a) {
+    if(album_set)
+        throw std::invalid_argument("Tried to set album when it was already set.");
+    album = a;
+    album_set = true;
+}
+
+void MediaFileBuilder::setAlbumArtist(const std::string &a) {
+    if(album_artist_set)
+        throw std::invalid_argument("Tried to set album artist when it was already set.");
+    album_artist = a;
+    album_artist_set = true;
+}
+
+void MediaFileBuilder::setTrackNumber(int n) {
+    if(track_number_set)
+        throw std::invalid_argument("Tried to set track number when it was already set.");
+    track_number = n;
+    track_number_set = true;
+}
+
+void MediaFileBuilder::setDuration(int n) {
+    if(duration_set)
+        throw std::invalid_argument("Tried to set duration when it was already set.");
+    duration = n;
+    duration_set = true;
 }

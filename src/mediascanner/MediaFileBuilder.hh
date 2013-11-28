@@ -38,6 +38,10 @@ public:
     void setTitle(const std::string &t);
     void setDate(const std::string &d);
     void setAuthor(const std::string &a);
+    void setAlbum(const std::string &a);
+    void setAlbumArtist(const std::string &a);
+    void setTrackNumber(int n);
+    void setDuration(int d);
 
 private:
     bool type_set = false;
@@ -54,6 +58,18 @@ private:
 
     bool author_set = false;
     std::string author;
+
+    bool album_set = false;
+    std::string album;
+
+    bool album_artist_set = false;
+    std::string album_artist;
+
+    int track_number = 0;
+    bool track_number_set = false;
+
+    int duration = 0;
+    bool duration_set = false;
 };
 
 

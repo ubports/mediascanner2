@@ -45,6 +45,10 @@ TEST_F(MFBTest, basic) {
     std::string title("def");
     std::string date("ghi");
     std::string author("jkl");
+    std::string album("mno");
+    std::string album_artist("pqr");
+    int track_number = 13;
+    int duration = 99;
 
     b.setType(type);
     ASSERT_THROW(b.setType(type), std::invalid_argument);
@@ -64,8 +68,34 @@ TEST_F(MFBTest, basic) {
 
     b.setAuthor(author);
     ASSERT_THROW(b.setAuthor(author), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
 
-    //    ASSERT_THROW(b.build(), std::invalid_argument);
+    b.setAlbum(album);
+    ASSERT_THROW(b.setAlbum(album), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setAlbumArtist(album_artist);
+    ASSERT_THROW(b.setAlbumArtist(album_artist), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setTrackNumber(track_number);
+    ASSERT_THROW(b.setTrackNumber(track_number), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setDuration(duration);
+    ASSERT_THROW(b.setDuration(duration), std::invalid_argument);
+
+    // Now see if data survives a round trip.
+    MediaFile mf = b.build();
+    ASSERT_EQ(mf.getType(), type);
+    ASSERT_EQ(mf.getFileName(), fname);
+    ASSERT_EQ(mf.getTitle(), title);
+    ASSERT_EQ(mf.getDate(), date);
+    ASSERT_EQ(mf.getAuthor(), author);
+    ASSERT_EQ(mf.getAlbum(), album);
+    ASSERT_EQ(mf.getAlbumArtist(), album_artist);
+    ASSERT_EQ(mf.getTrackNumber(), track_number);
+    ASSERT_EQ(mf.getDuration(), duration);
 }
 
 int main(int argc, char **argv) {
