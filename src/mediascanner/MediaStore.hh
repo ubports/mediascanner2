@@ -46,9 +46,11 @@ public:
 
     void insert(const MediaFile &m);
     void remove(const std::string &fname);
+    MediaFile lookup(const std::string &filename);
     std::vector<MediaFile> query(const std::string &q, MediaType type);
     std::vector<Album> queryAlbums(const std::string &core_term);
     std::vector<MediaFile> getAlbumSongs(const Album& album);
+    std::string getETag(const std::string &filename);
     size_t size() const;
     void pruneDeleted();
     void archiveItems(const std::string &prefix);

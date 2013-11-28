@@ -24,9 +24,23 @@
 MediaFileBuilder::MediaFileBuilder() {
 }
 
+MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) {
+    type = mf.getType();
+    filename = mf.getFileName();
+    content_type = mf.getContentType();
+    etag = mf.getETag();
+    title = mf.getTitle();
+    date = mf.getDate();
+    author = mf.getAuthor();
+    album = mf.getAlbum();
+    album_artist = mf.getAlbumArtist();
+    track_number = mf.getTrackNumber();
+    duration = mf.getDuration();
+}
+
 MediaFile MediaFileBuilder::build() const {
-    return MediaFile(filename, title, date, author, album, album_artist,
-            track_number, duration, type);
+    return MediaFile(filename, content_type, etag, title, date, author,
+            album, album_artist, track_number, duration, type);
 }
 
 void MediaFileBuilder::setType(MediaType t) {
@@ -41,6 +55,21 @@ void MediaFileBuilder::setFilename(const std::string &fname) {
         throw std::invalid_argument("Tried to set filename when it was already set.");
     filename = fname;
     filename_set = true;
+}
+
+void MediaFileBuilder::setEtag(const std::string &e) {
+    if(etag_set)
+        throw std::invalid_argument("Tried to set filename when it was already set.");
+    etag = e;
+    etag_set = true;
+
+}
+void MediaFileBuilder::setContentType(const std::string &c) {
+    if(content_type_set)
+        throw std::invalid_argument("Tried to set filename when it was already set.");
+    content_type = c;
+    content_type_set = true;
+
 }
 
 void MediaFileBuilder::setTitle(const std::string &t) {

@@ -31,8 +31,8 @@
  *
  * If you try to assign the same property twice, an exception is thrown.
  * This means that MediaFileBuilders are meant to build only one
- * MediaFile. To build a new one create a new MediaFileBuilder. This
- * ensures that no state leaks from the first MediaFile to the second.
+ * MediaFile. To build a new one create a new MediaFileBuilder. This is to
+ * ensure that no state leaks from the first MediaFile to the second.
  */
 
 class MFBTest : public ::testing::Test {

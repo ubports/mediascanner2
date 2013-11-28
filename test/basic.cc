@@ -18,10 +18,10 @@
  */
 
 #include <mediascanner/MediaFile.hh>
+#include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/MediaStore.hh>
 #include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
-#include <daemon/FileTypeDetector.hh>
 #include <daemon/Scanner.hh>
 
 #include "test_config.h"
@@ -135,9 +135,12 @@ TEST_F(ScanTest, subdir) {
 void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
     MetadataExtractor extractor;
-    vector<string> files = s.scanFiles(subdir, type);
-    for(auto &i : files) {
-        store.insert(extractor.extract(i));
+    vector<DetectedFile> files = s.scanFiles(&extractor, subdir, type);
+    for(auto &d : files) {
+        // If the file is unchanged, skip it.
+        if (d.etag == store.getETag(d.filename))
+            continue;
+        store.insert(extractor.extract(d));
     }
 }
 
@@ -161,6 +164,40 @@ TEST_F(ScanTest, scan) {
     ASSERT_EQ(store->size(), 0);
     delete store;
 
+}
+
+TEST_F(ScanTest, scan_skips_unchanged_files) {
+    string testdir = TEST_DIR "/testdir";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+    string outfile = testdir + "/testfile.ogg";
+    clear_dir(testdir);
+    ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
+    copy_file(testfile, outfile);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    scanFiles(store, testdir, AudioMedia);
+    ASSERT_EQ(store.size(), 1);
+
+    /* Modify the metadata for this file in the database */
+    MediaFile media = store.lookup(outfile);
+    EXPECT_NE(media.getETag(), "");
+    EXPECT_EQ(media.getTitle(), "track1");
+    MediaFileBuilder mfb(media);
+    mfb.setTitle("something else");
+    store.insert(mfb.build());
+
+    /* Scan again, and note that the data hasn't been updated */
+    scanFiles(store, testdir, AudioMedia);
+    media = store.lookup(outfile);
+    EXPECT_EQ(media.getTitle(), "something else");
+
+    /* Now change the stored etag, to trigger an update */
+    MediaFileBuilder mfb2(media);
+    mfb2.setEtag("old-etag");
+    store.insert(mfb2.build());
+    scanFiles(store, testdir, AudioMedia);
+    media = store.lookup(outfile);
+    EXPECT_EQ(media.getTitle(), "track1");
 }
 
 int main(int argc, char **argv) {

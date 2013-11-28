@@ -20,10 +20,11 @@
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
 #include "MetadataExtractor.hh"
-#include "FileTypeDetector.hh"
 
-#include<gst/gst.h>
-#include<gst/pbutils/pbutils.h>
+#include <glib-object.h>
+#include <gio/gio.h>
+#include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
 
 #include<cstdio>
 #include<string>
@@ -71,6 +72,50 @@ MetadataExtractor::~MetadataExtractor() {
     delete p;
 }
 
+DetectedFile MetadataExtractor::detect(const std::string &filename) {
+    std::unique_ptr<GFile, void(*)(void *)> file(
+        g_file_new_for_path(filename.c_str()), g_object_unref);
+    if (!file) {
+        throw runtime_error("Could not create file object");
+    }
+
+    GError *error = nullptr;
+    std::unique_ptr<GFileInfo, void(*)(void *)> info(
+        g_file_query_info(
+            file.get(),
+            G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
+            G_FILE_ATTRIBUTE_ETAG_VALUE,
+            G_FILE_QUERY_INFO_NONE, /* cancellable */ NULL, &error),
+        g_object_unref);
+    if (!info) {
+        string errortxt(error->message);
+        g_error_free(error);
+
+        string msg("Query of file info for ");
+        msg += filename;
+        msg += " failed: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
+
+    string etag(g_file_info_get_etag(info.get()));
+    string content_type(g_file_info_get_attribute_string(
+        info.get(), G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE));
+    if (content_type.empty()) {
+        throw runtime_error("Could not determine content type.");
+    }
+
+    MediaType type;
+    if (content_type.find("audio/") == 0) {
+        type = AudioMedia;
+    } else if (content_type.find("video/") == 0) {
+        type = VideoMedia;
+    } else {
+        throw runtime_error(string("File ") + filename + " is not audio or video");
+    }
+    return DetectedFile(filename, etag, content_type, type);
+}
+
 static void
 extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data) {
     MediaFileBuilder *mfb = (MediaFileBuilder *) user_data;
@@ -107,18 +152,14 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-MediaFile MetadataExtractor::extract(const std::string &filename) {
-    FileTypeDetector d;
-    MediaType media_type = d.detect(filename);
-    if (media_type == UnknownMedia) {
-        throw runtime_error("Tried to create an invalid media type.");
-    }
-
+MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     MediaFileBuilder mfb;
-    mfb.setFilename(filename);
-    mfb.setType(media_type);
+    mfb.setFilename(d.filename);
+    mfb.setEtag(d.etag);
+    mfb.setContentType(d.content_type);
+    mfb.setType(d.type);
+    string uri = getUri(d.filename);
 
-    string uri = getUri(filename);
     GError *error = nullptr;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
         gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
@@ -128,14 +169,14 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
         g_error_free(error);
 
         string msg = "Discovery of file ";
-        msg += filename;
+        msg += d.filename;
         msg += " failed: ";
         msg += errortxt;
         throw runtime_error(msg);
     }
 
     if (gst_discoverer_info_get_result(info.get()) != GST_DISCOVERER_OK) {
-        throw runtime_error("Unable to discover file " + filename);
+        throw runtime_error("Unable to discover file " + d.filename);
     }
 
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
@@ -144,6 +185,5 @@ MediaFile MetadataExtractor::extract(const std::string &filename) {
     }
     mfb.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
-
     return mfb.build();
 }
