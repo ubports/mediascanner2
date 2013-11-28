@@ -299,23 +299,40 @@ void MediaStore::remove(const string &fname) {
     del.step();
 }
 
+static MediaFile make_media(Statement &query) {
+    const string filename = query.getText(0);
+    const string content_type = query.getText(1);
+    const string etag = query.getText(2);
+    const string title = query.getText(3);
+    const string date = query.getText(4);
+    const string author = query.getText(5);
+    const string album = query.getText(6);
+    const string album_artist = query.getText(7);
+    int track_number = query.getInt(8);
+    int duration = query.getInt(9);
+    MediaType type = (MediaType)query.getInt(10);
+    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, track_number, duration, type);
+}
+
 static vector<MediaFile> collect_media(Statement &query) {
     vector<MediaFile> result;
     while (query.step()) {
-        const string filename = query.getText(0);
-        const string content_type = query.getText(1);
-        const string etag = query.getText(2);
-        const string title = query.getText(3);
-        const string date = query.getText(4);
-        const string author = query.getText(5);
-        const string album = query.getText(6);
-        const string album_artist = query.getText(7);
-        int track_number = query.getInt(8);
-        int duration = query.getInt(9);
-        MediaType type = (MediaType)query.getInt(10);
-        result.push_back(MediaFile(filename, content_type, etag, title, date, author, album, album_artist, track_number, duration, type));
+        result.push_back(make_media(query));
     }
     return result;
+}
+
+MediaFile MediaStore::lookup(const std::string &filename) {
+    Statement query(p->db, R"(
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+  FROM media
+  WHERE filename = ?
+)");
+    query.bind(1, filename);
+    if (!query.step()) {
+        throw runtime_error("Could not find media " + filename);
+    }
+    return make_media(query);
 }
 
 vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {

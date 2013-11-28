@@ -69,6 +69,15 @@ TEST_F(MediaStoreTest, mediafile_uri) {
     EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
 }
 
+TEST_F(MediaStoreTest, lookup) {
+    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio);
+
+    EXPECT_EQ(store.lookup("aaa"), audio);
+    EXPECT_THROW(store.lookup("not found"), std::runtime_error);
+}
+
 TEST_F(MediaStoreTest, roundtrip) {
     MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
     MediaFile video("aaa2", "type", "etag", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", 0, 5, VideoMedia);
