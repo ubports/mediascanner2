@@ -127,8 +127,11 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
     try {
-        MediaFile m = p->extractor.extract(abspath);
-        p->store.insert(m);
+        DetectedFile d = p->extractor.detect(abspath);
+        // Only extract and insert the file if the ETag has changed.
+        if (d.etag != p->store.getETag(d.filename)) {
+            p->store.insert(p->extractor.extract(d));
+        }
     } catch(const exception &e) {
         fprintf(stderr, "Error when adding new file: %s\n", e.what());
     }

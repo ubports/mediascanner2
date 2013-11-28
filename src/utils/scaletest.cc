@@ -83,7 +83,7 @@ int createDb(const string &base) {
                     track += " " + RNDWORD;
                 }
                 string fname = to_string(i) + ".mp3";
-                MediaFile mf(fname, track, "2013-01-01", artist, album, artist, trackCount, rnd() % 300, AudioMedia);
+                MediaFile mf(fname, "audio/mp3", "", track, "2013-01-01", artist, album, artist, trackCount, rnd() % 300, AudioMedia);
                 store.insert(mf);
                 i++;
                 //printf("%s, %s, %s\n", artist.c_str(), album.c_str(), track.c_str());

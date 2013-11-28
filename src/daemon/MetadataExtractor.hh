@@ -20,10 +20,25 @@
 #ifndef METADATAEXTRACTOR_H
 #define METADATAEXTRACTOR_H
 
-#include<string>
+#include <string>
+#include "../mediascanner/scannercore.hh"
 
 class MediaFile;
 struct MetadataExtractorPrivate;
+
+struct DetectedFile {
+    DetectedFile(const std::string &filename,
+                 const std::string &etag,
+                 const std::string content_type,
+                 MediaType type)
+        : filename(filename), etag(etag), content_type(content_type)
+        , type(type) {}
+
+    std::string filename;
+    std::string etag;
+    std::string content_type;
+    MediaType type;
+};
 
 class MetadataExtractor final {
 public:
@@ -32,7 +47,8 @@ public:
     MetadataExtractor(const MetadataExtractor&) = delete;
     MetadataExtractor& operator=(MetadataExtractor &o) = delete;
 
-    MediaFile extract(const std::string &filename);
+    DetectedFile detect(const std::string &filename);
+    MediaFile extract(const DetectedFile &media);
 
 private:
     MetadataExtractorPrivate *p;

@@ -2,7 +2,6 @@ add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
 include_directories(..)
 
 add_library(scannerstuff STATIC
-  FileTypeDetector.cc
   MetadataExtractor.cc
   SubtreeWatcher.cc
   Scanner.cc
