@@ -92,8 +92,8 @@ TEST_F(MFBTest, basic) {
     b.setDuration(duration);
     ASSERT_THROW(b.setDuration(duration), std::invalid_argument);
 
-    b.setEtag(etag);
-    ASSERT_THROW(b.setEtag(etag), std::invalid_argument);
+    b.setETag(etag);
+    ASSERT_THROW(b.setETag(etag), std::invalid_argument);
 
     b.setContentType(content_type);
     ASSERT_THROW(b.setContentType(content_type), std::invalid_argument);

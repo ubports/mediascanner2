@@ -57,7 +57,7 @@ void MediaFileBuilder::setFilename(const std::string &fname) {
     filename_set = true;
 }
 
-void MediaFileBuilder::setEtag(const std::string &e) {
+void MediaFileBuilder::setETag(const std::string &e) {
     if(etag_set)
         throw std::invalid_argument("Tried to set filename when it was already set.");
     etag = e;

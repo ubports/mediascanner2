@@ -193,7 +193,7 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
 
     /* Now change the stored etag, to trigger an update */
     MediaFileBuilder mfb2(media);
-    mfb2.setEtag("old-etag");
+    mfb2.setETag("old-etag");
     store.insert(mfb2.build());
     scanFiles(store, testdir, AudioMedia);
     media = store.lookup(outfile);

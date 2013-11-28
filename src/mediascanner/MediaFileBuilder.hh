@@ -36,7 +36,7 @@ public:
 
     void setType(MediaType t);
     void setFilename(const std::string &fname);
-    void setEtag(const std::string &e);
+    void setETag(const std::string &e);
     void setContentType(const std::string &c);
     void setTitle(const std::string &t);
     void setDate(const std::string &d);
