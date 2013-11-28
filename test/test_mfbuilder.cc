@@ -60,6 +60,8 @@ TEST_F(MFBTest, basic) {
     std::string author("jkl");
     std::string album("mno");
     std::string album_artist("pqr");
+    std::string etag("stu");
+    std::string content_type("vwx");
     int track_number = 13;
     int duration = 99;
 
@@ -90,6 +92,12 @@ TEST_F(MFBTest, basic) {
     b.setDuration(duration);
     ASSERT_THROW(b.setDuration(duration), std::invalid_argument);
 
+    b.setEtag(etag);
+    ASSERT_THROW(b.setEtag(etag), std::invalid_argument);
+
+    b.setContentType(content_type);
+    ASSERT_THROW(b.setContentType(content_type), std::invalid_argument);
+
     // Now see if data survives a round trip.
     MediaFile mf = b.build();
     ASSERT_EQ(mf.getType(), type);
@@ -101,6 +109,12 @@ TEST_F(MFBTest, basic) {
     ASSERT_EQ(mf.getAlbumArtist(), album_artist);
     ASSERT_EQ(mf.getTrackNumber(), track_number);
     ASSERT_EQ(mf.getDuration(), duration);
+    ASSERT_EQ(mf.getETag(), etag);
+    ASSERT_EQ(mf.getContentType(), content_type);
+
+    MediaFileBuilder mfb2(mf);
+    MediaFile mf2 = mfb2.build();
+    ASSERT_EQ(mf, mf2);
 }
 
 int main(int argc, char **argv) {
