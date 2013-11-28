@@ -138,6 +138,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     MediaFile mf(d.filename);
+    mf.setETag(d.etag);
     mf.setContentType(d.content_type);
     mf.setType(d.type);
     string uri = mf.getUri();
