@@ -34,11 +34,26 @@ public:
     MediaFile build() const;
 
     void setType(MediaType t);
+    void setFilename(const std::string &fname);
+    void setTitle(const std::string &t);
+    void setDate(const std::string &d);
+    void setAuthor(const std::string &a);
 
 private:
     bool type_set = false;
-    MediaType type;
+    MediaType type = UnknownMedia;
 
+    bool filename_set = false;
+    std::string filename;
+
+    bool title_set = false;
+    std::string title;
+
+    bool date_set = false;
+    std::string date;
+
+    bool author_set = false;
+    std::string author;
 };
 
 

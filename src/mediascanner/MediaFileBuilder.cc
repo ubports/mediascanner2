@@ -21,12 +21,20 @@
 #include"MediaFile.hh"
 #include<stdexcept>
 
-MediaFileBuilder::MediaFileBuilder() : type(UnknownMedia) {
+MediaFileBuilder::MediaFileBuilder() {
 }
 
 MediaFile MediaFileBuilder::build() const {
     if(!type_set)
         throw std::invalid_argument("Type is not set in builder.");
+    if(!filename_set)
+        throw std::invalid_argument("Filename is not set in builder.");
+    if(!title_set)
+        throw std::invalid_argument("Title is not set in builder.");
+    if(!date_set)
+        throw std::invalid_argument("Date is not set in builder.");
+    if(!author_set)
+        throw std::invalid_argument("Author is not set in builder.");
     return MediaFile("dummy");
 }
 
@@ -35,4 +43,32 @@ void MediaFileBuilder::setType(MediaType t) {
         throw std::invalid_argument("Tried to set type when it was already set.");
     type = t;
     type_set = true;
+}
+
+void MediaFileBuilder::setFilename(const std::string &fname) {
+    if(filename_set)
+        throw std::invalid_argument("Tried to set filename when it was already set.");
+    filename = fname;
+    filename_set = true;
+}
+
+void MediaFileBuilder::setTitle(const std::string &t) {
+    if(title_set)
+        throw std::invalid_argument("Tried to set title when it was already set.");
+    title = t;
+    title_set = true;
+}
+
+void MediaFileBuilder::setDate(const std::string &d) {
+    if(date_set)
+        throw std::invalid_argument("Tried to set date when it was already set.");
+    date = d;
+    date_set = true;
+}
+
+void MediaFileBuilder::setAuthor(const std::string &a) {
+    if(author_set)
+        throw std::invalid_argument("Tried to set author when it was already set.");
+    author = a;
+    author_set = true;
 }

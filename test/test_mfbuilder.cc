@@ -41,9 +41,31 @@ TEST_F(MFBTest, basic) {
     MediaFileBuilder b;
     ASSERT_THROW(b.build(), std::invalid_argument);
     MediaType type(AudioMedia);
+    std::string fname("abc");
+    std::string title("def");
+    std::string date("ghi");
+    std::string author("jkl");
+
     b.setType(type);
     ASSERT_THROW(b.setType(type), std::invalid_argument);
     ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setFilename(fname);
+    ASSERT_THROW(b.setFilename(fname), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setTitle(title);
+    ASSERT_THROW(b.setTitle(fname), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setDate(date);
+    ASSERT_THROW(b.setDate(date), std::invalid_argument);
+    ASSERT_THROW(b.build(), std::invalid_argument);
+
+    b.setAuthor(author);
+    ASSERT_THROW(b.setAuthor(author), std::invalid_argument);
+
+    //    ASSERT_THROW(b.build(), std::invalid_argument);
 }
 
 int main(int argc, char **argv) {
