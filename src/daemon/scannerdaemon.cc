@@ -105,14 +105,13 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
-    vector<MediaFile> files = s.scanFiles(extractor.get(), subdir, type);
-    for(auto &media : files) {
+    vector<DetectedFile> files = s.scanFiles(extractor.get(), subdir, type);
+    for(auto &d : files) {
         // If the file is unchanged, skip it.
-        if (media.getETag() == store.getETag(media.getFileName()))
+        if (d.etag == store.getETag(d.filename))
             continue;
         try {
-            extractor->extract(media);
-            store.insert(media);
+            store.insert(extractor->extract(d));
         } catch(const exception &e) {
             fprintf(stderr, "Error when indexing: %s\n", e.what());
         }

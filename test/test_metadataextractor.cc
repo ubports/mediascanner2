@@ -52,19 +52,19 @@ TEST_F(MetadataExtractorTest, init) {
 TEST_F(MetadataExtractorTest, detect_audio) {
     MetadataExtractor e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
-    MediaFile media = e.detect(testfile);
-    EXPECT_EQ(media.getType(), AudioMedia);
-    EXPECT_EQ(media.getContentType(), "audio/ogg");
-    EXPECT_NE(media.getETag(), "");
+    DetectedFile d = e.detect(testfile);
+    EXPECT_NE(d.etag, "");
+    EXPECT_EQ(d.content_type, "audio/ogg");
+    EXPECT_EQ(d.type, AudioMedia);
 }
 
 TEST_F(MetadataExtractorTest, detect_video) {
     MetadataExtractor e;
     string testfile = SOURCE_DIR "/media/testvideo_480p.ogv";
-    MediaFile media = e.detect(testfile);
-    EXPECT_EQ(media.getType(), VideoMedia);
-    EXPECT_EQ(media.getContentType(), "video/ogg");
-    EXPECT_NE(media.getETag(), "");
+    DetectedFile d = e.detect(testfile);
+    EXPECT_NE(d.etag, "");
+    EXPECT_EQ(d.content_type, "video/ogg");
+    EXPECT_EQ(d.type, VideoMedia);
 }
 
 TEST_F(MetadataExtractorTest, detect_notmedia) {
@@ -76,8 +76,7 @@ TEST_F(MetadataExtractorTest, detect_notmedia) {
 TEST_F(MetadataExtractorTest, extract) {
     MetadataExtractor e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
-    MediaFile file = e.detect(testfile);
-    e.extract(file);
+    MediaFile file = e.extract(e.detect(testfile));
 
     EXPECT_EQ(file.getType(), AudioMedia);
     EXPECT_EQ(file.getTitle(), "track1");
@@ -91,18 +90,15 @@ TEST_F(MetadataExtractorTest, extract) {
 TEST_F(MetadataExtractorTest, extract_video) {
     MetadataExtractor e;
 
-    MediaFile file = e.detect(SOURCE_DIR "/media/testvideo_480p.ogv");
-    e.extract(file);
+    MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_480p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
 
-    file = e.detect(SOURCE_DIR "/media/testvideo_720p.ogv");
-    e.extract(file);
+    file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_720p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
 
-    file = e.detect(SOURCE_DIR "/media/testvideo_1080p.ogv");
-    e.extract(file);
+    file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_1080p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
 }

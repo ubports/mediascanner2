@@ -56,7 +56,7 @@ MetadataExtractor::~MetadataExtractor() {
     delete p;
 }
 
-MediaFile MetadataExtractor::detect(const std::string &filename) {
+DetectedFile MetadataExtractor::detect(const std::string &filename) {
     std::unique_ptr<GFile, void(*)(void *)> file(
         g_file_new_for_path(filename.c_str()), g_object_unref);
     if (!file) {
@@ -82,25 +82,22 @@ MediaFile MetadataExtractor::detect(const std::string &filename) {
         throw runtime_error(msg);
     }
 
+    string etag(g_file_info_get_etag(info.get()));
     string content_type(g_file_info_get_attribute_string(
         info.get(), G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE));
-    string etag(g_file_info_get_etag(info.get()));
     if (content_type.empty()) {
         throw runtime_error("Could not determine content type.");
     }
 
-    MediaFile mf(filename);
+    MediaType type;
     if (content_type.find("audio/") == 0) {
-        mf.setType(AudioMedia);
+        type = AudioMedia;
     } else if (content_type.find("video/") == 0) {
-        mf.setType(VideoMedia);
+        type = VideoMedia;
     } else {
         throw runtime_error(string("File ") + filename + " is not audio or video");
     }
-    mf.setContentType(content_type);
-    mf.setETag(etag);
-
-    return mf;
+    return DetectedFile(filename, etag, content_type, type);
 }
 
 static void
@@ -139,7 +136,10 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-void MetadataExtractor::extract(MediaFile &mf) {
+MediaFile MetadataExtractor::extract(const DetectedFile &d) {
+    MediaFile mf(d.filename);
+    mf.setContentType(d.content_type);
+    mf.setType(d.type);
     string uri = mf.getUri();
     GError *error = nullptr;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
@@ -166,4 +166,5 @@ void MetadataExtractor::extract(MediaFile &mf) {
     }
     mf.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
+    return mf;
 }

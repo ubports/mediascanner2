@@ -25,7 +25,7 @@
 
 #include <mediascanner/scannercore.hh>
 
-class MediaFile;
+class DetectedFile;
 class MetadataExtractor;
 
 class Scanner final {
@@ -33,7 +33,7 @@ public:
     Scanner();
     ~Scanner();
 
-    std::vector<MediaFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
+    std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
 
 };
 

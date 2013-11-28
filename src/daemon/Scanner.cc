@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../mediascanner/MediaFile.hh"
 #include "MetadataExtractor.hh"
 #include "Scanner.hh"
 #include <dirent.h>
@@ -35,8 +34,8 @@ Scanner::~Scanner() {
 
 }
 
-vector<MediaFile> Scanner::scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type) {
-    vector<MediaFile> result;
+vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type) {
+    vector<DetectedFile> result;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
     printf("In subdir %s\n", root.c_str());
     if(!dir) {
@@ -54,15 +53,15 @@ vector<MediaFile> Scanner::scanFiles(MetadataExtractor *extractor, const std::st
         stat(fullpath.c_str(), &statbuf);
         if(S_ISREG(statbuf.st_mode)) {
             try {
-                MediaFile mf = extractor->detect(fullpath);
-                if (type == AllMedia || mf.getType() == type) {
-                    result.push_back(mf);
+                DetectedFile d = extractor->detect(fullpath);
+                if (type == AllMedia || d.type == type) {
+                    result.push_back(d);
                 }
             } catch (const exception &e) {
                 /* Ignore non-media files */
             }
         } else if(S_ISDIR(statbuf.st_mode)) {
-            vector<MediaFile> subdir = scanFiles(extractor, fullpath, type);
+            vector<DetectedFile> subdir = scanFiles(extractor, fullpath, type);
             result.insert(result.end(), subdir.begin(), subdir.end());
         }
     }
