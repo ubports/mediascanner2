@@ -44,16 +44,8 @@ public:
     bool operator==(const MediaFile &other) const;
     bool operator!=(const MediaFile &other) const;
 
-    void setTitle(const std::string& title) noexcept;
-    void setAuthor(const std::string& author) noexcept;
-    void setAlbum(const std::string& album) noexcept;
-    void setAlbumArtist(const std::string& album_artist) noexcept;
-    void setDate(const std::string& date) noexcept;
-    void setTrackNumber(int track_number) noexcept;
-    void setDuration(int duration) noexcept;
-    void setType(MediaType type) noexcept;
-
-    std::string getUri() const;
+    // There are no setters. MediaFiles are immutable.
+    // For piecewise construction use MediaFileBuilder.
 
 private:
     std::string filename;

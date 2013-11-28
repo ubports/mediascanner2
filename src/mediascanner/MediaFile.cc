@@ -65,38 +65,6 @@ MediaType MediaFile::getType() const noexcept {
     return type;
 }
 
-void MediaFile::setTitle(const std::string &title) noexcept {
-    this->title = title;
-}
-
-void MediaFile::setAuthor(const std::string &author) noexcept {
-    this->author = author;
-}
-
-void MediaFile::setAlbum(const std::string &album) noexcept {
-    this->album = album;
-}
-
-void MediaFile::setAlbumArtist(const std::string &album_artist) noexcept {
-    this->album_artist = album_artist;
-}
-
-void MediaFile::setDate(const std::string &date) noexcept {
-    this->date = date;
-}
-
-void MediaFile::setTrackNumber(int track_number) noexcept {
-    this->track_number = track_number;
-}
-
-void MediaFile::setDuration(int duration) noexcept {
-    this->duration = duration;
-}
-
-void MediaFile::setType(MediaType type) noexcept {
-    this->type = type;
-}
-
 bool MediaFile::operator==(const MediaFile &other) const {
     return filename == other.filename && title == other.title && author == other.author &&
         album == other.album && album_artist == other.album_artist && date == other.date && track_number == other.track_number && duration == other.duration && type == other.type;
@@ -104,18 +72,4 @@ bool MediaFile::operator==(const MediaFile &other) const {
 
 bool MediaFile::operator!=(const MediaFile &other) const {
     return !(*this == other);
-}
-
-std::string MediaFile::getUri() const {
-    GError *error = NULL;
-    char *uristr = g_filename_to_uri(filename.c_str(), "", &error);
-    if (error) {
-        string msg("Could not build URI: ");
-        msg += error->message;
-        g_error_free(error);
-        throw runtime_error(msg);
-    }
-    string uri(uristr);
-    g_free(uristr);
-    return uri;
 }

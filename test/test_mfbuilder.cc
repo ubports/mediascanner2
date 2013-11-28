@@ -22,6 +22,19 @@
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
 
+/**
+ * This is a helper class to build MediaFiles. Since we want them
+ * to be immutable and always valid, the user needs to always list
+ * all variables in the constructor. This is cumbersome so this class
+ * allows you to gather them one by one and then finally construct
+ * a fully valid MediaFile.
+ *
+ * If you try to assign the same property twice, an exception is thrown.
+ * This means that MediaFileBuilders are meant to build only one
+ * MediaFile. To build a new one create a new MediaFileBuilder. This
+ * ensures that no state leaks from the first MediaFile to the second.
+ */
+
 class MFBTest : public ::testing::Test {
  protected:
   MFBTest() {
@@ -39,7 +52,7 @@ class MFBTest : public ::testing::Test {
 
 TEST_F(MFBTest, basic) {
     MediaFileBuilder b;
-    ASSERT_THROW(b.build(), std::invalid_argument);
+
     MediaType type(AudioMedia);
     std::string fname("abc");
     std::string title("def");
@@ -52,35 +65,27 @@ TEST_F(MFBTest, basic) {
 
     b.setType(type);
     ASSERT_THROW(b.setType(type), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setFilename(fname);
     ASSERT_THROW(b.setFilename(fname), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setTitle(title);
     ASSERT_THROW(b.setTitle(fname), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setDate(date);
     ASSERT_THROW(b.setDate(date), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setAuthor(author);
     ASSERT_THROW(b.setAuthor(author), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setAlbum(album);
     ASSERT_THROW(b.setAlbum(album), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setAlbumArtist(album_artist);
     ASSERT_THROW(b.setAlbumArtist(album_artist), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setTrackNumber(track_number);
     ASSERT_THROW(b.setTrackNumber(track_number), std::invalid_argument);
-    ASSERT_THROW(b.build(), std::invalid_argument);
 
     b.setDuration(duration);
     ASSERT_THROW(b.setDuration(duration), std::invalid_argument);

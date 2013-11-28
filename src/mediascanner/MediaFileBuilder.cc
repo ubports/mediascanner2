@@ -25,24 +25,6 @@ MediaFileBuilder::MediaFileBuilder() {
 }
 
 MediaFile MediaFileBuilder::build() const {
-    if(!type_set)
-        throw std::invalid_argument("Type is not set in builder.");
-    if(!filename_set)
-        throw std::invalid_argument("Filename is not set in builder.");
-    if(!title_set)
-        throw std::invalid_argument("Title is not set in builder.");
-    if(!date_set)
-        throw std::invalid_argument("Date is not set in builder.");
-    if(!author_set)
-        throw std::invalid_argument("Author is not set in builder.");
-    if(!album_set)
-        throw std::invalid_argument("Album is not set in builder.");
-    if(!album_artist_set)
-        throw std::invalid_argument("Album artist is not set in builder.");
-    if(!track_number_set)
-        throw std::invalid_argument("Track number is not set in builder.");
-    if(!duration_set)
-        throw std::invalid_argument("Duration is not set in builder.");
     return MediaFile(filename, title, date, author, album, album_artist,
             track_number, duration, type);
 }
