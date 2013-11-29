@@ -85,18 +85,18 @@ TEST_F(SqliteTest, BindText) {
 
 TEST_F(SqliteTest, Insert) {
     Statement create(db, "CREATE TABLE foo (id INT PRIMARY KEY)");
-    EXPECT_EQ(false, create.step());
+    EXPECT_FALSE(create.step());
     create.finalize();
 
     Statement insert(db, "INSERT INTO foo(id) VALUES (?)");
     insert.bind(1, 42);
-    EXPECT_EQ(false, insert.step());
+    EXPECT_FALSE(insert.step());
     insert.finalize();
 
     Statement select(db, "SELECT id FROM foo");
-    EXPECT_EQ(true, select.step());
+    EXPECT_TRUE(select.step());
     EXPECT_EQ(42, select.getInt(0));
-    EXPECT_EQ(false, select.step());
+    EXPECT_FALSE(select.step());
     select.finalize();
 }
 
