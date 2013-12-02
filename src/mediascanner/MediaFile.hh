@@ -40,6 +40,8 @@ public:
     const std::string& getAlbum() const noexcept;
     const std::string& getAlbumArtist() const noexcept;
     const std::string& getDate() const noexcept;
+    std::string getUri() const;
+
     int getTrackNumber() const noexcept;
     int getDuration() const noexcept;
     MediaType getType() const noexcept;

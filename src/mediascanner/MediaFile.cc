@@ -18,6 +18,7 @@
  */
 
 #include "MediaFile.hh"
+#include "utils.hh"
 
 using namespace std;
 
@@ -71,6 +72,10 @@ MediaType MediaFile::getType() const noexcept {
     return type;
 }
 
+std::string MediaFile::getUri() const {
+    return ::getUri(filename);
+}
+
 bool MediaFile::operator==(const MediaFile &other) const {
     return
         filename == other.filename &&
@@ -89,3 +94,4 @@ bool MediaFile::operator==(const MediaFile &other) const {
 bool MediaFile::operator!=(const MediaFile &other) const {
     return !(*this == other);
 }
+

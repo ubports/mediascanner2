@@ -19,6 +19,7 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
+#include "../mediascanner/utils.hh"
 #include "MetadataExtractor.hh"
 
 #include <glib-object.h>
@@ -32,20 +33,6 @@
 #include<memory>
 
 using namespace std;
-
-std::string getUri(const std::string &filename) {
-    GError *error = NULL;
-    char *uristr = g_filename_to_uri(filename.c_str(), "", &error);
-    if (error) {
-        string msg("Could not build URI: ");
-        msg += error->message;
-        g_error_free(error);
-        throw runtime_error(msg);
-    }
-    string uri(uristr);
-    g_free(uristr);
-    return uri;
-}
 
 
 struct MetadataExtractorPrivate {
