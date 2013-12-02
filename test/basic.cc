@@ -18,6 +18,7 @@
  */
 
 #include <mediascanner/MediaFile.hh>
+#include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/MediaStore.hh>
 #include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
@@ -181,8 +182,9 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     MediaFile media = store.lookup(outfile);
     EXPECT_NE(media.getETag(), "");
     EXPECT_EQ(media.getTitle(), "track1");
-    media.setTitle("something else");
-    store.insert(media);
+    MediaFileBuilder mfb(media);
+    mfb.setTitle("something else");
+    store.insert(mfb.build());
 
     /* Scan again, and note that the data hasn't been updated */
     scanFiles(store, testdir, AudioMedia);
@@ -190,8 +192,9 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     EXPECT_EQ(media.getTitle(), "something else");
 
     /* Now change the stored etag, to trigger an update */
-    media.setETag("old-etag");
-    store.insert(media);
+    MediaFileBuilder mfb2(media);
+    mfb2.setETag("old-etag");
+    store.insert(mfb2.build());
     scanFiles(store, testdir, AudioMedia);
     media = store.lookup(outfile);
     EXPECT_EQ(media.getTitle(), "track1");

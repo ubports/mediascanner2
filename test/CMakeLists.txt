@@ -38,3 +38,7 @@ add_test(test_metadataextractor test_metadataextractor)
 add_executable(test_sqliteutils test_sqliteutils.cc)
 target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_LIBRARIES})
 add_test(test_sqliteutils test_sqliteutils)
+
+add_executable(test_mfbuilder test_mfbuilder.cc)
+target_link_libraries(test_mfbuilder gtest mediascanner)
+add_test(test_mfbuilder test_mfbuilder)

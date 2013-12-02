@@ -20,6 +20,8 @@
 #include"utils.hh"
 
 #include<vector>
+#include<stdexcept>
+#include<glib.h>
 
 std::string sqlQuote(const std::string &input) {
     std::vector<char> out;
@@ -67,3 +69,19 @@ std::string filenameToTitle(const std::string &filename) {
     }
     return result;
 }
+
+std::string getUri(const std::string &filename) {
+    GError *error = NULL;
+    char *uristr = g_filename_to_uri(filename.c_str(), "", &error);
+    if (error) {
+        std::string msg("Could not build URI: ");
+        msg += error->message;
+        g_error_free(error);
+        throw std::runtime_error(msg);
+    }
+
+    std::string uri(uristr);
+    g_free(uristr);
+    return uri;
+}
+

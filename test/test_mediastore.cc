@@ -47,6 +47,10 @@ class MediaStoreTest : public ::testing::Test {
 TEST_F(MediaStoreTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
 }
+TEST_F(MediaStoreTest, mediafile_uri) {
+    MediaFile media("/path/to/file.ogg");
+    EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
+}
 
 TEST_F(MediaStoreTest, equality) {
     MediaFile audio1("a", "type", "etag", "1900", "b", "c", "d", "e", 1, 5, AudioMedia);
@@ -62,11 +66,6 @@ TEST_F(MediaStoreTest, equality) {
     EXPECT_NE(audio1, video1);
     EXPECT_NE(audio2, video1);
     EXPECT_NE(audio2, video2);
-}
-
-TEST_F(MediaStoreTest, mediafile_uri) {
-    MediaFile media("/path/to/file.ogg");
-    EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
 }
 
 TEST_F(MediaStoreTest, lookup) {

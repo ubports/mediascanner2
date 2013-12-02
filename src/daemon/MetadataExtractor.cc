@@ -18,6 +18,8 @@
  */
 
 #include "../mediascanner/MediaFile.hh"
+#include "../mediascanner/MediaFileBuilder.hh"
+#include "../mediascanner/utils.hh"
 #include "MetadataExtractor.hh"
 
 #include <glib-object.h>
@@ -31,6 +33,7 @@
 #include<memory>
 
 using namespace std;
+
 
 struct MetadataExtractorPrivate {
     std::unique_ptr<GstDiscoverer,void(*)(void *)> discoverer;
@@ -102,7 +105,7 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
 
 static void
 extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data) {
-    MediaFile *mf = (MediaFile *) user_data;
+    MediaFileBuilder *mfb = (MediaFileBuilder *) user_data;
     int i, num;
     string tagname(tag);
 
@@ -113,23 +116,23 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
         val = gst_tag_list_get_value_index (list, tag, i);
         if (G_VALUE_HOLDS_STRING(val)) {
             if (tagname == GST_TAG_ARTIST)
-                mf->setAuthor(g_value_get_string(val));
+                mfb->setAuthor(g_value_get_string(val));
             else if (tagname == GST_TAG_TITLE)
-                mf->setTitle(g_value_get_string(val));
+                mfb->setTitle(g_value_get_string(val));
             else if (tagname == GST_TAG_ALBUM)
-                mf->setAlbum(g_value_get_string(val));
+                mfb->setAlbum(g_value_get_string(val));
             else if (tagname == GST_TAG_ALBUM_ARTIST)
-                mf->setAlbumArtist(g_value_get_string(val));
+                mfb->setAlbumArtist(g_value_get_string(val));
         } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
             if (tagname == GST_TAG_DATE_TIME) {
                 GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));
                 char *dt_string = gst_date_time_to_iso8601_string(dt);
-                mf->setDate(dt_string);
+                mfb->setDate(dt_string);
                 g_free(dt_string);
             }
         } else if (G_VALUE_HOLDS_UINT(val)) {
             if (tagname == GST_TAG_TRACK_NUMBER) {
-                mf->setTrackNumber(g_value_get_uint(val));
+                mfb->setTrackNumber(g_value_get_uint(val));
             }
         }
 
@@ -137,11 +140,12 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
-    MediaFile mf(d.filename);
-    mf.setETag(d.etag);
-    mf.setContentType(d.content_type);
-    mf.setType(d.type);
-    string uri = mf.getUri();
+    MediaFileBuilder mfb(d.filename);
+    mfb.setETag(d.etag);
+    mfb.setContentType(d.content_type);
+    mfb.setType(d.type);
+    string uri = getUri(d.filename);
+
     GError *error = nullptr;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
         gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
@@ -151,21 +155,21 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
         g_error_free(error);
 
         string msg = "Discovery of file ";
-        msg += mf.getFileName();
+        msg += d.filename;
         msg += " failed: ";
         msg += errortxt;
         throw runtime_error(msg);
     }
 
     if (gst_discoverer_info_get_result(info.get()) != GST_DISCOVERER_OK) {
-        throw runtime_error("Unable to discover file " + mf.getFileName());
+        throw runtime_error("Unable to discover file " + d.filename);
     }
 
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
     if (tags != NULL) {
-        gst_tag_list_foreach(tags, extract_tag_info, &mf);
+        gst_tag_list_foreach(tags, extract_tag_info, &mfb);
     }
-    mf.setDuration(static_cast<int>(
+    mfb.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
-    return mf;
+    return mfb.build();
 }
