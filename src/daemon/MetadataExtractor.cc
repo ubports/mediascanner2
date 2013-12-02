@@ -140,8 +140,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
-    MediaFileBuilder mfb;
-    mfb.setFilename(d.filename);
+    MediaFileBuilder mfb(d.filename);
     mfb.setETag(d.etag);
     mfb.setContentType(d.content_type);
     mfb.setType(d.type);

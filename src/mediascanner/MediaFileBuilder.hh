@@ -27,7 +27,7 @@ class MediaFile;
 
 class MediaFileBuilder final {
 public:
-    MediaFileBuilder();
+    MediaFileBuilder(const std::string &filename);
     MediaFileBuilder(const MediaFile &mf);
     MediaFileBuilder(const MediaFileBuilder &) = delete;
     MediaFileBuilder& operator=(MediaFileBuilder &) = delete;
@@ -35,7 +35,6 @@ public:
     MediaFile build() const;
 
     void setType(MediaType t);
-    void setFilename(const std::string &fname);
     void setETag(const std::string &e);
     void setContentType(const std::string &c);
     void setTitle(const std::string &t);
@@ -56,7 +55,6 @@ private:
     bool content_type_set = false;
     std::string content_type;
 
-    bool filename_set = false;
     std::string filename;
 
     bool title_set = false;

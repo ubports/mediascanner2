@@ -51,8 +51,6 @@ class MFBTest : public ::testing::Test {
 };
 
 TEST_F(MFBTest, basic) {
-    MediaFileBuilder b;
-
     MediaType type(AudioMedia);
     std::string fname("abc");
     std::string title("def");
@@ -65,11 +63,10 @@ TEST_F(MFBTest, basic) {
     int track_number = 13;
     int duration = 99;
 
+    MediaFileBuilder b(fname);
+
     b.setType(type);
     ASSERT_THROW(b.setType(type), std::invalid_argument);
-
-    b.setFilename(fname);
-    ASSERT_THROW(b.setFilename(fname), std::invalid_argument);
 
     b.setTitle(title);
     ASSERT_THROW(b.setTitle(fname), std::invalid_argument);

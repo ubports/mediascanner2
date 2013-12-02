@@ -21,7 +21,8 @@
 #include"MediaFile.hh"
 #include<stdexcept>
 
-MediaFileBuilder::MediaFileBuilder() {
+MediaFileBuilder::MediaFileBuilder(const std::string &fname) {
+    filename = fname;
 }
 
 MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) {
@@ -48,13 +49,6 @@ void MediaFileBuilder::setType(MediaType t) {
         throw std::invalid_argument("Tried to set type when it was already set.");
     type = t;
     type_set = true;
-}
-
-void MediaFileBuilder::setFilename(const std::string &fname) {
-    if(filename_set)
-        throw std::invalid_argument("Tried to set filename when it was already set.");
-    filename = fname;
-    filename_set = true;
 }
 
 void MediaFileBuilder::setETag(const std::string &e) {
