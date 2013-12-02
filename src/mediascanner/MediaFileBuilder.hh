@@ -49,13 +49,13 @@ private:
     bool type_set = false;
     MediaType type = UnknownMedia;
 
-    bool etag_set = false;
-    std::string etag;
+    std::string filename;
 
     bool content_type_set = false;
     std::string content_type;
 
-    std::string filename;
+    bool etag_set = false;
+    std::string etag;
 
     bool title_set = false;
     std::string title;
