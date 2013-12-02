@@ -25,18 +25,18 @@ MediaFileBuilder::MediaFileBuilder(const std::string &fname) {
     filename = fname;
 }
 
-MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) {
-    type = mf.getType();
-    filename = mf.getFileName();
-    content_type = mf.getContentType();
-    etag = mf.getETag();
-    title = mf.getTitle();
-    date = mf.getDate();
-    author = mf.getAuthor();
-    album = mf.getAlbum();
-    album_artist = mf.getAlbumArtist();
-    track_number = mf.getTrackNumber();
-    duration = mf.getDuration();
+MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) :
+    type(mf.getType()),
+    filename(mf.getFileName()),
+    content_type(mf.getContentType()),
+    etag(mf.getETag()),
+    title(mf.getTitle()),
+    date(mf.getDate()),
+    author(mf.getAuthor()),
+    album(mf.getAlbum()),
+    album_artist(mf.getAlbumArtist()),
+    track_number(mf.getTrackNumber()),
+    duration(mf.getDuration()) {
 }
 
 MediaFile MediaFileBuilder::build() const {
