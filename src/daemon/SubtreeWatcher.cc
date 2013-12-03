@@ -180,6 +180,12 @@ void SubtreeWatcher::pumpEvents() {
         }
         for(char *d = buf; d < buf + num_read;) {
             struct inotify_event *event = (struct inotify_event *) d;
+            if (p->wd2str.find(event->wd) == p->wd2str.end()) {
+                // Ignore events for unknown watches.  We may receive
+                // such events when a directory is removed.
+                d += sizeof(struct inotify_event) + event->len;
+                continue;
+            }
             string directory = p->wd2str[event->wd];
             string filename(event->name);
             string abspath = directory + '/' + filename;
