@@ -17,7 +17,7 @@ pkg_check_modules(MEDIASCANNER REQUIRED
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
 pkg_check_modules(UNITY unity REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -std=c++11")
