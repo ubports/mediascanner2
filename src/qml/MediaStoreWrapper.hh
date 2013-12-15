@@ -11,7 +11,7 @@
 class MediaStoreWrapper : public QObject {
     Q_OBJECT
 public:
-    MediaStoreWrapper();
+    MediaStoreWrapper(QObject *parent=0);
 
     Q_INVOKABLE QList<MediaFileWrapper*> query(const QString &q);
     Q_INVOKABLE MediaFileWrapper *lookup(const QString &filename);

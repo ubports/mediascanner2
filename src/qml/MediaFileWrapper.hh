@@ -10,7 +10,7 @@ class MediaFileWrapper : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString filename READ filename CONSTANT)
 public:
-    MediaFileWrapper(MediaFile media);
+    MediaFileWrapper(MediaFile media, QObject *parent=0);
     QString filename() const;
 
 private:

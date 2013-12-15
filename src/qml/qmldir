@@ -1,0 +1,2 @@
+module MediaScanner
+plugin mediascanner-qml

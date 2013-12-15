@@ -1,6 +1,7 @@
 #include "MediaStoreWrapper.hh"
 
-MediaStoreWrapper::MediaStoreWrapper() : store(MS_READ_ONLY) {
+MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
+    : QObject(parent), store(MS_READ_ONLY) {
 }
 
 QList<MediaFileWrapper*> MediaStoreWrapper::query(const QString &q) {

@@ -14,3 +14,8 @@ install(
   TARGETS mediascanner-qml
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt5/qml/Ubuntu/MediaScanner"
 )
+
+install(
+  FILES qmldir
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt5/qml/Ubuntu/MediaScanner"
+)
