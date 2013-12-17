@@ -13,6 +13,7 @@ Build-Depends: cmake,
                qt5-default,
                qtbase5-dev,
                qtbase5-dev-tools,
+               qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
 # For running unit tests
                gstreamer1.0-plugins-base,
