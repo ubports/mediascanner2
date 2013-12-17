@@ -1,0 +1,3 @@
+usr/lib/*/qt5/qml/Ubuntu/MediaScanner/qmldir
+usr/lib/*/qt5/qml/Ubuntu/MediaScanner/plugins.qmltypes
+usr/lib/*/qt5/qml/Ubuntu/MediaScanner/libmediascanner-qml.so
