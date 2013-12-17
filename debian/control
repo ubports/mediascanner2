@@ -57,7 +57,7 @@ Description: Development files for libmediascanner
  This package provides the infrastructure for using the media scanner's
  access library in C++ based projects.
 
-Package: qtdeclarative5-mediascanner-plugin
+Package: qtdeclarative5-ubuntu-mediascanner0.1
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends},
 Depends: mediascanner (= ${binary:Version}),
