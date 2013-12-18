@@ -1,4 +1,5 @@
 #include "MediaStoreWrapper.hh"
+#include <QQmlEngine>
 
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     : QObject(parent), store(MS_READ_ONLY) {
@@ -7,11 +8,15 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
     QList<QObject*> result;
     for (const auto &media : store.query(q.toStdString(), static_cast<::MediaType>(type))) {
-        result.append(new MediaFileWrapper(media));
+        auto wrapper = new MediaFileWrapper(media);
+        QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
+        result.append(wrapper);
     }
     return result;
 }
 
 MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
-    return new MediaFileWrapper(store.lookup(filename.toStdString()));
+    auto wrapper = new MediaFileWrapper(store.lookup(filename.toStdString()));
+    QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
+    return wrapper;
 }
