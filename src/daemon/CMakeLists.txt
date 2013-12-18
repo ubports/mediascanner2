@@ -12,6 +12,9 @@ add_executable(scannerdaemon
   scannerdaemon.cc
 )
 
+set_target_properties(scannerdaemon
+  PROPERTIES OUTPUT_NAME "mediascanner-service-2.0")
+
 target_link_libraries(scannerdaemon
   mediascanner
   scannerstuff
