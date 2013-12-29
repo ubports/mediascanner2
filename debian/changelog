@@ -1,5 +1,9 @@
 mediascanner2.0 (0.99-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Jussi Pakkanen ]
   * Hot new stuff
+
+  [ Łukasz 'sil2100' Zemczak ]
+  * Automatic snapshot from revision 191 (bootstrap)
 
  -- Jussi Pakkanen <jussi.pakkanen@ubuntu.com>  Tue, 05 Nov 2013 14:51:01 +0200
