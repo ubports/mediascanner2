@@ -1,0 +1,49 @@
+import QtQuick.tooling 1.1
+
+// This file describes the plugin-supplied types contained in the library.
+// It is used for QML tooling purposes only.
+//
+// This file was auto-generated with the command '/usr/lib/x86_64-linux-gnu/qt5/bin/qmlplugindump -notrelocatable Ubuntu.MediaScanner 0.1'.
+
+Module {
+    Component {
+        name: "MediaFileWrapper"
+        prototype: "QObject"
+        exports: ["Ubuntu.MediaScanner/MediaFile 0.1"]
+        Property { name: "filename"; type: "string"; isReadonly: true }
+        Property { name: "uri"; type: "string"; isReadonly: true }
+        Property { name: "contentType"; type: "string"; isReadonly: true }
+        Property { name: "eTag"; type: "string"; isReadonly: true }
+        Property { name: "title"; type: "string"; isReadonly: true }
+        Property { name: "author"; type: "string"; isReadonly: true }
+        Property { name: "album"; type: "string"; isReadonly: true }
+        Property { name: "albumArtist"; type: "string"; isReadonly: true }
+        Property { name: "date"; type: "string"; isReadonly: true }
+        Property { name: "trackNumber"; type: "int"; isReadonly: true }
+        Property { name: "duration"; type: "int"; isReadonly: true }
+    }
+    Component {
+        name: "MediaStoreWrapper"
+        prototype: "QObject"
+        exports: ["Ubuntu.MediaScanner/MediaStore 0.1"]
+        Enum {
+            name: "MediaType"
+            values: {
+                "Audio": 1,
+                "Video": 2,
+                "All": 3
+            }
+        }
+        Method {
+            name: "query"
+            type: "QList<QObject*>"
+            Parameter { name: "q"; type: "string" }
+            Parameter { name: "type"; type: "MediaType" }
+        }
+        Method {
+            name: "lookup"
+            type: "MediaFileWrapper*"
+            Parameter { name: "filename"; type: "string" }
+        }
+    }
+}

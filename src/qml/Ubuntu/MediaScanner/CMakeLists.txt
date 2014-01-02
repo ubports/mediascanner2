@@ -37,12 +37,16 @@ if(NOT CMAKE_CROSSCOMPILING)
     msg(FATAL_ERROR "Could not locate qmlplugindump.")
   endif()
 
-  add_custom_target(mediascanner-qmltypes ALL
-    COMMAND QML2_IMPORT_PATH=${CMAKE_BINARY_DIR}/src/qml ${qmlplugindump_exe} -notrelocatable Ubuntu.MediaScanner 0.1 > ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
-  )
-  add_dependencies(mediascanner-qmltypes mediascanner-qml mediascanner-qmlfiles)
-  install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
-    DESTINATION ${QML_PLUGIN_DIR}
+  # qmlplugindump doesn't run reliably in the CI environment (it seems
+  # to be instantiating the types, which fails when there is no media
+  # database).  So add a 
+  add_custom_target(update-qmltypes
+    COMMAND QML2_IMPORT_PATH=${CMAKE_BINARY_DIR}/src/qml ${qmlplugindump_exe} -notrelocatable Ubuntu.MediaScanner 0.1 > ${CMAKE_CURRENT_SOURCE_DIR}/plugin.qmltypes
+    DEPENDS mediascanner-qml mediascanner-qmlfiles
   )
 endif()
+
+install(
+  FILES plugin.qmltypes
+  DESTINATION ${QML_PLUGIN_DIR}
+)
