@@ -1,4 +1,4 @@
-Source: mediascanner
+Source: mediascanner2.0
 Section: libs
 Priority: optional
 Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
@@ -32,11 +32,12 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
 Depends: ${misc:Depends},
          ${shlibs:Depends},
+Recommends: mediascanner2.0
 Description: Access library for the media scanner's index
  This library provides convenient and safe access to the media scanner's
  index files.
 
-Package: mediascanner
+Package: mediascanner2.0
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends},
 Depends: gstreamer1.0-plugins-base,
@@ -46,7 +47,7 @@ Depends: gstreamer1.0-plugins-base,
 Description: Media scanner package
  This package provides the media scanner service.
 
-Package: libmediascanner-dev
+Package: libmediascanner-2.0-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same

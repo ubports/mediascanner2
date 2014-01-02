@@ -37,6 +37,13 @@ add_subdirectory(src/qml)
 add_subdirectory(src/utils)
 add_subdirectory(test)
 
+# Install pkg-config file
 configure_file(mediascanner-2.0.pc.in mediascanner-2.0.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mediascanner-2.0.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Install Upstart user session job
+install(
+  FILES mediascanner-2.0.conf
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions
+)
