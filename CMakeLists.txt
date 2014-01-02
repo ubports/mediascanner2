@@ -33,7 +33,7 @@ enable_testing()
 
 add_subdirectory(src/mediascanner)
 add_subdirectory(src/daemon)
-add_subdirectory(src/qml)
+add_subdirectory(src/qml/Ubuntu/MediaScanner)
 add_subdirectory(src/utils)
 add_subdirectory(test)
 
