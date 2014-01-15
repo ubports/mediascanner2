@@ -17,8 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include<pwd.h>
 #include<sys/select.h>
 #include<sys/stat.h>
+#include<sys/types.h>
 #include<sys/inotify.h>
 #include<unistd.h>
 #include<cstdio>
@@ -62,8 +64,19 @@ private:
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
 };
 
+static std::string getCurrentUser() {
+    int uid = geteuid();
+    struct passwd *pwd = getpwuid(uid);
+    if (pwd == NULL) {
+            string msg("Could not look up user name: ");
+            msg += strerror(errno);
+            throw runtime_error(msg);
+    }
+    return pwd->pw_name;
+}
+
 ScannerDaemon::ScannerDaemon() {
-    mountDir = string("/media/") + getlogin();
+    mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
