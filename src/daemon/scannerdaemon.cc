@@ -132,7 +132,6 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 }
 
 int ScannerDaemon::run() {
-    int kbdfd = STDIN_FILENO;
     while(true) {
         int maxfd = 0;
         fd_set fds;
@@ -142,7 +141,6 @@ int ScannerDaemon::run() {
             if(cfd > maxfd) maxfd = cfd;
             FD_SET(cfd, &fds);
         }
-        FD_SET(kbdfd, &fds);
         FD_SET(mountfd, &fds);
         if(mountfd > maxfd) maxfd = mountfd;
 
@@ -151,9 +149,6 @@ int ScannerDaemon::run() {
             string msg("Select failed: ");
             msg += strerror(errno);
             throw runtime_error(msg);
-        }
-        if(FD_ISSET(kbdfd, &fds)) {
-            return 0;
         }
         for(const auto &i: subtrees) {
             i.second->pumpEvents();
@@ -252,7 +247,6 @@ int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     try {
         ScannerDaemon d;
-        printf("\n\nPress enter to end this program.\n\n");
         return d.run();
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
