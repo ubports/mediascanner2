@@ -17,8 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include<pwd.h>
 #include<sys/select.h>
 #include<sys/stat.h>
+#include<sys/types.h>
 #include<sys/inotify.h>
 #include<unistd.h>
 #include<cstdio>
@@ -62,8 +64,19 @@ private:
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
 };
 
+static std::string getCurrentUser() {
+    int uid = geteuid();
+    struct passwd *pwd = getpwuid(uid);
+    if (pwd == NULL) {
+            string msg("Could not look up user name: ");
+            msg += strerror(errno);
+            throw runtime_error(msg);
+    }
+    return pwd->pw_name;
+}
+
 ScannerDaemon::ScannerDaemon() {
-    mountDir = string("/media/") + getlogin();
+    mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
@@ -119,7 +132,6 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 }
 
 int ScannerDaemon::run() {
-    int kbdfd = STDIN_FILENO;
     while(true) {
         int maxfd = 0;
         fd_set fds;
@@ -129,7 +141,6 @@ int ScannerDaemon::run() {
             if(cfd > maxfd) maxfd = cfd;
             FD_SET(cfd, &fds);
         }
-        FD_SET(kbdfd, &fds);
         FD_SET(mountfd, &fds);
         if(mountfd > maxfd) maxfd = mountfd;
 
@@ -138,9 +149,6 @@ int ScannerDaemon::run() {
             string msg("Select failed: ");
             msg += strerror(errno);
             throw runtime_error(msg);
-        }
-        if(FD_ISSET(kbdfd, &fds)) {
-            return 0;
         }
         for(const auto &i: subtrees) {
             i.second->pumpEvents();
@@ -239,7 +247,6 @@ int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     try {
         ScannerDaemon d;
-        printf("\n\nPress enter to end this program.\n\n");
         return d.run();
     } catch(string &s) {
         printf("Error: %s\n", s.c_str());
