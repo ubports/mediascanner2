@@ -22,6 +22,8 @@
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
 
+using namespace mediascanner;
+
 /**
  * This is a helper class to build MediaFiles. Since we want them
  * to be immutable and always valid, the user needs to always list

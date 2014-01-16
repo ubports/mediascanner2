@@ -23,6 +23,8 @@
 #include <string>
 #include "../mediascanner/scannercore.hh"
 
+namespace mediascanner {
+
 class MediaFile;
 struct MetadataExtractorPrivate;
 
@@ -53,5 +55,7 @@ public:
 private:
     MetadataExtractorPrivate *p;
 };
+
+}
 
 #endif

@@ -21,6 +21,8 @@
 #include"MediaFile.hh"
 #include<stdexcept>
 
+namespace mediascanner {
+
 MediaFileBuilder::MediaFileBuilder(const std::string &fname) {
     filename = fname;
 }
@@ -113,4 +115,6 @@ void MediaFileBuilder::setDuration(int n) {
         throw std::invalid_argument("Tried to set duration when it was already set.");
     duration = n;
     duration_set = true;
+}
+
 }

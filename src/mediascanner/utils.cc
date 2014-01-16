@@ -23,6 +23,8 @@
 #include<stdexcept>
 #include<glib.h>
 
+namespace mediascanner {
+
 std::string sqlQuote(const std::string &input) {
     std::vector<char> out;
     out.reserve(input.size() + 2);
@@ -83,5 +85,7 @@ std::string getUri(const std::string &filename) {
     std::string uri(uristr);
     g_free(uristr);
     return uri;
+}
+
 }
 

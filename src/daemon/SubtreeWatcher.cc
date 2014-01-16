@@ -36,6 +36,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
@@ -228,4 +230,6 @@ int SubtreeWatcher::getFd() const {
 
 int SubtreeWatcher::directoryCount() const {
     return (int) p->wd2str.size();
+}
+
 }

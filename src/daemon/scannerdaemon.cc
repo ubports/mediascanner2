@@ -41,6 +41,8 @@
 
 using namespace std;
 
+using namespace mediascanner;
+
 class ScannerDaemon final {
 public:
     ScannerDaemon();

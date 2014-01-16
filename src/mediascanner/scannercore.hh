@@ -20,11 +20,15 @@
 #ifndef SCANNERCORE_H
 #define SCANNERCORE_H
 
+namespace mediascanner {
+
 enum MediaType {
     UnknownMedia,
     AudioMedia,
     VideoMedia,
     AllMedia,
 };
+
+}
 
 #endif

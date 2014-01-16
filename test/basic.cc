@@ -35,6 +35,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
+using namespace mediascanner;
 
 class ScanTest : public ::testing::Test {
  protected:

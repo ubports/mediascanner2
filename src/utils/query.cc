@@ -26,6 +26,7 @@
 #include<vector>
 
 using namespace std;
+using namespace mediascanner;
 
 void queryDb(const string &core_term) {
     MediaStore store(MS_READ_ONLY);
@@ -59,3 +60,4 @@ int main(int argc, char **argv) {
     string core_term(argv[1]);
     queryDb(core_term);
 }
+

@@ -36,6 +36,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
 static const int schemaVersion = 3;
@@ -441,5 +443,7 @@ COMMIT;
         sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
         throw runtime_error(errmsg);
     }
+
+}
 
 }

@@ -29,6 +29,7 @@
 #include<sqlite3.h>
 
 using namespace std;
+using namespace mediascanner;
 
 #define RNDWORD words[rnd() % words.size()]
 

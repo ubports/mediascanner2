@@ -23,6 +23,8 @@
 #include"scannercore.hh"
 #include<string>
 
+namespace mediascanner {
+
 class MediaFile;
 
 class MediaFileBuilder final {
@@ -79,5 +81,6 @@ private:
     bool duration_set = false;
 };
 
+}
 
 #endif

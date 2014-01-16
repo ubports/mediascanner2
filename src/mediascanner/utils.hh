@@ -22,8 +22,12 @@
 
 #include<string>
 
+namespace mediascanner {
+
 std::string sqlQuote(const std::string &input);
 std::string filenameToTitle(const std::string &filename);
 std::string getUri(const std::string &filename);
+
+}
 
 #endif
