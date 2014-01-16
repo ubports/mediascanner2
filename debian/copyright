@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: mediascanner
-Source: https://launchpad.net/mediascanner
+Upstream-Name: mediascanner2
+Source: https://launchpad.net/mediascanner2
 
 Files: *
 Copyright: 2013 Canonical Ltd.

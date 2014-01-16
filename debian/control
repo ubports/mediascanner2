@@ -1,8 +1,8 @@
-Source: mediascanner2.0
+Source: mediascanner2
 Section: libs
 Priority: optional
 Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Build-Depends: cmake,
                debhelper (>= 9),
                libglib2.0-dev,
@@ -21,11 +21,11 @@ Build-Depends: cmake,
                gstreamer1.0-plugins-good,
 # For "old style" scope
                libunity-dev,
-Homepage: https://launchpad.net/mediascanner
+Homepage: https://launchpad.net/mediascanner2
 # if you don't have have commit access to this branch but would like to upload
 # directly to Ubuntu, don't worry: your changes will be merged back into the
 # upstream branch
-#Vcs-Bzr: lp:mediascanner
+Vcs-Bzr: lp:mediascanner2
 
 Package: libmediascanner-2.0-0
 Architecture: any

@@ -1,9 +1,14 @@
-mediascanner2.0 (0.99-0ubuntu1) UNRELEASED; urgency=low
+mediascanner2 (0.99+14.04.20140110-0ubuntu1) trusty; urgency=low
 
   [ Jussi Pakkanen ]
   * Hot new stuff
 
   [ Łukasz 'sil2100' Zemczak ]
   * Automatic snapshot from revision 191 (bootstrap)
+  * We no longer ship any LGPL sources. Also, fix packaging naming in
+    some places - along with Vcs-*
 
- -- Jussi Pakkanen <jussi.pakkanen@ubuntu.com>  Tue, 05 Nov 2013 14:51:01 +0200
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 194
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 10 Jan 2014 14:18:01 +0000
