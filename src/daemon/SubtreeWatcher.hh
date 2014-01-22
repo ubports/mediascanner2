@@ -45,7 +45,7 @@ public:
     SubtreeWatcher& operator=(SubtreeWatcher &o) = delete;
 
     void addDir(const std::string &path);
-    void pumpEvents();
+    bool pumpEvents();
     int getFd() const;
     int directoryCount() const;
 };
