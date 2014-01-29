@@ -19,7 +19,7 @@
 
 #include "mediascanner/MediaStore.hh"
 #include "mediascanner/MediaFile.hh"
-#include "mediascanner/utils.hh"
+#include "mediascanner/internal/utils.hh"
 
 #include<vector>
 #include<string>

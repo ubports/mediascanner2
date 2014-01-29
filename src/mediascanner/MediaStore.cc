@@ -31,8 +31,8 @@
 #include"MediaStore.hh"
 #include"MediaFile.hh"
 #include "Album.hh"
-#include "sqliteutils.hh"
-#include"utils.hh"
+#include "internal/sqliteutils.hh"
+#include "internal/utils.hh"
 
 using namespace std;
 
