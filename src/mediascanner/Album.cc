@@ -33,14 +33,6 @@ const std::string& Album::getArtist() const noexcept {
     return artist;
 }
 
-void Album::setTitle(const std::string &title) noexcept {
-    this->title = title;
-}
-
-void Album::setArtist(const std::string &artist) noexcept {
-    this->artist = artist;
-}
-
 bool Album::operator==(const Album &other) const {
     return title == other.title && artist == other.artist;
 }

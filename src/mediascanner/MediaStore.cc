@@ -322,7 +322,7 @@ static vector<MediaFile> collect_media(Statement &query) {
     return result;
 }
 
-MediaFile MediaStore::lookup(const std::string &filename) {
+MediaFile MediaStore::lookup(const std::string &filename) const {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media
@@ -335,7 +335,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return make_media(query);
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) const {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media JOIN (
@@ -350,7 +350,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return collect_media(query);
 }
 
-vector<Album> MediaStore::queryAlbums(const std::string &core_term) {
+vector<Album> MediaStore::queryAlbums(const std::string &core_term) const {
     Statement query(p->db, R"(
 SELECT album, album_artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
@@ -368,7 +368,7 @@ GROUP BY album, album_artist
     return albums;
 }
 
-vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) {
+vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
@@ -380,7 +380,7 @@ ORDER BY track_number
     return collect_media(query);
 }
 
-std::string MediaStore::getETag(const std::string &filename) {
+std::string MediaStore::getETag(const std::string &filename) const {
     Statement query(p->db, R"(
 SELECT etag FROM media WHERE filename = ?
 )");
