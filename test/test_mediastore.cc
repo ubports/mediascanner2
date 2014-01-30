@@ -133,6 +133,37 @@ TEST_F(MediaStoreTest, query_ranking) {
     EXPECT_EQ(result[3], audio3); // then artist
 }
 
+TEST_F(MediaStoreTest, query_limit) {
+    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    vector<MediaFile> result = store.query("aaa", AudioMedia, 2);
+    ASSERT_EQ(result.size(), 2);
+    EXPECT_EQ(result[0], audio1); // Term appears in title, artist and album
+    EXPECT_EQ(result[1], audio2); // title has highest weighting
+}
+
+TEST_F(MediaStoreTest, query_empty) {
+    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    // An empty query should return some results
+    vector<MediaFile> result = store.query("", AudioMedia, 2);
+    ASSERT_EQ(result.size(), 2);
+}
+
 TEST_F(MediaStoreTest, unmount) {
     MediaFile audio1("/media/username/dir/fname.ogg", "", "", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", 1, 5, AudioMedia);
     MediaFile audio2("/home/username/Music/fname.ogg", "", "", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 42, 5, AudioMedia);
