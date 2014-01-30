@@ -335,7 +335,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return make_media(query);
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type, int limit) {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media JOIN (
@@ -344,9 +344,11 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     ) AS ranktable ON (media.rowid = ranktable.docid)
   WHERE type == ?
   ORDER BY ranktable.rank DESC
+  LIMIT ?
 )");
     query.bind(1, core_term + "*");
     query.bind(2, (int)type);
+    query.bind(3, limit);
     return collect_media(query);
 }
 
