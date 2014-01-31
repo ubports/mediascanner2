@@ -22,6 +22,8 @@
 
 #include<string>
 
+namespace mediascanner {
+
 class MediaStore;
 class MetadataExtractor;
 
@@ -50,5 +52,6 @@ public:
     int directoryCount() const;
 };
 
+}
 
 #endif

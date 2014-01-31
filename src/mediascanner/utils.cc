@@ -17,11 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include"utils.hh"
+#include"internal/utils.hh"
 
 #include<vector>
 #include<stdexcept>
 #include<glib.h>
+
+namespace mediascanner {
 
 std::string sqlQuote(const std::string &input) {
     std::vector<char> out;
@@ -83,5 +85,7 @@ std::string getUri(const std::string &filename) {
     std::string uri(uristr);
     g_free(uristr);
     return uri;
+}
+
 }
 

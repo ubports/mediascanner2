@@ -19,7 +19,7 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
-#include "../mediascanner/utils.hh"
+#include "../mediascanner/internal/utils.hh"
 #include "MetadataExtractor.hh"
 
 #include <glib-object.h>
@@ -34,6 +34,7 @@
 
 using namespace std;
 
+namespace mediascanner {
 
 struct MetadataExtractorPrivate {
     std::unique_ptr<GstDiscoverer,void(*)(void *)> discoverer;
@@ -172,4 +173,6 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     mfb.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
     return mfb.build();
+}
+
 }

@@ -19,7 +19,7 @@
 
 #include "mediascanner/MediaStore.hh"
 #include "mediascanner/MediaFile.hh"
-#include "mediascanner/utils.hh"
+#include "mediascanner/internal/utils.hh"
 
 #include<vector>
 #include<string>
@@ -29,6 +29,7 @@
 #include<sqlite3.h>
 
 using namespace std;
+using namespace mediascanner;
 
 #define RNDWORD words[rnd() % words.size()]
 

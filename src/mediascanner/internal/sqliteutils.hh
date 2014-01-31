@@ -24,6 +24,8 @@
 #include <stdexcept>
 #include <string>
 
+namespace mediascanner {
+
 class Statement {
 public:
     Statement(sqlite3 *db, const char *sql) {
@@ -95,5 +97,6 @@ private:
     int rc;
 };
 
+}
 
 #endif

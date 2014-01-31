@@ -22,6 +22,8 @@
 
 #include <string>
 
+namespace mediascanner {
+
 class Album final {
 public:
 
@@ -38,5 +40,6 @@ private:
     std::string artist;
 };
 
-#endif
+}
 
+#endif

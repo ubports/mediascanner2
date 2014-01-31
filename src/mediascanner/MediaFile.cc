@@ -18,9 +18,11 @@
  */
 
 #include "MediaFile.hh"
-#include "utils.hh"
+#include "internal/utils.hh"
 
 using namespace std;
+
+namespace mediascanner {
 
 MediaFile::MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
         int track_number, int duration, MediaType type) :
@@ -73,7 +75,7 @@ MediaType MediaFile::getType() const noexcept {
 }
 
 std::string MediaFile::getUri() const {
-    return ::getUri(filename);
+    return mediascanner::getUri(filename);
 }
 
 bool MediaFile::operator==(const MediaFile &other) const {
@@ -95,3 +97,4 @@ bool MediaFile::operator!=(const MediaFile &other) const {
     return !(*this == other);
 }
 
+}
