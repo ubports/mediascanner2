@@ -24,6 +24,8 @@
 #include<vector>
 #include<string>
 
+namespace mediascanner {
+
 struct MediaStorePrivate;
 class MediaFile;
 class Album;
@@ -56,5 +58,7 @@ public:
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
 };
+
+}
 
 #endif

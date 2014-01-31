@@ -21,6 +21,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 Album::Album(const std::string &title, const std::string &artist)
     : title(title), artist(artist) {
 }
@@ -47,4 +49,6 @@ bool Album::operator==(const Album &other) const {
 
 bool Album::operator!=(const Album &other) const {
     return !(*this == other);
+}
+
 }

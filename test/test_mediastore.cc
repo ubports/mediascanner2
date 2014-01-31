@@ -28,6 +28,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
+using namespace mediascanner;
 
 class MediaStoreTest : public ::testing::Test {
  protected:

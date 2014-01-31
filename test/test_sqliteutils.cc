@@ -21,6 +21,7 @@
 #include <mediascanner/sqliteutils.hh>
 
 using namespace std;
+using namespace mediascanner;
 
 class SqliteTest : public ::testing::Test {
 public:
