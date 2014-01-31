@@ -19,7 +19,7 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
-#include "../mediascanner/utils.hh"
+#include "../mediascanner/internal/utils.hh"
 #include "MetadataExtractor.hh"
 
 #include <glib-object.h>

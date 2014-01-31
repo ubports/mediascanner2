@@ -20,7 +20,7 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/Album.hh>
 #include <mediascanner/MediaStore.hh>
-#include <mediascanner/utils.hh>
+#include <mediascanner/internal/utils.hh>
 
 #include<stdexcept>
 #include<cstdio>

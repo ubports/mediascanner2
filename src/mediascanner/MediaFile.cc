@@ -18,7 +18,7 @@
  */
 
 #include "MediaFile.hh"
-#include "utils.hh"
+#include "internal/utils.hh"
 
 using namespace std;
 
