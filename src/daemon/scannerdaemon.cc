@@ -38,8 +38,11 @@
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
+#include "InvalidationSender.hh"
 
 using namespace std;
+
+using namespace mediascanner;
 
 class ScannerDaemon final {
 public:
@@ -53,7 +56,7 @@ private:
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
     void removeDir(const string &dir);
-    void pumpEvents();
+    bool pumpEvents();
     void addMountedVolumes();
 
     int mountfd;
@@ -62,6 +65,7 @@ private:
     unique_ptr<MediaStore> store;
     unique_ptr<MetadataExtractor> extractor;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
+    InvalidationSender invalidator;
 };
 
 static std::string getCurrentUser() {
@@ -134,6 +138,7 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 int ScannerDaemon::run() {
     while(true) {
         int maxfd = 0;
+        bool changed = false;
         fd_set fds;
         FD_ZERO(&fds);
         for(const auto &i: subtrees) {
@@ -151,9 +156,12 @@ int ScannerDaemon::run() {
             throw runtime_error(msg);
         }
         for(const auto &i: subtrees) {
-            i.second->pumpEvents();
+            changed = i.second->pumpEvents() || changed;
         }
-        pumpEvents();
+        changed = pumpEvents() || changed;
+        if(changed) {
+            invalidator.invalidate();
+        }
     }
     return 99;
 }
@@ -178,9 +186,10 @@ void ScannerDaemon::setupMountWatcher() {
     }
 }
 
-void ScannerDaemon::pumpEvents() {
+bool ScannerDaemon::pumpEvents() {
     const int BUFSIZE= 4096;
     char buf[BUFSIZE];
+    bool changed = false;
     while(true) {
         fd_set reads;
         FD_ZERO(&reads);
@@ -189,7 +198,7 @@ void ScannerDaemon::pumpEvents() {
         timeout.tv_sec = 0;
         timeout.tv_usec = 0;
         if(select(mountfd+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            return;
+            break;
         }
         ssize_t num_read;
         num_read = read(mountfd, buf, BUFSIZE);
@@ -212,14 +221,17 @@ void ScannerDaemon::pumpEvents() {
                 if(event->mask & IN_CREATE) {
                     printf("Volume %s was mounted.\n", abspath.c_str());
                     addDir(abspath);
+                    changed = true;
                 } else if(event->mask & IN_DELETE){
                     printf("Volume %s was unmounted.\n", abspath.c_str());
                     removeDir(abspath);
+                    changed = true;
                 }
             }
             p += sizeof(struct inotify_event) + event->len;
         }
     }
+    return changed;
 }
 
 void ScannerDaemon::addMountedVolumes() {

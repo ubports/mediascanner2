@@ -1,3 +1,16 @@
+mediascanner2 (0.99+14.04.20140117-0ubuntu1) trusty; urgency=low
+
+  [ James Henstridge ]
+  * Fix a few issues that prevent the scanner daemon from running when
+    stdin is redirected to /dev/null.
+  * Fix the licensing on the public library so that it is correctly
+    labelled as LGPL, like the old mediascanner code base.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 197
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 17 Jan 2014 07:50:53 +0000
+
 mediascanner2 (0.99+14.04.20140110-0ubuntu1) trusty; urgency=low
 
   [ Jussi Pakkanen ]

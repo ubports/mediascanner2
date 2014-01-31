@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2014 Canonical, Ltd.
  *
  * Authors:
  *    Jussi Pakkanen <jussi.pakkanen@canonical.com>
@@ -17,28 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCANNER_HH_
-#define SCANNER_HH_
+#ifndef INVALIDATIONSENDER_HH
+#define INVALIDATIONSENDER_HH
 
-#include<string>
-#include<vector>
+/**
+ * A class that sends a broadcast signal that the state of media
+ * files has changed.
+ */
 
-#include <mediascanner/scannercore.hh>
-
-namespace mediascanner {
-
-class DetectedFile;
-class MetadataExtractor;
-
-class Scanner final {
+class InvalidationSender final {
 public:
-    Scanner();
-    ~Scanner();
+    InvalidationSender();
+    InvalidationSender(const InvalidationSender &o) = delete;
+    InvalidationSender& operator=(const InvalidationSender &o) = delete;
 
-    std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
-
+    void invalidate();
 };
-
-}
 
 #endif

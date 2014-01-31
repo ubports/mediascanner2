@@ -23,6 +23,8 @@
 #include"scannercore.hh"
 #include<string>
 
+namespace mediascanner {
+
 class MediaFile final {
 public:
 
@@ -64,6 +66,8 @@ private:
     int duration; // In seconds.
     MediaType type;
 };
+
+}
 
 #endif
 

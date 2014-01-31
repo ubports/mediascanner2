@@ -26,6 +26,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 Scanner::Scanner() {
 
 }
@@ -66,4 +68,6 @@ vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std:
         }
     }
     return result;
+}
+
 }

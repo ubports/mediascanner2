@@ -36,6 +36,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
 static const int schemaVersion = 3;
@@ -335,8 +337,19 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return make_media(query);
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type) {
-    Statement query(p->db, R"(
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type, int limit) {
+    if (core_term == "") {
+        Statement query(p->db, R"(
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+  FROM media
+  WHERE type == ?
+  LIMIT ?
+)");
+        query.bind(1, (int)type);
+        query.bind(2, limit);
+        return collect_media(query);
+    } else {
+        Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
@@ -344,10 +357,13 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     ) AS ranktable ON (media.rowid = ranktable.docid)
   WHERE type == ?
   ORDER BY ranktable.rank DESC
+  LIMIT ?
 )");
-    query.bind(1, core_term + "*");
-    query.bind(2, (int)type);
-    return collect_media(query);
+        query.bind(1, core_term + "*");
+        query.bind(2, (int)type);
+        query.bind(3, limit);
+        return collect_media(query);
+    }
 }
 
 vector<Album> MediaStore::queryAlbums(const std::string &core_term) {
@@ -441,5 +457,7 @@ COMMIT;
         sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
         throw runtime_error(errmsg);
     }
+
+}
 
 }

@@ -24,6 +24,8 @@
 #include<vector>
 #include<string>
 
+namespace mediascanner {
+
 struct MediaStorePrivate;
 class MediaFile;
 class Album;
@@ -47,7 +49,7 @@ public:
     void insert(const MediaFile &m);
     void remove(const std::string &fname);
     MediaFile lookup(const std::string &filename);
-    std::vector<MediaFile> query(const std::string &q, MediaType type);
+    std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1);
     std::vector<Album> queryAlbums(const std::string &core_term);
     std::vector<MediaFile> getAlbumSongs(const Album& album);
     std::string getETag(const std::string &filename);
@@ -56,5 +58,7 @@ public:
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
 };
+
+}
 
 #endif

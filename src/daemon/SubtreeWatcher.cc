@@ -36,6 +36,8 @@
 
 using namespace std;
 
+namespace mediascanner {
+
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
@@ -153,11 +155,12 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 }
 
 
-void SubtreeWatcher::pumpEvents() {
+bool SubtreeWatcher::pumpEvents() {
     const int BUFSIZE=4096;
     char buf[BUFSIZE];
+    bool changed = false;
     if(p->wd2str.empty())
-        return;
+        return changed;
     while(true) {
         fd_set reads;
         FD_ZERO(&reads);
@@ -166,7 +169,7 @@ void SubtreeWatcher::pumpEvents() {
         timeout.tv_sec = 0;
         timeout.tv_usec = 0;
         if(select(p->inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            return;
+            break;
         }
         ssize_t num_read;
         num_read = read(p->inotifyid, buf, BUFSIZE);
@@ -200,26 +203,37 @@ void SubtreeWatcher::pumpEvents() {
                 is_file = true;
 
             if(event->mask & IN_CREATE) {
-                if(is_dir)
+                if(is_dir) {
                     dirAdded(abspath);
+                    changed = true;
+                }
                 // Do not add files upon creation because we can't parse
                 // their metadata until it is fully written.
             } else if((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
-                if(is_dir)
+                if(is_dir) {
                     dirAdded(abspath);
-                if(is_file)
+                    changed = true;
+                }
+                if(is_file) {
                     fileAdded(abspath);
+                    changed = true;
+                }
             } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
-                if(p->str2wd.find(abspath) != p->str2wd.end())
+                if(p->str2wd.find(abspath) != p->str2wd.end()) {
                     dirRemoved(abspath);
-                else
+                    changed = true;
+                } else {
                     fileDeleted(abspath);
+                    changed = true;
+                }
             } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
                 removeDir(abspath);
+                changed = true;
             }
             d += sizeof(struct inotify_event) + event->len;
         }
     }
+    return changed;
 }
 
 int SubtreeWatcher::getFd() const {
@@ -228,4 +242,6 @@ int SubtreeWatcher::getFd() const {
 
 int SubtreeWatcher::directoryCount() const {
     return (int) p->wd2str.size();
+}
+
 }

@@ -29,6 +29,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
+using namespace mediascanner;
 
 class MetadataExtractorTest : public ::testing::Test {
  protected:
