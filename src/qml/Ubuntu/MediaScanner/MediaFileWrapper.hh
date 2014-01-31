@@ -39,7 +39,7 @@ class MediaFileWrapper : public QObject {
     Q_PROPERTY(int trackNumber READ trackNumber CONSTANT)
     Q_PROPERTY(int duration READ duration CONSTANT)
 public:
-    MediaFileWrapper(MediaFile media, QObject *parent=0);
+    MediaFileWrapper(const mediascanner::MediaFile &media, QObject *parent=0);
     QString filename() const;
     QString uri() const;
     QString contentType() const;
@@ -52,7 +52,7 @@ public:
     int trackNumber() const;
     int duration() const;
 private:
-    const MediaFile media;
+    const mediascanner::MediaFile media;
 };
 
 #endif

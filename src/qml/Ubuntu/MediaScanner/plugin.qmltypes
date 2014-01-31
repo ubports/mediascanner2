@@ -29,9 +29,9 @@ Module {
         Enum {
             name: "MediaType"
             values: {
-                "Audio": 1,
-                "Video": 2,
-                "All": 3
+                "AudioMedia": 1,
+                "VideoMedia": 2,
+                "AllMedia": 3
             }
         }
         Method {

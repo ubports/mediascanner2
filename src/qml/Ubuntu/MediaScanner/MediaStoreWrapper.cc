@@ -20,13 +20,15 @@
 #include "MediaStoreWrapper.hh"
 #include <QQmlEngine>
 
+using namespace mediascanner;
+
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     : QObject(parent), store(MS_READ_ONLY) {
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
     QList<QObject*> result;
-    for (const auto &media : store.query(q.toStdString(), static_cast<::MediaType>(type))) {
+    for (const auto &media : store.query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
         auto wrapper = new MediaFileWrapper(media);
         QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
         result.append(wrapper);

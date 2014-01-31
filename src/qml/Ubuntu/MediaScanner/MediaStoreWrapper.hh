@@ -32,18 +32,17 @@ class MediaStoreWrapper : public QObject {
     Q_ENUMS(MediaType)
 public:
     enum MediaType {
-        Audio = AudioMedia,
-        Video = VideoMedia,
-        All = AllMedia,
+        AudioMedia = mediascanner::AudioMedia,
+        VideoMedia = mediascanner::VideoMedia,
+        AllMedia = mediascanner::AllMedia,
     };
-    typedef enum MediaType MediaType;
     MediaStoreWrapper(QObject *parent=0);
 
     Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
     Q_INVOKABLE MediaFileWrapper *lookup(const QString &filename);
 
 private:
-    MediaStore store;
+    mediascanner::MediaStore store;
 };
 
 #endif
