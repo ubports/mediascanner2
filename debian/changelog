@@ -1,3 +1,19 @@
+mediascanner2 (0.99+14.04.20140205-0ubuntu1) trusty; urgency=low
+
+  [ James Henstridge ]
+  * Add a limit argument to MediaStore::query(), and ensure that it
+    produces some results in response to an empty query.
+
+  [ Jussi Pakkanen ]
+  * Simple class for sending result set invalidation messages.
+  * Add a mediascanner namespace.
+  * Simpler header reorg.
+
+  [ CI bot ]
+  * Null merge to get changes through CITrain
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 05 Feb 2014 18:08:14 +0000
+
 mediascanner2 (0.99+14.04.20140117-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]
