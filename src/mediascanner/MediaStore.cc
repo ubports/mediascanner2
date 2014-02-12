@@ -366,15 +366,17 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     }
 }
 
-vector<Album> MediaStore::queryAlbums(const std::string &core_term) {
+vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) {
     Statement query(p->db, R"(
 SELECT album, album_artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND album <> ''
 GROUP BY album, album_artist
+LIMIT ?
 )");
     query.bind(1, core_term + "*");
     query.bind(2, (int)AudioMedia);
+    query.bind(3, limit);
     vector<Album> albums;
     while (query.step()) {
         const string album = query.getText(0);
