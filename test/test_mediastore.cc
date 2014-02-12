@@ -239,9 +239,25 @@ TEST_F(MediaStoreTest, queryAlbums_limit) {
     store.insert(audio4);
 
     vector<Album> albums = store.queryAlbums("Artist");
-    EXPECT_EQ(albums.size(), 2);
+    EXPECT_EQ(2, albums.size());
     albums = store.queryAlbums("Artist", 1);
-    EXPECT_EQ(albums.size(), 1);
+    EXPECT_EQ(1, albums.size());
+}
+
+TEST_F(MediaStoreTest, queryAlbums_empty) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", 1, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+
+    vector<Album> albums = store.queryAlbums("");
+    EXPECT_EQ(2, albums.size());
 }
 
 TEST_F(MediaStoreTest, getAlbumSongs) {

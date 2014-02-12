@@ -366,24 +366,44 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     }
 }
 
+static Album make_album(Statement &query) {
+    const string album = query.getText(0);
+    const string album_artist = query.getText(1);
+    return Album(album, album_artist);
+}
+
+static vector<Album> collect_albums(Statement &query) {
+    vector<Album> result;
+    while (query.step()) {
+        result.push_back(make_album(query));
+    }
+    return result;
+}
+
 vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) {
-    Statement query(p->db, R"(
+    if (core_term == "") {
+        Statement query(p->db, R"(
+SELECT album, album_artist FROM media
+WHERE type = ? AND album <> ''
+GROUP BY album, album_artist
+LIMIT ?
+)");
+        query.bind(1, (int)AudioMedia);
+        query.bind(2, limit);
+        return collect_albums(query);
+    } else {
+        Statement query(p->db, R"(
 SELECT album, album_artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND album <> ''
 GROUP BY album, album_artist
 LIMIT ?
 )");
-    query.bind(1, core_term + "*");
-    query.bind(2, (int)AudioMedia);
-    query.bind(3, limit);
-    vector<Album> albums;
-    while (query.step()) {
-        const string album = query.getText(0);
-        const string album_artist = query.getText(1);
-        albums.push_back(Album(album, album_artist));
+        query.bind(1, core_term + "*");
+        query.bind(2, (int)AudioMedia);
+        query.bind(3, limit);
+        return collect_albums(query);
     }
-    return albums;
 }
 
 vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) {
