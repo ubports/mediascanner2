@@ -258,6 +258,8 @@ TEST_F(MediaStoreTest, queryAlbums_empty) {
 
     vector<Album> albums = store.queryAlbums("");
     EXPECT_EQ(2, albums.size());
+    albums = store.queryAlbums("", 1);
+    EXPECT_EQ(1, albums.size());
 }
 
 TEST_F(MediaStoreTest, getAlbumSongs) {
