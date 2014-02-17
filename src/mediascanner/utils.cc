@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include"utils.hh"
+#include"internal/utils.hh"
 
 #include<vector>
 #include<stdexcept>
