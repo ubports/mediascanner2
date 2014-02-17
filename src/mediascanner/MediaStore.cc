@@ -265,7 +265,7 @@ size_t MediaStore::size() const {
     return count.getInt(0);
 }
 
-void MediaStore::insert(const MediaFile &m) {
+void MediaStore::insert(const MediaFile &m) const {
     Statement query(p->db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     string fname = m.getFileName();
     string title = m.getTitle();
@@ -295,7 +295,7 @@ void MediaStore::insert(const MediaFile &m) {
     printf(" duration : %d\n", m.getDuration());
 }
 
-void MediaStore::remove(const string &fname) {
+void MediaStore::remove(const string &fname) const {
     Statement del(p->db, "DELETE FROM media WHERE filename = ?");
     del.bind(1, fname);
     del.step();
@@ -324,7 +324,7 @@ static vector<MediaFile> collect_media(Statement &query) {
     return result;
 }
 
-MediaFile MediaStore::lookup(const std::string &filename) {
+MediaFile MediaStore::lookup(const std::string &filename) const {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media
@@ -337,7 +337,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return make_media(query);
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type, int limit) {
+vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type, int limit) const {
     if (core_term == "") {
         Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
@@ -380,7 +380,7 @@ static vector<Album> collect_albums(Statement &query) {
     return result;
 }
 
-vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) {
+vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
     if (core_term == "") {
         Statement query(p->db, R"(
 SELECT album, album_artist FROM media
@@ -406,7 +406,7 @@ LIMIT ?
     }
 }
 
-vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) {
+vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {
     Statement query(p->db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
@@ -418,7 +418,7 @@ ORDER BY track_number
     return collect_media(query);
 }
 
-std::string MediaStore::getETag(const std::string &filename) {
+std::string MediaStore::getETag(const std::string &filename) const {
     Statement query(p->db, R"(
 SELECT etag FROM media WHERE filename = ?
 )");

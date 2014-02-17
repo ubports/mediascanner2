@@ -35,9 +35,6 @@ public:
     bool operator==(const Album &other) const;
     bool operator!=(const Album &other) const;
 
-    void setTitle(const std::string& title) noexcept;
-    void setArtist(const std::string& artist) noexcept;
-
 private:
     std::string title;
     std::string artist;
