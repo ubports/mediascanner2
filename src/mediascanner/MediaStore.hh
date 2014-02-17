@@ -46,11 +46,11 @@ public:
     MediaStore operator=(const MediaStore &other) = delete;
     ~MediaStore();
 
-    void insert(const MediaFile &m);
-    void remove(const std::string &fname);
+    void insert(const MediaFile &m) const;
+    void remove(const std::string &fname) const;
     MediaFile lookup(const std::string &filename) const;
     std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
-    std::vector<Album> queryAlbums(const std::string &core_term) const;
+    std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
 
