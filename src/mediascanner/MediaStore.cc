@@ -40,7 +40,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 3;
+static const int schemaVersion = 4;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -216,7 +216,7 @@ static std::string get_default_database() {
         cachedir = env_cachedir;
     } else {
         cachedir = g_get_user_cache_dir();
-        cachedir += "/mediascanner-test";
+        cachedir += "/mediascanner-2.0";
     }
     if (g_mkdir_with_parents(cachedir.c_str(), S_IRWXU) < 0) {
         std::string msg("Could not create cache dir: ");
