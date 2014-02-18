@@ -52,7 +52,7 @@ vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std:
         if(fname[0] == '.') // Ignore hidden files and dirs.
             continue;
         string fullpath = root + "/" + fname;
-        stat(fullpath.c_str(), &statbuf);
+        lstat(fullpath.c_str(), &statbuf);
         if(S_ISREG(statbuf.st_mode)) {
             try {
                 DetectedFile d = extractor->detect(fullpath);
