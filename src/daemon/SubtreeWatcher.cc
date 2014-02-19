@@ -105,7 +105,7 @@ void SubtreeWatcher::addDir(const string &root) {
         if(fname[0] == '.') // Ignore hidden entries and also "." and "..".
             continue;
         string fullpath = root + "/" + fname;
-        stat(fullpath.c_str(), &statbuf);
+        lstat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
             addDir(fullpath);
         }
@@ -195,7 +195,7 @@ bool SubtreeWatcher::pumpEvents() {
             bool is_dir = false;
             bool is_file = false;
             struct stat statbuf;
-            stat(abspath.c_str(), &statbuf);
+            lstat(abspath.c_str(), &statbuf);
             // Remember: these are not valid in case of delete event.
             if(S_ISDIR(statbuf.st_mode))
                 is_dir = true;
