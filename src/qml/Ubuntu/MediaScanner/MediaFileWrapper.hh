@@ -25,6 +25,9 @@
 
 #include <mediascanner/MediaFile.hh>
 
+namespace mediascanner {
+namespace qml {
+
 class MediaFileWrapper : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString filename READ filename CONSTANT)
@@ -54,5 +57,8 @@ public:
 private:
     const mediascanner::MediaFile media;
 };
+
+}
+}
 
 #endif

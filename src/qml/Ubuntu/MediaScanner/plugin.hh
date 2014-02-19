@@ -22,6 +22,9 @@
 
 #include <QtQml>
 
+namespace mediascanner {
+namespace qml {
+
 class MediaScannerPlugin : public QQmlExtensionPlugin
 {
     Q_OBJECT
@@ -30,5 +33,8 @@ class MediaScannerPlugin : public QQmlExtensionPlugin
 public:
     virtual void registerTypes(const char *uri) override;
 };
+
+}
+}
 
 #endif

@@ -27,6 +27,9 @@
 #include <mediascanner/MediaStore.hh>
 #include "MediaFileWrapper.hh"
 
+namespace mediascanner {
+namespace qml {
+
 class MediaStoreWrapper : public QObject {
     Q_OBJECT
     Q_ENUMS(MediaType)
@@ -44,5 +47,8 @@ public:
 private:
     mediascanner::MediaStore store;
 };
+
+}
+}
 
 #endif

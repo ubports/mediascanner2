@@ -20,7 +20,7 @@
 #include "MediaStoreWrapper.hh"
 #include <QQmlEngine>
 
-using namespace mediascanner;
+using namespace mediascanner::qml;
 
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     : QObject(parent), store(MS_READ_ONLY) {

@@ -19,9 +19,9 @@
 
 #include "MediaFileWrapper.hh"
 
-using namespace mediascanner;
+using namespace mediascanner::qml;
 
-MediaFileWrapper::MediaFileWrapper(const MediaFile &media, QObject *parent)
+MediaFileWrapper::MediaFileWrapper(const mediascanner::MediaFile &media, QObject *parent)
     : QObject(parent), media(media) {
 }
 

@@ -7,7 +7,7 @@ import QtQuick.tooling 1.1
 
 Module {
     Component {
-        name: "MediaFileWrapper"
+        name: "mediascanner::qml::MediaFileWrapper"
         prototype: "QObject"
         exports: ["Ubuntu.MediaScanner/MediaFile 0.1"]
         Property { name: "filename"; type: "string"; isReadonly: true }
@@ -23,7 +23,7 @@ Module {
         Property { name: "duration"; type: "int"; isReadonly: true }
     }
     Component {
-        name: "MediaStoreWrapper"
+        name: "mediascanner::qml::MediaStoreWrapper"
         prototype: "QObject"
         exports: ["Ubuntu.MediaScanner/MediaStore 0.1"]
         Enum {

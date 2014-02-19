@@ -21,6 +21,8 @@
 #include "MediaFileWrapper.hh"
 #include "MediaStoreWrapper.hh"
 
+using namespace mediascanner::qml;
+
 void MediaScannerPlugin::registerTypes(const char *uri) {
     qmlRegisterType<MediaStoreWrapper>(uri, 0, 1, "MediaStore");
     qmlRegisterUncreatableType<MediaFileWrapper>(uri, 0, 1, "MediaFile",
