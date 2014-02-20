@@ -94,6 +94,8 @@ ScannerDaemon::ScannerDaemon() {
     const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
     if (videodir)
         addDir(videodir);
+    // In case someone opened the db file before we could populate it.
+    invalidator.invalidate();
 }
 
 ScannerDaemon::~ScannerDaemon() {
