@@ -7,6 +7,27 @@ import QtQuick.tooling 1.1
 
 Module {
     Component {
+        name: "mediascanner::qml::MediaFileModelBase"
+        prototype: "QAbstractListModel"
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleModelData": 0,
+                "RoleFilename": 1,
+                "RoleUri": 2,
+                "RoleContentType": 3,
+                "RoleETag": 4,
+                "RoleTitle": 5,
+                "RoleAuthor": 6,
+                "RoleAlbum": 7,
+                "RoleAlbumArtist": 8,
+                "RoleDate": 9,
+                "RoleTrackNumber": 10,
+                "RoleDuration": 11
+            }
+        }
+    }
+    Component {
         name: "mediascanner::qml::MediaFileWrapper"
         prototype: "QObject"
         exports: ["Ubuntu.MediaScanner/MediaFile 0.1"]
@@ -45,5 +66,12 @@ Module {
             type: "MediaFileWrapper*"
             Parameter { name: "filename"; type: "string" }
         }
+    }
+    Component {
+        name: "mediascanner::qml::SongsSearchModel"
+        prototype: "mediascanner::qml::MediaFileModelBase"
+        exports: ["Ubuntu.MediaScanner/SongsSearchModel 0.1"]
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "query"; type: "string" }
     }
 }

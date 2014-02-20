@@ -6,6 +6,8 @@ add_library(mediascanner-qml MODULE
   plugin.cc
   MediaFileWrapper.cc
   MediaStoreWrapper.cc
+  MediaFileModelBase.cc
+  SongsSearchModel.cc
 )
 
 set_target_properties(mediascanner-qml PROPERTIES AUTOMOC TRUE)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2014 Canonical, Ltd.
  *
  * Authors:
  *    James Henstridge <james.henstridge@canonical.com>
@@ -17,34 +17,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MEDIASCANNER_QML_MEDIASTOREWRAPPER_H
-#define MEDIASCANNER_QML_MEDIASTOREWRAPPER_H
+#ifndef MEDIASCANNER_QML_SONGSSEARCHMODEL_H
+#define MEDIASCANNER_QML_SONGSSEARCHMODEL_H
 
-#include <QList>
-#include <QObject>
 #include <QString>
 
-#include <mediascanner/MediaStore.hh>
-#include "MediaFileWrapper.hh"
+#include "MediaStoreWrapper.hh"
+#include "MediaFileModelBase.hh"
 
 namespace mediascanner {
 namespace qml {
 
-class MediaStoreWrapper : public QObject {
+class SongsSearchModel : public MediaFileModelBase {
     Q_OBJECT
-    Q_ENUMS(MediaType)
+    Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
+    Q_PROPERTY(QString query READ getQuery WRITE setQuery)
 public:
-    enum MediaType {
-        AudioMedia = mediascanner::AudioMedia,
-        VideoMedia = mediascanner::VideoMedia,
-        AllMedia = mediascanner::AllMedia,
-    };
-    MediaStoreWrapper(QObject *parent=0);
+    explicit SongsSearchModel(QObject *parent=0);
 
-    Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
-    Q_INVOKABLE MediaFileWrapper *lookup(const QString &filename);
+    MediaStoreWrapper *getStore();
+    void setStore(MediaStoreWrapper *store);
 
-    mediascanner::MediaStore store;
+    QString getQuery();
+    void setQuery(const QString query);
+private:
+    void update();
+
+    MediaStoreWrapper *store;
+    QString query;
 };
 
 }
