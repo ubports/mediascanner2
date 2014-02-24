@@ -1095,9 +1095,7 @@ static int porterNext(
         // otherwise, drop two-letter words (considered stop-words)
         (numChars >=3) ||
         // wildcard case:
-        (numChars == 1 && iStartOffset == 0 &&
-         (c->iOffset >= 3) &&
-         (c->iOffset == c->nInput - 1) &&
+        ((c->iOffset == c->nInput - 1) &&
          (z[c->iOffset] == '*'))) {
       /* figure out the number of bytes to copy/stem */
       int n = c->iOffset - iStartOffset;
