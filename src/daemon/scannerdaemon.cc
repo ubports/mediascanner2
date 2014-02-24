@@ -22,6 +22,7 @@
 #include<sys/stat.h>
 #include<sys/types.h>
 #include<sys/inotify.h>
+#include<sys/signalfd.h>
 #include<unistd.h>
 #include<cstdio>
 #include<cerrno>
@@ -52,6 +53,7 @@ public:
 
 private:
 
+    void setupSignalFd();
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
@@ -60,6 +62,7 @@ private:
     void addMountedVolumes();
 
     int mountfd;
+    int sigfd;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
@@ -84,6 +87,7 @@ ScannerDaemon::ScannerDaemon() {
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
+    setupSignalFd();
     setupMountWatcher();
     addMountedVolumes();
 
@@ -100,6 +104,26 @@ ScannerDaemon::ScannerDaemon() {
 
 ScannerDaemon::~ScannerDaemon() {
     close(mountfd);
+    close(sigfd);
+}
+
+void ScannerDaemon::setupSignalFd() {
+    sigset_t mask;
+
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGQUIT);
+
+    /* Block signals so we get them only via the fd. */
+
+    if(sigprocmask(SIG_BLOCK, &mask, NULL) == -1) {
+        throw runtime_error(strerror(errno));
+    }
+
+    sigfd = signalfd(-1, &mask, 0);
+    if(sigfd == -1) {
+        throw runtime_error(strerror(errno));
+    }
 }
 
 void ScannerDaemon::addDir(const string &dir) {
@@ -150,12 +174,18 @@ int ScannerDaemon::run() {
         }
         FD_SET(mountfd, &fds);
         if(mountfd > maxfd) maxfd = mountfd;
+        FD_SET(sigfd, &fds);
+        if(sigfd > maxfd) maxfd = sigfd;
 
         int rval = select(maxfd+1, &fds, nullptr, nullptr, nullptr);
         if(rval < 0) {
             string msg("Select failed: ");
             msg += strerror(errno);
             throw runtime_error(msg);
+        }
+        if(FD_ISSET(sigfd, &fds)) {
+            printf("Received signal, shutting down.\n");
+            return 0;
         }
         for(const auto &i: subtrees) {
             changed = i.second->pumpEvents() || changed;
