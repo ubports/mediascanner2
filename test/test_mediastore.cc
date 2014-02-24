@@ -150,6 +150,20 @@ TEST_F(MediaStoreTest, query_limit) {
     EXPECT_EQ(result[1], audio2); // title has highest weighting
 }
 
+TEST_F(MediaStoreTest, query_short) {
+    MediaFile audio1("/path/foo5.ogg", "", "", "title xyz", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title xzy", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+
+    vector<MediaFile> result = store.query("x", AudioMedia);
+    EXPECT_EQ(result.size(), 2);
+    result = store.query("xy", AudioMedia);
+    EXPECT_EQ(result.size(), 1);
+}
+
 TEST_F(MediaStoreTest, query_empty) {
     MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
     MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
