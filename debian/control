@@ -16,6 +16,7 @@ Build-Depends: cmake,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
                qtdeclarative5-qtquick2-plugin,
+               qtdeclarative5-test-plugin,
 # For running unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
