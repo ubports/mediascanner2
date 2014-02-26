@@ -1,3 +1,19 @@
+mediascanner2 (0.99+14.04.20140220-0ubuntu1) trusty; urgency=low
+
+  [ James Henstridge ]
+  * Add a limit argument to MediaStore::queryAlbums(), and ensure that
+    it returns some results when given an empty query string.
+
+  [ Jussi Pakkanen ]
+  * Added const qualifiers to methods and made album immutable just like
+    mediafile.
+  * Use lstat to avoid loops.
+  * Fix path where media cache is stored.
+  * Nil merge to get on the release train.
+  * Send invalidation signal once the db is fully populated.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 20 Feb 2014 10:03:04 +0000
+
 mediascanner2 (0.99+14.04.20140205-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]

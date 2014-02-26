@@ -94,6 +94,8 @@ ScannerDaemon::ScannerDaemon() {
     const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
     if (videodir)
         addDir(videodir);
+    // In case someone opened the db file before we could populate it.
+    invalidator.invalidate();
 }
 
 ScannerDaemon::~ScannerDaemon() {
@@ -216,7 +218,7 @@ bool ScannerDaemon::pumpEvents() {
             string filename(event->name);
             string abspath = directory + '/' + filename;
             struct stat statbuf;
-            stat(abspath.c_str(), &statbuf);
+            lstat(abspath.c_str(), &statbuf);
             if(S_ISDIR(statbuf.st_mode)) {
                 if(event->mask & IN_CREATE) {
                     printf("Volume %s was mounted.\n", abspath.c_str());
@@ -248,7 +250,7 @@ void ScannerDaemon::addMountedVolumes() {
         if(fname[0] == '.')
             continue;
         string fullpath = mountDir + "/" + fname;
-        stat(fullpath.c_str(), &statbuf);
+        lstat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
             addDir(fullpath);
         }
