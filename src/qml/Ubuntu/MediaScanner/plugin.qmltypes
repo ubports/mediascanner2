@@ -68,6 +68,16 @@ Module {
         }
     }
     Component {
+        name: "mediascanner::qml::SongsModel"
+        prototype: "mediascanner::qml::MediaFileModelBase"
+        exports: ["Ubuntu.MediaScanner/SongsModel 0.1"]
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "artist"; type: "string" }
+        Property { name: "album"; type: "string" }
+        Property { name: "albumArtist"; type: "string" }
+        Property { name: "limit"; type: "int" }
+    }
+    Component {
         name: "mediascanner::qml::SongsSearchModel"
         prototype: "mediascanner::qml::MediaFileModelBase"
         exports: ["Ubuntu.MediaScanner/SongsSearchModel 0.1"]
