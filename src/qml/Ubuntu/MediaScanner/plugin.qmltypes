@@ -83,7 +83,7 @@ Module {
         }
         Method {
             name: "lookup"
-            type: "MediaFileWrapper*"
+            type: "mediascanner::qml::MediaFileWrapper*"
             Parameter { name: "filename"; type: "string" }
         }
     }

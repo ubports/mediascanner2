@@ -37,7 +37,12 @@ QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
 }
 
 MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
-    auto wrapper = new MediaFileWrapper(store.lookup(filename.toStdString()));
+    MediaFileWrapper *wrapper;
+    try {
+        wrapper = new MediaFileWrapper(store.lookup(filename.toStdString()));
+    } catch (std::runtime_error &e) {
+        return nullptr;
+    }
     QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
     return wrapper;
 }

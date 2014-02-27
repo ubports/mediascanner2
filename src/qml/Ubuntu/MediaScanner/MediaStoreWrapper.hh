@@ -42,7 +42,7 @@ public:
     MediaStoreWrapper(QObject *parent=0);
 
     Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
-    Q_INVOKABLE MediaFileWrapper *lookup(const QString &filename);
+    Q_INVOKABLE mediascanner::qml::MediaFileWrapper *lookup(const QString &filename);
 
     mediascanner::MediaStore store;
 };
