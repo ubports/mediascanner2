@@ -54,6 +54,7 @@ public:
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
     std::vector<MediaFile> listSongs(const std::string& artist="", const std::string& album="", const std::string& album_artist="", int limit=-1) const;
+    std::vector<Album> listAlbums(const std::string& artist="", const std::string& album_artist="", int limit=-1) const;
 
     size_t size() const;
     void pruneDeleted();

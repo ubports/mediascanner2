@@ -337,6 +337,40 @@ TEST_F(MediaStoreTest, listSongs) {
     EXPECT_EQ(3, tracks.size());
 }
 
+TEST_F(MediaStoreTest, listAlbums) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+    store.insert(audio5);
+
+    vector<Album> albums = store.listAlbums();
+    ASSERT_EQ(4, albums.size());
+    EXPECT_EQ("AlbumOne", albums[0].getTitle());
+
+    // test limit
+    albums = store.listAlbums("", "", 2);
+    EXPECT_EQ(2, albums.size());
+
+    // Songs by artist
+    albums = store.listAlbums("ArtistOne");
+    EXPECT_EQ(3, albums.size());
+
+    // Songs by album artist
+    albums = store.listAlbums("", "ArtistOne");
+    EXPECT_EQ(2, albums.size());
+
+    // Combination
+    albums = store.listAlbums("ArtistOne", "Various Artists");
+    EXPECT_EQ(1, albums.size());
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

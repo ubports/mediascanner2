@@ -8,6 +8,7 @@ add_library(mediascanner-qml MODULE
   MediaStoreWrapper.cc
   MediaFileModelBase.cc
   AlbumModelBase.cc
+  AlbumsModel.cc
   SongsModel.cc
   SongsSearchModel.cc
 )

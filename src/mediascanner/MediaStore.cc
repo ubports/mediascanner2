@@ -466,6 +466,36 @@ LIMIT ?
     return collect_media(query);
 }
 
+std::vector<Album> MediaStore::listAlbums(const std::string& artist, const std::string& album_artist, int limit) const {
+    std::string qs(R"(
+SELECT album, album_artist FROM media
+  WHERE type = ?
+)");
+    if (!artist.empty()) {
+        qs += " AND artist = ?";
+    }
+    if (!album_artist.empty()) {
+        qs += " AND album_artist = ?";
+    }
+    qs += R"(
+GROUP BY album, album_artist
+ORDER BY album_artist, album
+LIMIT ?
+)";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!artist.empty()) {
+        query.bind(param++, artist);
+    }
+    if (!album_artist.empty()) {
+        query.bind(param++, album_artist);
+    }
+    query.bind(param++, limit);
+
+    return collect_albums(query);
+}
+
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
     Statement query(p->db, "SELECT filename FROM media");
