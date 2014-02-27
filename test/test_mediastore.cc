@@ -290,6 +290,53 @@ TEST_F(MediaStoreTest, getETag) {
     EXPECT_EQ(store.getETag("/something-else.mp3"), "");
 }
 
+TEST_F(MediaStoreTest, listSongs) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio6("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+    store.insert(audio5);
+    store.insert(audio6);
+
+    vector<MediaFile> tracks = store.listSongs();
+    ASSERT_EQ(6, tracks.size());
+    EXPECT_EQ("TitleOne", tracks[0].getTitle());
+
+    // Apply a limit
+    tracks = store.listSongs("", "", "", 4);
+    EXPECT_EQ(4, tracks.size());
+
+    // List songs by artist
+    tracks = store.listSongs("ArtistOne");
+    EXPECT_EQ(4, tracks.size());
+
+    // List songs by album
+    tracks = store.listSongs("", "AlbumOne");
+    EXPECT_EQ(2, tracks.size());
+
+    // List songs by album artist
+    tracks = store.listSongs("", "", "Various Artists");
+    EXPECT_EQ(2, tracks.size());
+
+    // Combinations
+    tracks = store.listSongs("ArtistOne", "AlbumOne", "");
+    EXPECT_EQ(2, tracks.size());
+    tracks = store.listSongs("", "AlbumOne", "ArtistOne");
+    EXPECT_EQ(2, tracks.size());
+    tracks = store.listSongs("ArtistOne", "AlbumOne", "ArtistOne");
+    EXPECT_EQ(2, tracks.size());
+    tracks = store.listSongs("ArtistOne", "", "ArtistOne");
+    EXPECT_EQ(3, tracks.size());
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

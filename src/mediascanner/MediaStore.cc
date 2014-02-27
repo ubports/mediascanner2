@@ -430,6 +430,41 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
+std::vector<MediaFile> MediaStore::listSongs(const std::string& artist, const std::string& album, const std::string& album_artist, int limit) const {
+    std::string qs(R"(
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+  FROM media
+  WHERE type = ?
+)");
+    if (!artist.empty()) {
+        qs += " AND artist = ?";
+    }
+    if (!album.empty()) {
+        qs += " AND album = ?";
+    }
+    if (!album_artist.empty()) {
+        qs += " AND album_artist = ?";
+    }
+    qs += R"(
+ORDER BY album_artist, album, track_number, title
+LIMIT ?
+)";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!artist.empty()) {
+        query.bind(param++, artist);
+    }
+    if (!album.empty()) {
+        query.bind(param++, album);
+    }
+    if (!album_artist.empty()) {
+        query.bind(param++, album_artist);
+    }
+    query.bind(param++, limit);
+
+    return collect_media(query);
+}
 
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
