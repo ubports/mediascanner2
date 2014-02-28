@@ -21,6 +21,7 @@
 #include "MediaFileWrapper.hh"
 #include "MediaStoreWrapper.hh"
 #include "AlbumsModel.hh"
+#include "ArtistsModel.hh"
 #include "SongsModel.hh"
 #include "SongsSearchModel.hh"
 
@@ -31,6 +32,7 @@ void MediaScannerPlugin::registerTypes(const char *uri) {
     qmlRegisterUncreatableType<MediaFileWrapper>(uri, 0, 1, "MediaFile",
         "Use a MediaStore to retrieve MediaFiles");
     qmlRegisterType<AlbumsModel>(uri, 0, 1, "AlbumsModel");
+    qmlRegisterType<ArtistsModel>(uri, 0, 1, "ArtistsModel");
     qmlRegisterType<SongsModel>(uri, 0, 1, "SongsModel");
     qmlRegisterType<SongsSearchModel>(uri, 0, 1, "SongsSearchModel");
 }

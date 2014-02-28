@@ -27,6 +27,20 @@ Module {
         Property { name: "limit"; type: "int" }
     }
     Component {
+        name: "mediascanner::qml::ArtistsModel"
+        prototype: "QAbstractListModel"
+        exports: ["Ubuntu.MediaScanner/ArtistsModel 0.1"]
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleArtist": 0
+            }
+        }
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "albumArtists"; type: "bool" }
+        Property { name: "limit"; type: "int" }
+    }
+    Component {
         name: "mediascanner::qml::MediaFileModelBase"
         prototype: "QAbstractListModel"
         Enum {
