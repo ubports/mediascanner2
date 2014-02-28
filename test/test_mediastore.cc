@@ -372,6 +372,37 @@ TEST_F(MediaStoreTest, listAlbums) {
     EXPECT_EQ(1, albums.size());
 }
 
+TEST_F(MediaStoreTest, listArtists) {
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+    store.insert(audio5);
+
+    vector<string> artists = store.listArtists(false);
+    ASSERT_EQ(2, artists.size());
+    EXPECT_EQ("ArtistOne", artists[0]);
+    EXPECT_EQ("ArtistTwo", artists[1]);
+
+    // Test limit clause
+    artists = store.listArtists(false, 1);
+    EXPECT_EQ(1, artists.size());
+
+    // List "album artists"
+    artists = store.listArtists(true);
+    ASSERT_EQ(3, artists.size());
+    EXPECT_EQ("ArtistOne", artists[0]);
+    EXPECT_EQ("ArtistTwo", artists[1]);
+    EXPECT_EQ("Various Artists", artists[2]);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
