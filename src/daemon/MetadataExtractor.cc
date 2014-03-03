@@ -37,7 +37,7 @@ using namespace std;
 namespace mediascanner {
 
 struct MetadataExtractorPrivate {
-    std::unique_ptr<GstDiscoverer,void(*)(void *)> discoverer;
+    std::unique_ptr<GstDiscoverer, decltype(&g_object_unref)> discoverer;
     MetadataExtractorPrivate() : discoverer(nullptr, g_object_unref) {};
 };
 
@@ -49,6 +49,7 @@ MetadataExtractor::MetadataExtractor(int seconds) {
     if (not p->discoverer) {
         string errortxt(error->message);
         g_error_free(error);
+        delete(p);
 
         string msg = "Failed to create discoverer: ";
         msg += errortxt;
