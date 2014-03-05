@@ -50,7 +50,7 @@ public:
 
     void addDir(const std::string &path);
     bool pumpEvents();
-    bool processEvents();
+    void processEvents();
     int getFd() const;
     int directoryCount() const;
 };

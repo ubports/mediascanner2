@@ -31,6 +31,7 @@
 #include<cassert>
 
 #include<glib.h>
+#include<glib-unix.h>
 #include<gst/gst.h>
 
 #include "../mediascanner/MediaFile.hh"
@@ -56,16 +57,19 @@ private:
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
     void removeDir(const string &dir);
-    bool processEvents();
+    static gboolean sourceCallback(int, GIOCondition, gpointer data);
+    void processEvents();
     void addMountedVolumes();
 
     int mountfd;
+    unique_ptr<GSource,void(*)(GSource*)> mount_source;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
     unique_ptr<MetadataExtractor> extractor;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
+    unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
 };
 
 static std::string getCurrentUser() {
@@ -79,7 +83,9 @@ static std::string getCurrentUser() {
     return pwd->pw_name;
 }
 
-ScannerDaemon::ScannerDaemon() {
+ScannerDaemon::ScannerDaemon() :
+    mount_source(nullptr, g_source_unref),
+    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
     mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
@@ -99,6 +105,9 @@ ScannerDaemon::ScannerDaemon() {
 }
 
 ScannerDaemon::~ScannerDaemon() {
+    if (mount_source) {
+        g_source_destroy(mount_source.get());
+    }
     close(mountfd);
 }
 
@@ -138,38 +147,14 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 }
 
 int ScannerDaemon::run() {
-    while(true) {
-        int maxfd = 0;
-        bool changed = false;
-        fd_set fds;
-        FD_ZERO(&fds);
-        for(const auto &i: subtrees) {
-            int cfd = i.second->getFd();
-            if(cfd > maxfd) maxfd = cfd;
-            FD_SET(cfd, &fds);
-        }
-        FD_SET(mountfd, &fds);
-        if(mountfd > maxfd) maxfd = mountfd;
-
-        int rval = select(maxfd+1, &fds, nullptr, nullptr, nullptr);
-        if(rval < 0) {
-            string msg("Select failed: ");
-            msg += strerror(errno);
-            throw runtime_error(msg);
-        }
-        for(const auto &i: subtrees) {
-            if (FD_ISSET(i.second->getFd(), &fds)) {
-                changed = i.second->processEvents() || changed;
-            }
-        }
-        if (FD_ISSET(mountfd, &fds)) {
-            changed = processEvents() || changed;
-        }
-        if(changed) {
-            invalidator.invalidate();
-        }
-    }
+    g_main_loop_run(main_loop.get());
     return 99;
+}
+
+gboolean ScannerDaemon::sourceCallback(int, GIOCondition, gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    daemon->processEvents();
+    return TRUE;
 }
 
 void ScannerDaemon::setupMountWatcher() {
@@ -190,9 +175,13 @@ void ScannerDaemon::setupMountWatcher() {
         msg += strerror(errno);
         throw runtime_error(msg);
     }
+
+    mount_source.reset(g_unix_fd_source_new(mountfd, G_IO_IN));
+    g_source_set_callback(mount_source.get(), reinterpret_cast<GSourceFunc>(&ScannerDaemon::sourceCallback), this, nullptr);
+    g_source_attach(mount_source.get(), nullptr);
 }
 
-bool ScannerDaemon::processEvents() {
+void ScannerDaemon::processEvents() {
     const int BUFSIZE= 4096;
     char buf[BUFSIZE];
     bool changed = false;
@@ -200,11 +189,11 @@ bool ScannerDaemon::processEvents() {
     num_read = read(mountfd, buf, BUFSIZE);
     if(num_read == 0) {
         printf("Inotify returned 0.\n");
-        return false;
+        return;
     }
     if(num_read == -1) {
         printf("Read error.\n");
-        return false;
+        return;
     }
     for(char *p = buf; p < buf + num_read;) {
         struct inotify_event *event = (struct inotify_event *) p;
@@ -226,7 +215,9 @@ bool ScannerDaemon::processEvents() {
         }
         p += sizeof(struct inotify_event) + event->len;
     }
-    return changed;
+    if (changed) {
+        invalidator.invalidate();
+    }
 }
 
 void ScannerDaemon::addMountedVolumes() {

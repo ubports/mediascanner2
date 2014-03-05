@@ -36,16 +36,11 @@
 #include<memory>
 
 #include <glib.h>
+#include <glib-unix.h>
 
 using namespace std;
 
 namespace mediascanner {
-
-static GSource *make_source(int fd) {
-    std::unique_ptr<GIOChannel,void(*)(GIOChannel*)> channel(
-        g_io_channel_unix_new(fd), g_io_channel_unref);
-    return g_io_create_watch(channel.get(), G_IO_IN);
-}
 
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
@@ -62,7 +57,7 @@ struct SubtreeWatcherPrivate {
     SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator) :
         store(store), extractor(extractor), invalidator(invalidator),
         inotifyid(inotify_init()), keep_going(true),
-        source(make_source(inotifyid), g_source_unref) {
+        source(g_unix_fd_source_new(inotifyid, G_IO_IN), g_source_unref) {
     }
 
     ~SubtreeWatcherPrivate() {
@@ -184,7 +179,7 @@ bool SubtreeWatcher::pumpEvents() {
     return false;
 }
 
-bool SubtreeWatcher::processEvents() {
+void SubtreeWatcher::processEvents() {
     const int BUFSIZE=4096;
     char buf[BUFSIZE];
     bool changed = false;
@@ -192,11 +187,11 @@ bool SubtreeWatcher::processEvents() {
     num_read = read(p->inotifyid, buf, BUFSIZE);
     if(num_read == 0) {
         printf("Inotify returned 0.\n");
-        return false;
+        return;
     }
     if(num_read == -1) {
         printf("Read error.\n");
-        return false;
+        return;
     }
     for(char *d = buf; d < buf + num_read;) {
         struct inotify_event *event = (struct inotify_event *) d;
@@ -249,7 +244,9 @@ bool SubtreeWatcher::processEvents() {
         }
         d += sizeof(struct inotify_event) + event->len;
     }
-    return changed;
+    if (changed) {
+        p->invalidator.invalidate();
+    }
 }
 
 int SubtreeWatcher::getFd() const {
