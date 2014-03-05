@@ -48,6 +48,7 @@ public:
 
     void addDir(const std::string &path);
     bool pumpEvents();
+    bool processEvents();
     int getFd() const;
     int directoryCount() const;
 };

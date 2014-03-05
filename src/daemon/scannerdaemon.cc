@@ -56,7 +56,7 @@ private:
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
     void removeDir(const string &dir);
-    bool pumpEvents();
+    bool processEvents();
     void addMountedVolumes();
 
     int mountfd;
@@ -158,9 +158,13 @@ int ScannerDaemon::run() {
             throw runtime_error(msg);
         }
         for(const auto &i: subtrees) {
-            changed = i.second->pumpEvents() || changed;
+            if (FD_ISSET(i.second->getFd(), &fds)) {
+                changed = i.second->processEvents() || changed;
+            }
         }
-        changed = pumpEvents() || changed;
+        if (FD_ISSET(mountfd, &fds)) {
+            changed = processEvents() || changed;
+        }
         if(changed) {
             invalidator.invalidate();
         }
@@ -188,50 +192,39 @@ void ScannerDaemon::setupMountWatcher() {
     }
 }
 
-bool ScannerDaemon::pumpEvents() {
+bool ScannerDaemon::processEvents() {
     const int BUFSIZE= 4096;
     char buf[BUFSIZE];
     bool changed = false;
-    while(true) {
-        fd_set reads;
-        FD_ZERO(&reads);
-        FD_SET(mountfd, &reads);
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-        if(select(mountfd+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            break;
-        }
-        ssize_t num_read;
-        num_read = read(mountfd, buf, BUFSIZE);
-        if(num_read == 0) {
-            printf("Inotify returned 0.\n");
-            break;
-        }
-        if(num_read == -1) {
-            printf("Read error.\n");
-            break;
-        }
-        for(char *p = buf; p < buf + num_read;) {
-            struct inotify_event *event = (struct inotify_event *) p;
-            string directory = mountDir;
-            string filename(event->name);
-            string abspath = directory + '/' + filename;
-            struct stat statbuf;
-            lstat(abspath.c_str(), &statbuf);
-            if(S_ISDIR(statbuf.st_mode)) {
-                if(event->mask & IN_CREATE) {
-                    printf("Volume %s was mounted.\n", abspath.c_str());
-                    addDir(abspath);
-                    changed = true;
-                } else if(event->mask & IN_DELETE){
-                    printf("Volume %s was unmounted.\n", abspath.c_str());
-                    removeDir(abspath);
-                    changed = true;
-                }
+    ssize_t num_read;
+    num_read = read(mountfd, buf, BUFSIZE);
+    if(num_read == 0) {
+        printf("Inotify returned 0.\n");
+        return false;
+    }
+    if(num_read == -1) {
+        printf("Read error.\n");
+        return false;
+    }
+    for(char *p = buf; p < buf + num_read;) {
+        struct inotify_event *event = (struct inotify_event *) p;
+        string directory = mountDir;
+        string filename(event->name);
+        string abspath = directory + '/' + filename;
+        struct stat statbuf;
+        lstat(abspath.c_str(), &statbuf);
+        if(S_ISDIR(statbuf.st_mode)) {
+            if(event->mask & IN_CREATE) {
+                printf("Volume %s was mounted.\n", abspath.c_str());
+                addDir(abspath);
+                changed = true;
+            } else if(event->mask & IN_DELETE){
+                printf("Volume %s was unmounted.\n", abspath.c_str());
+                removeDir(abspath);
+                changed = true;
             }
-            p += sizeof(struct inotify_event) + event->len;
         }
+        p += sizeof(struct inotify_event) + event->len;
     }
     return changed;
 }

@@ -156,8 +156,6 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 
 
 bool SubtreeWatcher::pumpEvents() {
-    const int BUFSIZE=4096;
-    char buf[BUFSIZE];
     bool changed = false;
     if(p->wd2str.empty())
         return changed;
@@ -171,67 +169,75 @@ bool SubtreeWatcher::pumpEvents() {
         if(select(p->inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
             break;
         }
-        ssize_t num_read;
-        num_read = read(p->inotifyid, buf, BUFSIZE);
-        if(num_read == 0) {
-            printf("Inotify returned 0.\n");
-            break;
-        }
-        if(num_read == -1) {
-            printf("Read error.\n");
-            break;
-        }
-        for(char *d = buf; d < buf + num_read;) {
-            struct inotify_event *event = (struct inotify_event *) d;
-            if (p->wd2str.find(event->wd) == p->wd2str.end()) {
-                // Ignore events for unknown watches.  We may receive
-                // such events when a directory is removed.
-                d += sizeof(struct inotify_event) + event->len;
-                continue;
-            }
-            string directory = p->wd2str[event->wd];
-            string filename(event->name);
-            string abspath = directory + '/' + filename;
-            bool is_dir = false;
-            bool is_file = false;
-            struct stat statbuf;
-            lstat(abspath.c_str(), &statbuf);
-            // Remember: these are not valid in case of delete event.
-            if(S_ISDIR(statbuf.st_mode))
-                is_dir = true;
-            if(S_ISREG(statbuf.st_mode))
-                is_file = true;
+        changed = processEvents() || changed;
+    }
+    return changed;
+}
 
-            if(event->mask & IN_CREATE) {
-                if(is_dir) {
-                    dirAdded(abspath);
-                    changed = true;
-                }
-                // Do not add files upon creation because we can't parse
-                // their metadata until it is fully written.
-            } else if((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
-                if(is_dir) {
-                    dirAdded(abspath);
-                    changed = true;
-                }
-                if(is_file) {
-                    fileAdded(abspath);
-                    changed = true;
-                }
-            } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
-                if(p->str2wd.find(abspath) != p->str2wd.end()) {
-                    dirRemoved(abspath);
-                    changed = true;
-                } else {
-                    fileDeleted(abspath);
-                    changed = true;
-                }
-            } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
-                removeDir(abspath);
+bool SubtreeWatcher::processEvents() {
+    const int BUFSIZE=4096;
+    char buf[BUFSIZE];
+    bool changed = false;
+    ssize_t num_read;
+    num_read = read(p->inotifyid, buf, BUFSIZE);
+    if(num_read == 0) {
+        printf("Inotify returned 0.\n");
+        return false;
+    }
+    if(num_read == -1) {
+        printf("Read error.\n");
+        return false;
+    }
+    for(char *d = buf; d < buf + num_read;) {
+        struct inotify_event *event = (struct inotify_event *) d;
+        if (p->wd2str.find(event->wd) == p->wd2str.end()) {
+            // Ignore events for unknown watches.  We may receive
+            // such events when a directory is removed.
+            d += sizeof(struct inotify_event) + event->len;
+            continue;
+        }
+        string directory = p->wd2str[event->wd];
+        string filename(event->name);
+        string abspath = directory + '/' + filename;
+        bool is_dir = false;
+        bool is_file = false;
+        struct stat statbuf;
+        lstat(abspath.c_str(), &statbuf);
+        // Remember: these are not valid in case of delete event.
+        if(S_ISDIR(statbuf.st_mode))
+            is_dir = true;
+        if(S_ISREG(statbuf.st_mode))
+            is_file = true;
+
+        if(event->mask & IN_CREATE) {
+            if(is_dir) {
+                dirAdded(abspath);
                 changed = true;
             }
-            d += sizeof(struct inotify_event) + event->len;
+            // Do not add files upon creation because we can't parse
+            // their metadata until it is fully written.
+        } else if((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
+            if(is_dir) {
+                dirAdded(abspath);
+                changed = true;
+            }
+            if(is_file) {
+                fileAdded(abspath);
+                changed = true;
+            }
+        } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
+            if(p->str2wd.find(abspath) != p->str2wd.end()) {
+                dirRemoved(abspath);
+                changed = true;
+            } else {
+                fileDeleted(abspath);
+                changed = true;
+            }
+        } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
+            removeDir(abspath);
+            changed = true;
         }
+        d += sizeof(struct inotify_event) + event->len;
     }
     return changed;
 }
