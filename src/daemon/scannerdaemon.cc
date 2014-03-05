@@ -53,16 +53,19 @@ public:
 
 private:
 
+    void setupSignals();
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
     void removeDir(const string &dir);
     static gboolean sourceCallback(int, GIOCondition, gpointer data);
+    static gboolean signalCallback(gpointer data);
     void processEvents();
     void addMountedVolumes();
 
     int mountfd;
     unique_ptr<GSource,void(*)(GSource*)> mount_source;
+    int sigint_id, sigterm_id;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
@@ -84,12 +87,13 @@ static std::string getCurrentUser() {
 }
 
 ScannerDaemon::ScannerDaemon() :
-    mount_source(nullptr, g_source_unref),
+    mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
     main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
     mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
+    setupSignals();
     setupMountWatcher();
     addMountedVolumes();
 
@@ -105,10 +109,27 @@ ScannerDaemon::ScannerDaemon() :
 }
 
 ScannerDaemon::~ScannerDaemon() {
+    if (sigint_id != 0) {
+        g_source_remove(sigint_id);
+    }
+    if (sigterm_id != 0) {
+        g_source_remove(sigterm_id);
+    }
     if (mount_source) {
         g_source_destroy(mount_source.get());
     }
     close(mountfd);
+}
+
+gboolean ScannerDaemon::signalCallback(gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    g_main_loop_quit(daemon->main_loop.get());
+    return TRUE;
+}
+
+void ScannerDaemon::setupSignals() {
+    sigint_id = g_unix_signal_add(SIGINT, &ScannerDaemon::signalCallback, this);
+    sigterm_id = g_unix_signal_add(SIGTERM, &ScannerDaemon::signalCallback, this);
 }
 
 void ScannerDaemon::addDir(const string &dir) {
