@@ -75,7 +75,7 @@ struct SubtreeWatcherPrivate {
 };
 
 static gboolean source_callback(GIOChannel *, GIOCondition, gpointer data) {
-    SubtreeWatcher *watcher = reinterpret_cast<SubtreeWatcher*>(data);
+    SubtreeWatcher *watcher = static_cast<SubtreeWatcher*>(data);
     watcher->processEvents();
     return TRUE;
 }
@@ -88,7 +88,7 @@ SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor, 
         delete p;
         throw runtime_error(msg);
     }
-    g_source_set_callback(p->source.get(), reinterpret_cast<GSourceFunc>(source_callback), reinterpret_cast<gpointer>(this), nullptr);
+    g_source_set_callback(p->source.get(), reinterpret_cast<GSourceFunc>(source_callback), static_cast<gpointer>(this), nullptr);
     g_source_attach(p->source.get(), nullptr);
 }
 
