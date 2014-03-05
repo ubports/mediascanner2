@@ -32,6 +32,9 @@ public:
     InvalidationSender& operator=(const InvalidationSender &o) = delete;
 
     void invalidate();
+    void disable();
+private:
+    bool enabled;
 };
 
 #endif

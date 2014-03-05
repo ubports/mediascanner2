@@ -24,11 +24,14 @@
 
 using namespace std;
 
-InvalidationSender::InvalidationSender() {
+InvalidationSender::InvalidationSender() : enabled(true) {
 
 }
 
 void InvalidationSender::invalidate() {
+    if (!enabled) {
+        return;
+    }
     string invocation("dbus-send /com/canonical/unity/scopes ");
     invocation += "com.canonical.unity.scopes.InvalidateResults string:";
     const string m_invoc = invocation + "mediascanner-music";
@@ -39,4 +42,8 @@ void InvalidationSender::invalidate() {
     if(system(v_invoc.c_str()) != 0) {
         fprintf(stderr, "Could not invalidate video scope results.\n");
     }
+}
+
+void InvalidationSender::disable() {
+    enabled = false;
 }

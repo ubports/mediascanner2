@@ -107,7 +107,7 @@ void ScannerDaemon::addDir(const string &dir) {
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get()));
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
     store->restoreItems(dir);
     store->pruneDeleted();
     readFiles(*store.get(), dir, AllMedia);

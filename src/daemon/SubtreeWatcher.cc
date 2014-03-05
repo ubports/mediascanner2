@@ -19,6 +19,7 @@
 
 #include "../mediascanner/MediaStore.hh"
 #include "../mediascanner/MediaFile.hh"
+#include "InvalidationSender.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
 
@@ -34,22 +35,34 @@
 #include<map>
 #include<memory>
 
+#include <glib.h>
+
 using namespace std;
 
 namespace mediascanner {
 
+static GSource *make_source(int fd) {
+    std::unique_ptr<GIOChannel,void(*)(GIOChannel*)> channel(
+        g_io_channel_unix_new(fd), g_io_channel_unref);
+    return g_io_create_watch(channel.get(), G_IO_IN);
+}
+
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
+    InvalidationSender &invalidator;
     int inotifyid;
     // Ideally use boost::bimap or something instead of these two separate objects.
     std::map<int, std::string> wd2str;
     std::map<std::string, int> str2wd;
     bool keep_going;
 
-    SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor) :
-        store(store), extractor(extractor), inotifyid(inotify_init()),
-        keep_going(true) {
+    std::unique_ptr<GSource,void(*)(GSource*)> source;
+
+    SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator) :
+        store(store), extractor(extractor), invalidator(invalidator),
+        inotifyid(inotify_init()), keep_going(true),
+        source(make_source(inotifyid), g_source_unref) {
     }
 
     ~SubtreeWatcherPrivate() {
@@ -61,17 +74,26 @@ struct SubtreeWatcherPrivate {
 
 };
 
-SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) {
-    p = new SubtreeWatcherPrivate(store, extractor);
+static gboolean source_callback(GIOChannel *, GIOCondition, gpointer data) {
+    SubtreeWatcher *watcher = reinterpret_cast<SubtreeWatcher*>(data);
+    watcher->processEvents();
+    return TRUE;
+}
+
+SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator) {
+    p = new SubtreeWatcherPrivate(store, extractor, invalidator);
     if(p->inotifyid == -1) {
         string msg("Could not init inotify: ");
         msg += strerror(errno);
         delete p;
         throw runtime_error(msg);
     }
+    g_source_set_callback(p->source.get(), reinterpret_cast<GSourceFunc>(source_callback), reinterpret_cast<gpointer>(this), nullptr);
+    g_source_attach(p->source.get(), nullptr);
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
+    g_source_destroy(p->source.get());
     delete p;
 }
 
@@ -156,22 +178,10 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 
 
 bool SubtreeWatcher::pumpEvents() {
-    bool changed = false;
-    if(p->wd2str.empty())
-        return changed;
-    while(true) {
-        fd_set reads;
-        FD_ZERO(&reads);
-        FD_SET(p->inotifyid, &reads);
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-        if(select(p->inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            break;
-        }
-        changed = processEvents() || changed;
+    GMainContext *context = g_main_context_default();
+    while (g_main_context_iteration(context, false)) {
     }
-    return changed;
+    return false;
 }
 
 bool SubtreeWatcher::processEvents() {

@@ -20,6 +20,7 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/MediaStore.hh>
+#include <daemon/InvalidationSender.hh>
 #include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
 #include <daemon/Scanner.hh>
@@ -55,7 +56,8 @@ class ScanTest : public ::testing::Test {
 TEST_F(ScanTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    SubtreeWatcher watcher(store, extractor, invalidator);
 }
 
 void clear_dir(const string &subdir) {
@@ -91,7 +93,9 @@ TEST_F(ScanTest, index) {
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    invalidator.disable();
+    SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(subdir);
     ASSERT_EQ(store.size(), 0);
 
@@ -112,7 +116,9 @@ TEST_F(ScanTest, subdir) {
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    invalidator.disable();
+    SubtreeWatcher watcher(store, extractor, invalidator);
     ASSERT_EQ(watcher.directoryCount(), 0);
     watcher.addDir(testdir);
     ASSERT_EQ(watcher.directoryCount(), 1);
