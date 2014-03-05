@@ -172,13 +172,6 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 }
 
 
-bool SubtreeWatcher::pumpEvents() {
-    GMainContext *context = g_main_context_default();
-    while (g_main_context_iteration(context, false)) {
-    }
-    return false;
-}
-
 void SubtreeWatcher::processEvents() {
     const int BUFSIZE=4096;
     char buf[BUFSIZE];
