@@ -1080,12 +1080,9 @@ static int porterNext(
      *  - there are two ideograms together,
      *  - there are three chars or more,
      *  - we think this is a query and wildcard magic is desired.
-     * We think is a wildcard query when we have a single character, it starts
-     *  at the start of the buffer, it's CJK, our current offset is one shy of
-     *  nInput and the character at iOffset is '*'.  Because the state gets
-     *  clobbered by the incidence of '*' our requirement for CJK is that the
-     *  implied character length is at least 3 given that it takes at least 3
-     *  bytes to encode to 0x2000.
+     * We think is a wildcard query when we have at least one
+     *  character, our current offset is one shy of nInput and the
+     *  character at iOffset is '*'.
      */
     // It is possible we have no token to emit here if iPrevBigramOffset was not
     //  0 on entry and there was no second CJK character.  iPrevBigramOffset
