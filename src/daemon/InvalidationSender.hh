@@ -28,13 +28,17 @@
 class InvalidationSender final {
 public:
     InvalidationSender();
+    ~InvalidationSender();
     InvalidationSender(const InvalidationSender &o) = delete;
     InvalidationSender& operator=(const InvalidationSender &o) = delete;
 
     void invalidate();
     void disable();
 private:
+    static int callback(void *data);
+
     bool enabled;
+    unsigned int timeout_id;
 };
 
 #endif
