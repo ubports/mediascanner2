@@ -10,6 +10,13 @@ Build-Depends: cmake,
                libgstreamer1.0-dev,
                libgtest-dev,
                libsqlite3-dev,
+               qt5-default,
+               qtbase5-dev,
+               qtbase5-dev-tools,
+               qtdeclarative5-dev,
+               qtdeclarative5-dev-tools,
+               qtdeclarative5-qtquick2-plugin,
+               qtdeclarative5-test-plugin,
 # For running unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
@@ -54,3 +61,13 @@ Depends: libmediascanner-2.0-0 (= ${binary:Version}),
 Description: Development files for libmediascanner
  This package provides the infrastructure for using the media scanner's
  access library in C++ based projects.
+
+Package: qtdeclarative5-ubuntu-mediascanner0.1
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends},
+Depends: mediascanner (= ${binary:Version}),
+         ${misc:Depends},
+         ${shlibs:Depends},
+Description: QML plugin for the Ubuntu Media Scanner
+ This package provides components that allow access to the media
+ scanner index from Qt Quick 2 / QML applications.

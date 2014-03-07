@@ -430,6 +430,99 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
+std::vector<MediaFile> MediaStore::listSongs(const std::string& artist, const std::string& album, const std::string& album_artist, int limit) const {
+    std::string qs(R"(
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+  FROM media
+  WHERE type = ?
+)");
+    if (!artist.empty()) {
+        qs += " AND artist = ?";
+    }
+    if (!album.empty()) {
+        qs += " AND album = ?";
+    }
+    if (!album_artist.empty()) {
+        qs += " AND album_artist = ?";
+    }
+    qs += R"(
+ORDER BY album_artist, album, track_number, title
+LIMIT ?
+)";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!artist.empty()) {
+        query.bind(param++, artist);
+    }
+    if (!album.empty()) {
+        query.bind(param++, album);
+    }
+    if (!album_artist.empty()) {
+        query.bind(param++, album_artist);
+    }
+    query.bind(param++, limit);
+
+    return collect_media(query);
+}
+
+std::vector<Album> MediaStore::listAlbums(const std::string& artist, const std::string& album_artist, int limit) const {
+    std::string qs(R"(
+SELECT album, album_artist FROM media
+  WHERE type = ?
+)");
+    if (!artist.empty()) {
+        qs += " AND artist = ?";
+    }
+    if (!album_artist.empty()) {
+        qs += " AND album_artist = ?";
+    }
+    qs += R"(
+GROUP BY album, album_artist
+ORDER BY album_artist, album
+LIMIT ?
+)";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!artist.empty()) {
+        query.bind(param++, artist);
+    }
+    if (!album_artist.empty()) {
+        query.bind(param++, album_artist);
+    }
+    query.bind(param++, limit);
+
+    return collect_albums(query);
+}
+
+vector<std::string> MediaStore::listArtists(bool album_artists, int limit) {
+    const char *qs;
+
+    if (album_artists) {
+        qs = R"(
+SELECT album_artist FROM media
+  GROUP BY album_artist
+  ORDER BY album_artist
+  LIMIT ?
+)";
+    } else {
+        qs = R"(
+SELECT artist FROM media
+  GROUP BY artist
+  ORDER BY artist
+  LIMIT ?
+)";
+    }
+    Statement query(p->db, qs);
+    query.bind(1, limit);
+
+    vector<string> artists;
+    while (query.step()) {
+        artists.push_back(query.getText(0));
+    }
+    return artists;
+}
 
 void MediaStore::pruneDeleted() {
     vector<string> deleted;
