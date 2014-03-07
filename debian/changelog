@@ -1,3 +1,22 @@
+mediascanner2 (0.100-0ubuntu1) UNRELEASED; urgency=low
+
+  [ James Henstridge ]
+  * First stages of a QML plugin for the Media Scanner. At present it 
+    only exposes the query() and lookup() interfaces.
+  * Relax the rules for tokenising the input when it ends with a short 
+    token followed '*' wildcard. This allows us to produce results for 
+    short strings when doing incremental searches.
+  * Convert the scanner daemon over to using the glib main loop rather 
+    than a hand rolled one, and limit invalidation signals to be sent at 
+    most once a second.
+
+  [ Jussi Pakkanen ]
+  * Add sqlite error string to exception.
+  * Shutdown cleanly on signals.
+  * Made SQLite db safe to access from multiple threads.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Fri, 07 Mar 2014 16:19:14 +0800
+
 mediascanner2 (0.99+14.04.20140220-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]
