@@ -36,7 +36,13 @@ public:
     }
 
     ~Statement() {
-        finalize();
+        try {
+            finalize();
+        } catch(const std::exception &e) {
+            fprintf(stderr, "Error finalising statement: %s\n", e.what());
+        } catch(...) {
+            fprintf(stderr, "Unknown error finalising statement.\n");
+        }
     }
 
     void bind(int pos, int value) {

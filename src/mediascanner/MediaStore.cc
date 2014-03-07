@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
+#include <mutex>
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -44,6 +45,22 @@ static const int schemaVersion = 4;
 
 struct MediaStorePrivate {
     sqlite3 *db;
+    // https://www.sqlite.org/cvstrac/wiki?p=DatabaseIsLocked
+    // http://sqlite.com/faq.html#q6
+    std::mutex dbMutex;
+
+    void insert(const MediaFile &m) const;
+    void remove(const std::string &fname) const;
+    MediaFile lookup(const std::string &filename) const;
+    std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
+    std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
+    std::vector<MediaFile> getAlbumSongs(const Album& album) const;
+    std::string getETag(const std::string &filename) const;
+
+    size_t size() const;
+    void pruneDeleted();
+    void archiveItems(const std::string &prefix);
+    void restoreItems(const std::string &prefix);
 };
 
 extern "C" void sqlite3Fts3PorterTokenizerModule(
@@ -259,14 +276,14 @@ MediaStore::~MediaStore() {
     delete p;
 }
 
-size_t MediaStore::size() const {
-    Statement count(p->db, "SELECT COUNT(*) FROM media");
+size_t MediaStorePrivate::size() const {
+    Statement count(db, "SELECT COUNT(*) FROM media");
     count.step();
     return count.getInt(0);
 }
 
-void MediaStore::insert(const MediaFile &m) const {
-    Statement query(p->db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+void MediaStorePrivate::insert(const MediaFile &m) const {
+    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     string fname = m.getFileName();
     string title = m.getTitle();
     if(title.empty())
@@ -295,8 +312,8 @@ void MediaStore::insert(const MediaFile &m) const {
     printf(" duration : %d\n", m.getDuration());
 }
 
-void MediaStore::remove(const string &fname) const {
-    Statement del(p->db, "DELETE FROM media WHERE filename = ?");
+void MediaStorePrivate::remove(const string &fname) const {
+    Statement del(db, "DELETE FROM media WHERE filename = ?");
     del.bind(1, fname);
     del.step();
 }
@@ -324,8 +341,8 @@ static vector<MediaFile> collect_media(Statement &query) {
     return result;
 }
 
-MediaFile MediaStore::lookup(const std::string &filename) const {
-    Statement query(p->db, R"(
+MediaFile MediaStorePrivate::lookup(const std::string &filename) const {
+    Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media
   WHERE filename = ?
@@ -337,9 +354,9 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
     return make_media(query);
 }
 
-vector<MediaFile> MediaStore::query(const std::string &core_term, MediaType type, int limit) const {
+vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, int limit) const {
     if (core_term == "") {
-        Statement query(p->db, R"(
+        Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media
   WHERE type == ?
@@ -349,7 +366,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
         query.bind(2, limit);
         return collect_media(query);
     } else {
-        Statement query(p->db, R"(
+        Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
   FROM media JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
@@ -380,9 +397,9 @@ static vector<Album> collect_albums(Statement &query) {
     return result;
 }
 
-vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
+vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, int limit) const {
     if (core_term == "") {
-        Statement query(p->db, R"(
+        Statement query(db, R"(
 SELECT album, album_artist FROM media
 WHERE type = ? AND album <> ''
 GROUP BY album, album_artist
@@ -392,7 +409,7 @@ LIMIT ?
         query.bind(2, limit);
         return collect_albums(query);
     } else {
-        Statement query(p->db, R"(
+        Statement query(db, R"(
 SELECT album, album_artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND album <> ''
@@ -406,8 +423,8 @@ LIMIT ?
     }
 }
 
-vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {
-    Statement query(p->db, R"(
+vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
+    Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
 ORDER BY track_number
@@ -418,8 +435,8 @@ ORDER BY track_number
     return collect_media(query);
 }
 
-std::string MediaStore::getETag(const std::string &filename) const {
-    Statement query(p->db, R"(
+std::string MediaStorePrivate::getETag(const std::string &filename) const {
+    Statement query(db, R"(
 SELECT etag FROM media WHERE filename = ?
 )");
     query.bind(1, filename);
@@ -524,9 +541,9 @@ SELECT artist FROM media
     return artists;
 }
 
-void MediaStore::pruneDeleted() {
+void MediaStorePrivate::pruneDeleted() {
     vector<string> deleted;
-    Statement query(p->db, "SELECT filename FROM media");
+    Statement query(db, "SELECT filename FROM media");
     while (query.step()) {
         const string filename = query.getText(0);
         if (access(filename.c_str(), F_OK) != 0) {
@@ -540,7 +557,7 @@ void MediaStore::pruneDeleted() {
     }
 }
 
-void MediaStore::archiveItems(const std::string &prefix) {
+void MediaStorePrivate::archiveItems(const std::string &prefix) {
     const char *templ = R"(BEGIN TRANSACTION;
 INSERT INTO media_attic SELECT * FROM media WHERE filename LIKE %s;
 DELETE FROM media WHERE filename LIKE %s;
@@ -551,13 +568,13 @@ COMMIT;
     char cmd[bufsize];
     snprintf(cmd, bufsize, templ, cond.c_str(), cond.c_str());
     char *errmsg;
-    if(sqlite3_exec(p->db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
-        sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
+    if(sqlite3_exec(db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
+        sqlite3_exec(db, "ROLLBACK;", nullptr, nullptr, nullptr);
         throw runtime_error(errmsg);
     }
 }
 
-void MediaStore::restoreItems(const std::string &prefix) {
+void MediaStorePrivate::restoreItems(const std::string &prefix) {
     const char *templ = R"(BEGIN TRANSACTION;
 INSERT INTO media SELECT * FROM media_attic WHERE filename LIKE %s;
 DELETE FROM media_attic WHERE filename LIKE %s;
@@ -568,11 +585,66 @@ COMMIT;
     char cmd[bufsize];
     snprintf(cmd, bufsize, templ, cond.c_str(), cond.c_str());
     char *errmsg;
-    if(sqlite3_exec(p->db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
-        sqlite3_exec(p->db, "ROLLBACK;", nullptr, nullptr, nullptr);
+    if(sqlite3_exec(db, cmd, nullptr, nullptr, &errmsg) != SQLITE_OK) {
+        sqlite3_exec(db, "ROLLBACK;", nullptr, nullptr, nullptr);
         throw runtime_error(errmsg);
     }
 
+}
+
+void MediaStore::insert(const MediaFile &m) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->insert(m);
+}
+
+void MediaStore::remove(const std::string &fname) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->remove(fname);
+}
+
+MediaFile MediaStore::lookup(const std::string &filename) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->lookup(filename);
+}
+
+std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, int limit) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->query(q, type, limit);
+}
+
+std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->queryAlbums(core_term, limit);
+}
+
+std::vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->getAlbumSongs(album);
+}
+
+std::string MediaStore::getETag(const std::string &filename) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->getETag(filename);
+}
+
+size_t MediaStore::size() const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->size();
+}
+
+void MediaStore::pruneDeleted() {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->pruneDeleted();
+}
+
+void MediaStore::archiveItems(const std::string &prefix) {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->archiveItems(prefix);
+}
+
+void MediaStore::restoreItems(const std::string &prefix) {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->restoreItems(prefix);
 }
 
 }
