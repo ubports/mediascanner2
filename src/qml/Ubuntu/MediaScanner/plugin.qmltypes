@@ -1,0 +1,121 @@
+import QtQuick.tooling 1.1
+
+// This file describes the plugin-supplied types contained in the library.
+// It is used for QML tooling purposes only.
+//
+// This file was auto-generated with the command '/usr/lib/x86_64-linux-gnu/qt5/bin/qmlplugindump -notrelocatable Ubuntu.MediaScanner 0.1'.
+
+Module {
+    Component {
+        name: "mediascanner::qml::AlbumModelBase"
+        prototype: "QAbstractListModel"
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleTitle": 0,
+                "RoleArtist": 1
+            }
+        }
+    }
+    Component {
+        name: "mediascanner::qml::AlbumsModel"
+        prototype: "mediascanner::qml::AlbumModelBase"
+        exports: ["Ubuntu.MediaScanner/AlbumsModel 0.1"]
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "artist"; type: "string" }
+        Property { name: "albumArtist"; type: "string" }
+        Property { name: "limit"; type: "int" }
+    }
+    Component {
+        name: "mediascanner::qml::ArtistsModel"
+        prototype: "QAbstractListModel"
+        exports: ["Ubuntu.MediaScanner/ArtistsModel 0.1"]
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleArtist": 0
+            }
+        }
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "albumArtists"; type: "bool" }
+        Property { name: "limit"; type: "int" }
+    }
+    Component {
+        name: "mediascanner::qml::MediaFileModelBase"
+        prototype: "QAbstractListModel"
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleModelData": 0,
+                "RoleFilename": 1,
+                "RoleUri": 2,
+                "RoleContentType": 3,
+                "RoleETag": 4,
+                "RoleTitle": 5,
+                "RoleAuthor": 6,
+                "RoleAlbum": 7,
+                "RoleAlbumArtist": 8,
+                "RoleDate": 9,
+                "RoleTrackNumber": 10,
+                "RoleDuration": 11
+            }
+        }
+    }
+    Component {
+        name: "mediascanner::qml::MediaFileWrapper"
+        prototype: "QObject"
+        exports: ["Ubuntu.MediaScanner/MediaFile 0.1"]
+        Property { name: "filename"; type: "string"; isReadonly: true }
+        Property { name: "uri"; type: "string"; isReadonly: true }
+        Property { name: "contentType"; type: "string"; isReadonly: true }
+        Property { name: "eTag"; type: "string"; isReadonly: true }
+        Property { name: "title"; type: "string"; isReadonly: true }
+        Property { name: "author"; type: "string"; isReadonly: true }
+        Property { name: "album"; type: "string"; isReadonly: true }
+        Property { name: "albumArtist"; type: "string"; isReadonly: true }
+        Property { name: "date"; type: "string"; isReadonly: true }
+        Property { name: "trackNumber"; type: "int"; isReadonly: true }
+        Property { name: "duration"; type: "int"; isReadonly: true }
+    }
+    Component {
+        name: "mediascanner::qml::MediaStoreWrapper"
+        prototype: "QObject"
+        exports: ["Ubuntu.MediaScanner/MediaStore 0.1"]
+        Enum {
+            name: "MediaType"
+            values: {
+                "AudioMedia": 1,
+                "VideoMedia": 2,
+                "AllMedia": 3
+            }
+        }
+        Method {
+            name: "query"
+            type: "QList<QObject*>"
+            Parameter { name: "q"; type: "string" }
+            Parameter { name: "type"; type: "MediaType" }
+        }
+        Method {
+            name: "lookup"
+            type: "mediascanner::qml::MediaFileWrapper*"
+            Parameter { name: "filename"; type: "string" }
+        }
+    }
+    Component {
+        name: "mediascanner::qml::SongsModel"
+        prototype: "mediascanner::qml::MediaFileModelBase"
+        exports: ["Ubuntu.MediaScanner/SongsModel 0.1"]
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "artist"; type: "string" }
+        Property { name: "album"; type: "string" }
+        Property { name: "albumArtist"; type: "string" }
+        Property { name: "limit"; type: "int" }
+    }
+    Component {
+        name: "mediascanner::qml::SongsSearchModel"
+        prototype: "mediascanner::qml::MediaFileModelBase"
+        exports: ["Ubuntu.MediaScanner/SongsSearchModel 0.1"]
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "query"; type: "string" }
+    }
+}

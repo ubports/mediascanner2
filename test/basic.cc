@@ -20,6 +20,7 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/MediaStore.hh>
+#include <daemon/InvalidationSender.hh>
 #include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
 #include <daemon/Scanner.hh>
@@ -55,7 +56,8 @@ class ScanTest : public ::testing::Test {
 TEST_F(ScanTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    SubtreeWatcher watcher(store, extractor, invalidator);
 }
 
 void clear_dir(const string &subdir) {
@@ -83,6 +85,11 @@ void copy_file(const string &src, const string &dst) {
     delete[] buf;
 }
 
+void iterate_main_loop() {
+    while (g_main_context_iteration(nullptr, FALSE)) {
+    }
+}
+
 TEST_F(ScanTest, index) {
     string subdir = TEST_DIR "/testdir";
     string testfile = SOURCE_DIR "/media/testfile.ogg";
@@ -91,15 +98,17 @@ TEST_F(ScanTest, index) {
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    invalidator.disable();
+    SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(subdir);
     ASSERT_EQ(store.size(), 0);
 
     copy_file(testfile, outfile);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(store.size(), 1);
     ASSERT_EQ(unlink(outfile.c_str()), 0);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(store.size(), 0);
 }
 
@@ -112,23 +121,25 @@ TEST_F(ScanTest, subdir) {
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
-    SubtreeWatcher watcher(store, extractor);
+    InvalidationSender invalidator;
+    invalidator.disable();
+    SubtreeWatcher watcher(store, extractor, invalidator);
     ASSERT_EQ(watcher.directoryCount(), 0);
     watcher.addDir(testdir);
     ASSERT_EQ(watcher.directoryCount(), 1);
     ASSERT_EQ(store.size(), 0);
 
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(watcher.directoryCount(), 2);
     copy_file(testfile, outfile);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(store.size(), 1);
     ASSERT_EQ(unlink(outfile.c_str()), 0);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(store.size(), 0);
     ASSERT_EQ(rmdir(subdir.c_str()), 0);
-    watcher.pumpEvents();
+    iterate_main_loop();
     ASSERT_EQ(watcher.directoryCount(), 1);
 }
 

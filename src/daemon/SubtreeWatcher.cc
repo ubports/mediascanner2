@@ -19,6 +19,7 @@
 
 #include "../mediascanner/MediaStore.hh"
 #include "../mediascanner/MediaFile.hh"
+#include "InvalidationSender.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
 
@@ -34,6 +35,9 @@
 #include<map>
 #include<memory>
 
+#include <glib.h>
+#include <glib-unix.h>
+
 using namespace std;
 
 namespace mediascanner {
@@ -41,15 +45,19 @@ namespace mediascanner {
 struct SubtreeWatcherPrivate {
     MediaStore &store; // Hackhackhack, should be replaced with callback object or something.
     MetadataExtractor &extractor;
+    InvalidationSender &invalidator;
     int inotifyid;
     // Ideally use boost::bimap or something instead of these two separate objects.
     std::map<int, std::string> wd2str;
     std::map<std::string, int> str2wd;
     bool keep_going;
 
-    SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor) :
-        store(store), extractor(extractor), inotifyid(inotify_init()),
-        keep_going(true) {
+    std::unique_ptr<GSource,void(*)(GSource*)> source;
+
+    SubtreeWatcherPrivate(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator) :
+        store(store), extractor(extractor), invalidator(invalidator),
+        inotifyid(inotify_init()), keep_going(true),
+        source(g_unix_fd_source_new(inotifyid, G_IO_IN), g_source_unref) {
     }
 
     ~SubtreeWatcherPrivate() {
@@ -61,17 +69,26 @@ struct SubtreeWatcherPrivate {
 
 };
 
-SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor) {
-    p = new SubtreeWatcherPrivate(store, extractor);
+static gboolean source_callback(GIOChannel *, GIOCondition, gpointer data) {
+    SubtreeWatcher *watcher = static_cast<SubtreeWatcher*>(data);
+    watcher->processEvents();
+    return TRUE;
+}
+
+SubtreeWatcher::SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator) {
+    p = new SubtreeWatcherPrivate(store, extractor, invalidator);
     if(p->inotifyid == -1) {
         string msg("Could not init inotify: ");
         msg += strerror(errno);
         delete p;
         throw runtime_error(msg);
     }
+    g_source_set_callback(p->source.get(), reinterpret_cast<GSourceFunc>(source_callback), static_cast<gpointer>(this), nullptr);
+    g_source_attach(p->source.get(), nullptr);
 }
 
 SubtreeWatcher::~SubtreeWatcher() {
+    g_source_destroy(p->source.get());
     delete p;
 }
 
@@ -155,85 +172,74 @@ void SubtreeWatcher::dirRemoved(const string &abspath) {
 }
 
 
-bool SubtreeWatcher::pumpEvents() {
+void SubtreeWatcher::processEvents() {
     const int BUFSIZE=4096;
     char buf[BUFSIZE];
     bool changed = false;
-    if(p->wd2str.empty())
-        return changed;
-    while(true) {
-        fd_set reads;
-        FD_ZERO(&reads);
-        FD_SET(p->inotifyid, &reads);
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-        if(select(p->inotifyid+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            break;
+    ssize_t num_read;
+    num_read = read(p->inotifyid, buf, BUFSIZE);
+    if(num_read == 0) {
+        printf("Inotify returned 0.\n");
+        return;
+    }
+    if(num_read == -1) {
+        printf("Read error.\n");
+        return;
+    }
+    for(char *d = buf; d < buf + num_read;) {
+        struct inotify_event *event = (struct inotify_event *) d;
+        if (p->wd2str.find(event->wd) == p->wd2str.end()) {
+            // Ignore events for unknown watches.  We may receive
+            // such events when a directory is removed.
+            d += sizeof(struct inotify_event) + event->len;
+            continue;
         }
-        ssize_t num_read;
-        num_read = read(p->inotifyid, buf, BUFSIZE);
-        if(num_read == 0) {
-            printf("Inotify returned 0.\n");
-            break;
-        }
-        if(num_read == -1) {
-            printf("Read error.\n");
-            break;
-        }
-        for(char *d = buf; d < buf + num_read;) {
-            struct inotify_event *event = (struct inotify_event *) d;
-            if (p->wd2str.find(event->wd) == p->wd2str.end()) {
-                // Ignore events for unknown watches.  We may receive
-                // such events when a directory is removed.
-                d += sizeof(struct inotify_event) + event->len;
-                continue;
-            }
-            string directory = p->wd2str[event->wd];
-            string filename(event->name);
-            string abspath = directory + '/' + filename;
-            bool is_dir = false;
-            bool is_file = false;
-            struct stat statbuf;
-            lstat(abspath.c_str(), &statbuf);
-            // Remember: these are not valid in case of delete event.
-            if(S_ISDIR(statbuf.st_mode))
-                is_dir = true;
-            if(S_ISREG(statbuf.st_mode))
-                is_file = true;
+        string directory = p->wd2str[event->wd];
+        string filename(event->name);
+        string abspath = directory + '/' + filename;
+        bool is_dir = false;
+        bool is_file = false;
+        struct stat statbuf;
+        lstat(abspath.c_str(), &statbuf);
+        // Remember: these are not valid in case of delete event.
+        if(S_ISDIR(statbuf.st_mode))
+            is_dir = true;
+        if(S_ISREG(statbuf.st_mode))
+            is_file = true;
 
-            if(event->mask & IN_CREATE) {
-                if(is_dir) {
-                    dirAdded(abspath);
-                    changed = true;
-                }
-                // Do not add files upon creation because we can't parse
-                // their metadata until it is fully written.
-            } else if((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
-                if(is_dir) {
-                    dirAdded(abspath);
-                    changed = true;
-                }
-                if(is_file) {
-                    fileAdded(abspath);
-                    changed = true;
-                }
-            } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
-                if(p->str2wd.find(abspath) != p->str2wd.end()) {
-                    dirRemoved(abspath);
-                    changed = true;
-                } else {
-                    fileDeleted(abspath);
-                    changed = true;
-                }
-            } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
-                removeDir(abspath);
+        if(event->mask & IN_CREATE) {
+            if(is_dir) {
+                dirAdded(abspath);
                 changed = true;
             }
-            d += sizeof(struct inotify_event) + event->len;
+            // Do not add files upon creation because we can't parse
+            // their metadata until it is fully written.
+        } else if((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_MOVED_TO)) {
+            if(is_dir) {
+                dirAdded(abspath);
+                changed = true;
+            }
+            if(is_file) {
+                fileAdded(abspath);
+                changed = true;
+            }
+        } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
+            if(p->str2wd.find(abspath) != p->str2wd.end()) {
+                dirRemoved(abspath);
+                changed = true;
+            } else {
+                fileDeleted(abspath);
+                changed = true;
+            }
+        } else if((event->mask & IN_IGNORED) || (event->mask & IN_UNMOUNT) || (event->mask & IN_DELETE_SELF)) {
+            removeDir(abspath);
+            changed = true;
         }
+        d += sizeof(struct inotify_event) + event->len;
     }
-    return changed;
+    if (changed) {
+        p->invalidator.invalidate();
+    }
 }
 
 int SubtreeWatcher::getFd() const {

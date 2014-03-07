@@ -1,0 +1,2 @@
+module Ubuntu.MediaScanner
+plugin mediascanner-qml

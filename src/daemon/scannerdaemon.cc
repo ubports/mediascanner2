@@ -31,6 +31,7 @@
 #include<cassert>
 
 #include<glib.h>
+#include<glib-unix.h>
 #include<gst/gst.h>
 
 #include "../mediascanner/MediaFile.hh"
@@ -52,20 +53,26 @@ public:
 
 private:
 
+    void setupSignals();
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
     void addDir(const string &dir);
     void removeDir(const string &dir);
-    bool pumpEvents();
+    static gboolean sourceCallback(int, GIOCondition, gpointer data);
+    static gboolean signalCallback(gpointer data);
+    void processEvents();
     void addMountedVolumes();
 
     int mountfd;
+    unique_ptr<GSource,void(*)(GSource*)> mount_source;
+    int sigint_id, sigterm_id;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
     unique_ptr<MetadataExtractor> extractor;
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
+    unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
 };
 
 static std::string getCurrentUser() {
@@ -79,11 +86,14 @@ static std::string getCurrentUser() {
     return pwd->pw_name;
 }
 
-ScannerDaemon::ScannerDaemon() {
+ScannerDaemon::ScannerDaemon() :
+    mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
+    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
     mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
+    setupSignals();
     setupMountWatcher();
     addMountedVolumes();
 
@@ -99,7 +109,27 @@ ScannerDaemon::ScannerDaemon() {
 }
 
 ScannerDaemon::~ScannerDaemon() {
+    if (sigint_id != 0) {
+        g_source_remove(sigint_id);
+    }
+    if (sigterm_id != 0) {
+        g_source_remove(sigterm_id);
+    }
+    if (mount_source) {
+        g_source_destroy(mount_source.get());
+    }
     close(mountfd);
+}
+
+gboolean ScannerDaemon::signalCallback(gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    g_main_loop_quit(daemon->main_loop.get());
+    return TRUE;
+}
+
+void ScannerDaemon::setupSignals() {
+    sigint_id = g_unix_signal_add(SIGINT, &ScannerDaemon::signalCallback, this);
+    sigterm_id = g_unix_signal_add(SIGTERM, &ScannerDaemon::signalCallback, this);
 }
 
 void ScannerDaemon::addDir(const string &dir) {
@@ -107,7 +137,7 @@ void ScannerDaemon::addDir(const string &dir) {
     if(subtrees.find(dir) != subtrees.end()) {
         return;
     }
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get()));
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
     store->restoreItems(dir);
     store->pruneDeleted();
     readFiles(*store.get(), dir, AllMedia);
@@ -138,34 +168,14 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 }
 
 int ScannerDaemon::run() {
-    while(true) {
-        int maxfd = 0;
-        bool changed = false;
-        fd_set fds;
-        FD_ZERO(&fds);
-        for(const auto &i: subtrees) {
-            int cfd = i.second->getFd();
-            if(cfd > maxfd) maxfd = cfd;
-            FD_SET(cfd, &fds);
-        }
-        FD_SET(mountfd, &fds);
-        if(mountfd > maxfd) maxfd = mountfd;
-
-        int rval = select(maxfd+1, &fds, nullptr, nullptr, nullptr);
-        if(rval < 0) {
-            string msg("Select failed: ");
-            msg += strerror(errno);
-            throw runtime_error(msg);
-        }
-        for(const auto &i: subtrees) {
-            changed = i.second->pumpEvents() || changed;
-        }
-        changed = pumpEvents() || changed;
-        if(changed) {
-            invalidator.invalidate();
-        }
-    }
+    g_main_loop_run(main_loop.get());
     return 99;
+}
+
+gboolean ScannerDaemon::sourceCallback(int, GIOCondition, gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    daemon->processEvents();
+    return TRUE;
 }
 
 void ScannerDaemon::setupMountWatcher() {
@@ -186,54 +196,49 @@ void ScannerDaemon::setupMountWatcher() {
         msg += strerror(errno);
         throw runtime_error(msg);
     }
+
+    mount_source.reset(g_unix_fd_source_new(mountfd, G_IO_IN));
+    g_source_set_callback(mount_source.get(), reinterpret_cast<GSourceFunc>(&ScannerDaemon::sourceCallback), this, nullptr);
+    g_source_attach(mount_source.get(), nullptr);
 }
 
-bool ScannerDaemon::pumpEvents() {
+void ScannerDaemon::processEvents() {
     const int BUFSIZE= 4096;
     char buf[BUFSIZE];
     bool changed = false;
-    while(true) {
-        fd_set reads;
-        FD_ZERO(&reads);
-        FD_SET(mountfd, &reads);
-        struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-        if(select(mountfd+1, &reads, nullptr, nullptr, &timeout) <= 0) {
-            break;
-        }
-        ssize_t num_read;
-        num_read = read(mountfd, buf, BUFSIZE);
-        if(num_read == 0) {
-            printf("Inotify returned 0.\n");
-            break;
-        }
-        if(num_read == -1) {
-            printf("Read error.\n");
-            break;
-        }
-        for(char *p = buf; p < buf + num_read;) {
-            struct inotify_event *event = (struct inotify_event *) p;
-            string directory = mountDir;
-            string filename(event->name);
-            string abspath = directory + '/' + filename;
-            struct stat statbuf;
-            lstat(abspath.c_str(), &statbuf);
-            if(S_ISDIR(statbuf.st_mode)) {
-                if(event->mask & IN_CREATE) {
-                    printf("Volume %s was mounted.\n", abspath.c_str());
-                    addDir(abspath);
-                    changed = true;
-                } else if(event->mask & IN_DELETE){
-                    printf("Volume %s was unmounted.\n", abspath.c_str());
-                    removeDir(abspath);
-                    changed = true;
-                }
-            }
-            p += sizeof(struct inotify_event) + event->len;
-        }
+    ssize_t num_read;
+    num_read = read(mountfd, buf, BUFSIZE);
+    if(num_read == 0) {
+        printf("Inotify returned 0.\n");
+        return;
     }
-    return changed;
+    if(num_read == -1) {
+        printf("Read error.\n");
+        return;
+    }
+    for(char *p = buf; p < buf + num_read;) {
+        struct inotify_event *event = (struct inotify_event *) p;
+        string directory = mountDir;
+        string filename(event->name);
+        string abspath = directory + '/' + filename;
+        struct stat statbuf;
+        lstat(abspath.c_str(), &statbuf);
+        if(S_ISDIR(statbuf.st_mode)) {
+            if(event->mask & IN_CREATE) {
+                printf("Volume %s was mounted.\n", abspath.c_str());
+                addDir(abspath);
+                changed = true;
+            } else if(event->mask & IN_DELETE){
+                printf("Volume %s was unmounted.\n", abspath.c_str());
+                removeDir(abspath);
+                changed = true;
+            }
+        }
+        p += sizeof(struct inotify_event) + event->len;
+    }
+    if (changed) {
+        invalidator.invalidate();
+    }
 }
 
 void ScannerDaemon::addMountedVolumes() {
