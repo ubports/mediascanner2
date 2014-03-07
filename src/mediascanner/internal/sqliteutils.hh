@@ -86,7 +86,9 @@ public:
         if (statement != NULL) {
             rc = sqlite3_finalize(statement);
             if (rc != SQLITE_OK) {
-                throw std::runtime_error("Could not finalize statement");
+                std::string msg("Could not finalize statement: ");
+                msg += sqlite3_errstr(rc);
+                throw std::runtime_error(msg);
             }
             statement = NULL;
         }
