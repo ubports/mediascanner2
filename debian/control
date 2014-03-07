@@ -65,7 +65,7 @@ Description: Development files for libmediascanner
 Package: qtdeclarative5-ubuntu-mediascanner0.1
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends},
-Depends: mediascanner (= ${binary:Version}),
+Depends: mediascanner2.0 (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends},
 Description: QML plugin for the Ubuntu Media Scanner
