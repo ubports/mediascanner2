@@ -21,14 +21,35 @@
 #include<string>
 #include<cstdlib>
 #include<cstdio>
+#include <glib.h>
 
 using namespace std;
 
-InvalidationSender::InvalidationSender() {
+// timer delay in seconds
+const unsigned int DELAY = 1;
 
+InvalidationSender::InvalidationSender() : enabled(true), timeout_id(0) {
+}
+
+InvalidationSender::~InvalidationSender() {
+    if (timeout_id != 0) {
+        g_source_remove(timeout_id);
+    }
 }
 
 void InvalidationSender::invalidate() {
+    if (!enabled) {
+        return;
+    }
+    if (timeout_id != 0) {
+        return;
+    }
+    timeout_id = g_timeout_add_seconds(DELAY, &InvalidationSender::callback, static_cast<void*>(this));
+}
+
+int InvalidationSender::callback(void *data) {
+    auto invalidator = static_cast<InvalidationSender*>(data);
+
     string invocation("dbus-send /com/canonical/unity/scopes ");
     invocation += "com.canonical.unity.scopes.InvalidateResults string:";
     const string m_invoc = invocation + "mediascanner-music";
@@ -39,4 +60,11 @@ void InvalidationSender::invalidate() {
     if(system(v_invoc.c_str()) != 0) {
         fprintf(stderr, "Could not invalidate video scope results.\n");
     }
+
+    invalidator->timeout_id = 0;
+    return FALSE;
+}
+
+void InvalidationSender::disable() {
+    enabled = false;
 }

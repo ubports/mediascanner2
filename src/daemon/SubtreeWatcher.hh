@@ -22,6 +22,8 @@
 
 #include<string>
 
+class InvalidationSender;
+
 namespace mediascanner {
 
 class MediaStore;
@@ -41,13 +43,13 @@ private:
     bool removeDir(const std::string &abspath);
 
 public:
-    SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor);
+    SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator);
     ~SubtreeWatcher();
     SubtreeWatcher(SubtreeWatcher &o) = delete;
     SubtreeWatcher& operator=(SubtreeWatcher &o) = delete;
 
     void addDir(const std::string &path);
-    bool pumpEvents();
+    void processEvents();
     int getFd() const;
     int directoryCount() const;
 };

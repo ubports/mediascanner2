@@ -54,7 +54,8 @@ MetadataExtractor::MetadataExtractor(int seconds) {
         string msg = "Failed to create discoverer: ";
         msg += errortxt;
         throw runtime_error(msg);
-    } else {
+    }
+    if (error) {
         // Sometimes this is filled in even though no error happens.
         g_error_free(error);
     }
@@ -164,11 +165,12 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
         msg += " failed: ";
         msg += errortxt;
         throw runtime_error(msg);
-    } else {
+    }
+    if (error) {
         // Sometimes this gets filled in even if no error actually occurs.
         g_error_free(error);
+        error = nullptr;
     }
-    error = nullptr;
 
     if (gst_discoverer_info_get_result(info.get()) != GST_DISCOVERER_OK) {
         throw runtime_error("Unable to discover file " + d.filename);
