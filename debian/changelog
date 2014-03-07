@@ -1,4 +1,4 @@
-mediascanner2 (0.100-0ubuntu1) UNRELEASED; urgency=low
+mediascanner2 (0.100+14.04.20140307.1-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]
   * First stages of a QML plugin for the Media Scanner. At present it 
@@ -15,7 +15,10 @@ mediascanner2 (0.100-0ubuntu1) UNRELEASED; urgency=low
   * Shutdown cleanly on signals.
   * Made SQLite db safe to access from multiple threads.
 
- -- James Henstridge <james.henstridge@canonical.com>  Fri, 07 Mar 2014 16:19:14 +0800
+  [ Michal Hruby ]
+  * Fix incorrect depends
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 07 Mar 2014 17:40:21 +0000
 
 mediascanner2 (0.99+14.04.20140220-0ubuntu1) trusty; urgency=low
 
