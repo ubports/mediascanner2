@@ -33,5 +33,6 @@ bool is_rootlike(const string &path) {
     string s1 = path + "/usr";
     string s2 = path + "/var";
     string s3 = path + "/bin";
-    return dir_exists(s1) && dir_exists(s2) && dir_exists(s3);
+    string s4 = path + "/Program Files";
+    return (dir_exists(s1) && dir_exists(s2) && dir_exists(s3)) || dir_exists(s4);
 }
