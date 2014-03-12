@@ -212,6 +212,14 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     EXPECT_EQ(media.getTitle(), "track1");
 }
 
+TEST(Mediascanner, root_skip) {
+    MetadataExtractor e;
+    string root(SOURCE_DIR);
+    Scanner s;
+    auto res = s.scanFiles(&e, root, AudioMedia);
+    ASSERT_EQ(res.size(), 1);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
