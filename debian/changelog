@@ -1,3 +1,12 @@
+mediascanner2 (0.100+14.04.20140314-0ubuntu1) trusty; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Keep going if inotify watch creation fails.
+  * Skip subdirectories that look like root directories.
+  * Delay signal handling initialisation.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 14 Mar 2014 15:17:16 +0000
+
 mediascanner2 (0.100+14.04.20140310-0ubuntu1) trusty; urgency=low
 
   * New rebuild forced
