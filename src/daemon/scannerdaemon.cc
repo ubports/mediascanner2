@@ -93,7 +93,6 @@ ScannerDaemon::ScannerDaemon() :
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
     extractor.reset(new MetadataExtractor());
-    setupSignals();
     setupMountWatcher();
     addMountedVolumes();
 
@@ -106,6 +105,10 @@ ScannerDaemon::ScannerDaemon() :
         addDir(videodir);
     // In case someone opened the db file before we could populate it.
     invalidator.invalidate();
+    // This is at the end because the initial scan may take a while
+    // and is not interruptible but we want the process to die if it
+    // gets a SIGINT or the like.
+    setupSignals();
 }
 
 ScannerDaemon::~ScannerDaemon() {
