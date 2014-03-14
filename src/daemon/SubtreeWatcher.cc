@@ -105,9 +105,8 @@ void SubtreeWatcher::addDir(const string &root) {
             IN_CREATE | IN_DELETE_SELF | IN_DELETE | IN_CLOSE_WRITE |
             IN_MOVED_FROM | IN_MOVED_TO | IN_ONLYDIR);
     if(wd == -1) {
-        string msg("Could not create inotify watch object: ");
-        msg += strerror(errno);
-        throw runtime_error(msg);
+        fprintf(stderr, "Could not create inotify watch object: %s\n", strerror(errno));
+        return; // Probably ran out of watches, keep monitoring what we can.
     }
     p->wd2str[wd] = root;
     p->str2wd[root] = wd;
