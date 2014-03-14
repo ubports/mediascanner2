@@ -22,6 +22,7 @@
 #include "InvalidationSender.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
+#include "util.h"
 
 #include<sys/select.h>
 #include<stdexcept>
@@ -95,6 +96,11 @@ SubtreeWatcher::~SubtreeWatcher() {
 void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
+    if(is_rootlike(root)) {
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
+                root.c_str());
+        return;
+    }
     if(p->str2wd.find(root) != p->str2wd.end())
         return;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);

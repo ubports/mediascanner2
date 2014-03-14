@@ -40,6 +40,7 @@
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
 #include "InvalidationSender.hh"
+#include "util.h"
 
 using namespace std;
 
@@ -135,6 +136,11 @@ void ScannerDaemon::setupSignals() {
 void ScannerDaemon::addDir(const string &dir) {
     assert(dir[0] == '/');
     if(subtrees.find(dir) != subtrees.end()) {
+        return;
+    }
+    if(is_rootlike(dir)) {
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
+                dir.c_str());
         return;
     }
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));

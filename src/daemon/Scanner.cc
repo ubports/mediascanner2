@@ -19,6 +19,7 @@
 
 #include "MetadataExtractor.hh"
 #include "Scanner.hh"
+#include "util.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>
@@ -41,6 +42,11 @@ vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std:
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
     printf("In subdir %s\n", root.c_str());
     if(!dir) {
+        return result;
+    }
+    if(is_rootlike(root)) {
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
+                root.c_str());
         return result;
     }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
