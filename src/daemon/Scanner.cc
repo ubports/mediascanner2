@@ -45,8 +45,8 @@ vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std:
         return result;
     }
     if(is_rootlike(root)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
-                root.c_str());
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                root.c_str(), __PRETTY_FUNCTION__);
         return result;
     }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),

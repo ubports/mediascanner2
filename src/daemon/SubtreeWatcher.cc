@@ -97,8 +97,8 @@ void SubtreeWatcher::addDir(const string &root) {
     if(root[0] != '/')
         throw runtime_error("Path must be absolute.");
     if(is_rootlike(root)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
-                root.c_str());
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                root.c_str(), __PRETTY_FUNCTION__);
         return;
     }
     if(p->str2wd.find(root) != p->str2wd.end())
