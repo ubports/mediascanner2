@@ -41,6 +41,7 @@ class MediaFileWrapper : public QObject {
     Q_PROPERTY(QString date READ date CONSTANT)
     Q_PROPERTY(int trackNumber READ trackNumber CONSTANT)
     Q_PROPERTY(int duration READ duration CONSTANT)
+    Q_PROPERTY(QString art READ art CONSTANT)
 public:
     MediaFileWrapper(const mediascanner::MediaFile &media, QObject *parent=0);
     QString filename() const;
@@ -54,6 +55,7 @@ public:
     QString date() const;
     int trackNumber() const;
     int duration() const;
+    QString art() const;
 private:
     const mediascanner::MediaFile media;
 };

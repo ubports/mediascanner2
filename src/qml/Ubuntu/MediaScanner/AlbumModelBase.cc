@@ -18,6 +18,7 @@
  */
 
 #include "AlbumModelBase.hh"
+#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -25,6 +26,7 @@ AlbumModelBase::AlbumModelBase(QObject *parent)
     : QAbstractListModel(parent) {
     roles[Roles::RoleTitle] = "title";
     roles[Roles::RoleArtist] = "artist";
+    roles[Roles::RoleArt] = "art";
 }
 
 int AlbumModelBase::rowCount(const QModelIndex &) const {
@@ -41,6 +43,8 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
         return QString::fromStdString(album.getTitle());
     case RoleArtist:
         return QString::fromStdString(album.getArtist());
+    case RoleArt:
+        return make_album_art_uri(album.getArtist(), album.getTitle());
     default:
         return QVariant();
     }

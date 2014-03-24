@@ -18,6 +18,7 @@
  */
 
 #include "MediaFileWrapper.hh"
+#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -67,4 +68,8 @@ int MediaFileWrapper::trackNumber() const {
 
 int MediaFileWrapper::duration() const {
     return media.getDuration();
+}
+
+QString MediaFileWrapper::art() const {
+    return make_album_art_uri(media.getAuthor(), media.getAlbum());
 }
