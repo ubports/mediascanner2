@@ -17,37 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MEDIASCANNER_QML_ALBUMMODELBASE_H
-#define MEDIASCANNER_QML_ALBUMMODELBASE_H
+#ifndef MEDIASCANER_QML_UTILS_H
+#define MEDIASCANER_QML_UTILS_H
 
-#include <QAbstractListModel>
+#include <string>
 #include <QString>
-
-#include <mediascanner/Album.hh>
 
 namespace mediascanner {
 namespace qml {
 
-class AlbumModelBase : public QAbstractListModel {
-    Q_OBJECT
-    Q_ENUMS(Roles)
-public:
-    enum Roles {
-        RoleTitle,
-        RoleArtist,
-        RoleArt,
-    };
-
-    explicit AlbumModelBase(QObject *parent = 0);
-    int rowCount(const QModelIndex &parent=QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-protected:
-    QHash<int, QByteArray> roleNames() const override;
-    void updateResults(const std::vector<mediascanner::Album> &results);
-private:
-    QHash<int, QByteArray> roles;
-    std::vector<mediascanner::Album> results;
-};
+QString make_album_art_uri(const std::string &artist, const std::string &album);
 
 }
 }

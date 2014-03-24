@@ -45,6 +45,7 @@ public:
         RoleDate,
         RoleTrackNumber,
         RoleDuration,
+        RoleArt,
     };
 
     explicit MediaFileModelBase(QObject *parent = 0);

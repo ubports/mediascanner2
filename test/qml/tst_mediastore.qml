@@ -33,6 +33,7 @@ Item {
             checkAttr("date", "2013-11-15");
             checkAttr("trackNumber", 1);
             checkAttr("duration", 235);
+            checkAttr("art", "image://albumart/artist=Spiderbait&album=Spiderbait");
         }
 
         function test_query() {

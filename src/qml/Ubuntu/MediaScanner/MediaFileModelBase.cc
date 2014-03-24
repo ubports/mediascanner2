@@ -19,6 +19,7 @@
 
 #include "MediaFileModelBase.hh"
 #include "MediaFileWrapper.hh"
+#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -36,6 +37,7 @@ MediaFileModelBase::MediaFileModelBase(QObject *parent)
     roles[Roles::RoleDate] = "date";
     roles[Roles::RoleTrackNumber] = "trackNumber";
     roles[Roles::RoleDuration] = "duration";
+    roles[Roles::RoleArt] = "art";
 }
 
 int MediaFileModelBase::rowCount(const QModelIndex &) const {
@@ -72,6 +74,8 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
         return media.getTrackNumber();
     case RoleDuration:
         return media.getDuration();
+    case RoleArt:
+        return make_album_art_uri(media.getAuthor(), media.getAlbum());
     default:
         return QVariant();
     }
