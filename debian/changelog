@@ -1,3 +1,12 @@
+mediascanner2 (0.100+14.04.20140324-0ubuntu1) trusty; urgency=low
+
+  [ James Henstridge ]
+  * Expose an "art" role/property on album and song models, returning a
+    URI that can be used with a QML Image component. The actual image
+    provider comes from ubuntu-ui-toolkit.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 24 Mar 2014 18:34:58 +0000
+
 mediascanner2 (0.100+14.04.20140314-0ubuntu1) trusty; urgency=low
 
   [ Jussi Pakkanen ]
