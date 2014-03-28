@@ -20,8 +20,6 @@ Build-Depends: cmake,
 # For running unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
-# For "old style" scope
-               libunity-dev,
 Homepage: https://launchpad.net/mediascanner2
 # if you don't have have commit access to this branch but would like to upload
 # directly to Ubuntu, don't worry: your changes will be merged back into the
