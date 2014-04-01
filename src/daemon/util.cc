@@ -28,7 +28,7 @@ static bool dir_exists(const string &path) {
     struct stat statbuf;
     if(stat(path.c_str(), &statbuf) < 0) {
         if(errno != ENOENT) {
-            printf("Error while trying to determine state of dir %s: %s", path.c_str(), strerror(errno));
+            printf("Error while trying to determine state of dir %s: %s\n", path.c_str(), strerror(errno));
         }
         return false;
     }
