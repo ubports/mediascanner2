@@ -142,8 +142,8 @@ void ScannerDaemon::addDir(const string &dir) {
         return;
     }
     if(is_rootlike(dir)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it.\n",
-                dir.c_str());
+        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                dir.c_str(), __PRETTY_FUNCTION__);
         return;
     }
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
@@ -158,7 +158,6 @@ void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
     assert(subtrees.find(dir) != subtrees.end());
     subtrees.erase(dir);
-
 }
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
@@ -239,8 +238,13 @@ void ScannerDaemon::processEvents() {
                 changed = true;
             } else if(event->mask & IN_DELETE){
                 printf("Volume %s was unmounted.\n", abspath.c_str());
-                removeDir(abspath);
-                changed = true;
+                if(subtrees.find(abspath) != subtrees.end()) {
+                    removeDir(abspath);
+                    changed = true;
+                } else {
+                    // This volume was not tracked because it looked rootlike.
+                    // Thus we don't need to do anything.
+                }
             }
         }
         p += sizeof(struct inotify_event) + event->len;
