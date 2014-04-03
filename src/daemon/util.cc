@@ -20,12 +20,18 @@
 #include "util.h"
 
 #include<sys/stat.h>
+#include<cstring>
 
 using namespace std;
 
 static bool dir_exists(const string &path) {
     struct stat statbuf;
-    stat(path.c_str(), &statbuf);
+    if(stat(path.c_str(), &statbuf) < 0) {
+        if(errno != ENOENT) {
+            printf("Error while trying to determine state of dir %s: %s\n", path.c_str(), strerror(errno));
+        }
+        return false;
+    }
     return S_ISDIR(statbuf.st_mode) ;
 }
 
