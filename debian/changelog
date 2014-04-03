@@ -1,3 +1,22 @@
+mediascanner2 (0.100+14.04.20140403-0ubuntu1) trusty; urgency=low
+
+  [ James Henstridge ]
+  * Remove the Unity scope found in src/utils: it looks like it has
+    suffered from bit rot and has never been used (we have unity-scope-
+    mediascanner instead). This also removes an unnecessary dependency
+    on the old libunity.
+  * Before using GStreamer to extract metadata from a file, print a log
+    message. This is intended to help track problems with metadata
+    extraction.
+
+  [ Jussi Pakkanen ]
+  * Avoid assert crash by not trying to unregister subvolumes that were
+    skipped due to looking like root subdirs. (LP: #1294193)
+  * The output value of stat is undefined when the stat call fails. So
+    don't use it.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 03 Apr 2014 10:00:38 +0000
+
 mediascanner2 (0.100+14.04.20140324-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]
