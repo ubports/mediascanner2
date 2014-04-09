@@ -42,3 +42,10 @@ bool is_rootlike(const string &path) {
     string s4 = path + "/Program Files";
     return (dir_exists(s1) && dir_exists(s2) && dir_exists(s3)) || dir_exists(s4);
 }
+
+bool is_optical_disc(const string &path) {
+    string dvd1 = path + "/AUDIO_TS";
+    string dvd2 = path + "/VIDEO_TS";
+    string bluray = path + "/BDMV";
+    return (dir_exists(dvd1) && dir_exists(dvd2)) || dir_exists(bluray);
+}
