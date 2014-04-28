@@ -47,6 +47,7 @@ public:
     std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
     FileGenerator* generator(MetadataExtractor *extractor, const std::string &root, const MediaType type);
     DetectedFile next(FileGenerator* g);
+    void deleteGenerator(FileGenerator *g);
 };
 
 }

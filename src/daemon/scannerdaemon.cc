@@ -162,15 +162,24 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
-    vector<DetectedFile> files = s.scanFiles(extractor.get(), subdir, type);
-    for(auto &d : files) {
-        // If the file is unchanged, skip it.
-        if (d.etag == store.getETag(d.filename))
-            continue;
+    FileGenerator *g = s.generator(extractor.get(), subdir, type);
+    while(true) {
         try {
-            store.insert(extractor->extract(d));
-        } catch(const exception &e) {
-            fprintf(stderr, "Error when indexing: %s\n", e.what());
+            auto d = s.next(g);
+            // If the file is unchanged, skip it.
+            if (d.etag == store.getETag(d.filename))
+                continue;
+            try {
+                store.insert(extractor->extract(d));
+            } catch(const exception &e) {
+                fprintf(stderr, "Error when indexing: %s\n", e.what());
+            }
+        } catch(const StopIteration &stop) {
+            s.deleteGenerator(g);
+            return;
+        } catch(...) {
+            s.deleteGenerator(g);
+            throw;
         }
     }
 }

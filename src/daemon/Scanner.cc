@@ -80,40 +80,48 @@ DetectedFile Scanner::next(FileGenerator* g) {
         g->dirs.pop_back();
         unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(curdir.c_str()), closedir);
         g->dir = move(tmp);
+        if(is_rootlike(curdir)) {
+            fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                    curdir.c_str(), __PRETTY_FUNCTION__);
+            g->dir.reset();
+            continue;
+        }
         printf("In subdir %s\n", curdir.c_str());
     }
-    if(is_rootlike(curdir)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                curdir.c_str(), __PRETTY_FUNCTION__);
-    } else {
-        unique_ptr<struct dirent, void(*)(void*)> tmpentry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
-                free);
-        g->entry = std::move(tmpentry);
-        struct dirent *de;
-        while(readdir_r(g->dir.get(), g->entry.get(), &de) == 0 && de ) {
-            struct stat statbuf;
-            string fname = g->entry.get()->d_name;
-            if(fname[0] == '.') // Ignore hidden files and dirs.
-                continue;
-            string fullpath = curdir + "/" + fname;
-            lstat(fullpath.c_str(), &statbuf);
-            if(S_ISREG(statbuf.st_mode)) {
-                try {
-                    DetectedFile d = g->extractor->detect(fullpath);
-                    if (g->type == AllMedia || d.type == g->type) {
-                        return d;
-                    }
-                } catch (const exception &e) {
-                    /* Ignore non-media files */
+    unique_ptr<struct dirent, void(*)(void*)> tmpentry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
+            free);
+    g->entry = std::move(tmpentry);
+    struct dirent *de;
+    while(readdir_r(g->dir.get(), g->entry.get(), &de) == 0 && de ) {
+        struct stat statbuf;
+        string fname = g->entry.get()->d_name;
+        if(fname[0] == '.') // Ignore hidden files and dirs.
+            continue;
+        string fullpath = curdir + "/" + fname;
+        lstat(fullpath.c_str(), &statbuf);
+        if(S_ISREG(statbuf.st_mode)) {
+            try {
+                DetectedFile d = g->extractor->detect(fullpath);
+                if (g->type == AllMedia || d.type == g->type) {
+                    return d;
                 }
-            } else if(S_ISDIR(statbuf.st_mode)) {
-                g->dirs.push_back(fullpath);
+            } catch (const exception &e) {
+                /* Ignore non-media files */
             }
+        } else if(S_ISDIR(statbuf.st_mode)) {
+            g->dirs.push_back(fullpath);
         }
     }
+
     // Nothing left in this directory so on to the next.
     g->dir.reset();
     return next(g);
 }
 
+// We need this because FileGenerator is an opaque type,
+// its definition is only inside this file and thus we can
+// only call delete here.
+void Scanner::deleteGenerator(FileGenerator*g) {
+    delete g;
+}
 }
