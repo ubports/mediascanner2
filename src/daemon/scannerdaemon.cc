@@ -162,10 +162,12 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s;
-    FileGenerator *g = s.generator(extractor.get(), subdir, type);
+    auto deleter = [&s](FileGenerator *g) { s.deleteGenerator(g); };
+    unique_ptr<FileGenerator, decltype(deleter)> g(s.generator(extractor.get(), subdir, type),
+            deleter);
     while(true) {
         try {
-            auto d = s.next(g);
+            auto d = s.next(g.get());
             // If the file is unchanged, skip it.
             if (d.etag == store.getETag(d.filename))
                 continue;
@@ -175,11 +177,7 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
                 fprintf(stderr, "Error when indexing: %s\n", e.what());
             }
         } catch(const StopIteration &stop) {
-            s.deleteGenerator(g);
             return;
-        } catch(...) {
-            s.deleteGenerator(g);
-            throw;
         }
     }
 }
