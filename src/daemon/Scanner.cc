@@ -32,11 +32,13 @@ namespace mediascanner {
 struct FileGenerator {
     FileGenerator();
 
+    string curdir;
     vector<string> dirs;
     unique_ptr<struct dirent, void(*)(void*)> entry;
     unique_ptr<DIR, int(*)(DIR*)> dir;
     MediaType type;
     MetadataExtractor *extractor;
+    struct dirent *de;
 };
 
 FileGenerator::FileGenerator() : entry(nullptr, free), dir(nullptr, closedir), type(AllMedia), extractor(nullptr) {
@@ -71,33 +73,33 @@ FileGenerator* Scanner::generator(MetadataExtractor *extractor, const std::strin
 }
 
 DetectedFile Scanner::next(FileGenerator* g) {
-    string curdir;
-    while(!g->dir) {
-        if(g->dirs.empty()) {
-            throw StopIteration();
-        }
-        curdir = g->dirs.back();
-        g->dirs.pop_back();
-        unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(curdir.c_str()), closedir);
-        g->dir = move(tmp);
-        if(is_rootlike(curdir)) {
-            fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                    curdir.c_str(), __PRETTY_FUNCTION__);
-            g->dir.reset();
+    if(!g->entry) {
+        while(!g->dir) {
+            if(g->dirs.empty()) {
+                throw StopIteration();
+            }
+            g->curdir = g->dirs.back();
+            g->dirs.pop_back();
+            unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(g->curdir.c_str()), closedir);
+            g->dir = move(tmp);
+            if(is_rootlike(g->curdir)) {
+                fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                        g->curdir.c_str(), __PRETTY_FUNCTION__);
+                g->dir.reset();
             continue;
+            }
+            printf("In subdir %s\n", g->curdir.c_str());
         }
-        printf("In subdir %s\n", curdir.c_str());
+        unique_ptr<struct dirent, void(*)(void*)> tmpentry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
+                free);
+        g->entry = std::move(tmpentry);
     }
-    unique_ptr<struct dirent, void(*)(void*)> tmpentry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
-            free);
-    g->entry = std::move(tmpentry);
-    struct dirent *de;
-    while(readdir_r(g->dir.get(), g->entry.get(), &de) == 0 && de ) {
+    while(readdir_r(g->dir.get(), g->entry.get(), &g->de) == 0 && g->de ) {
         struct stat statbuf;
         string fname = g->entry.get()->d_name;
         if(fname[0] == '.') // Ignore hidden files and dirs.
             continue;
-        string fullpath = curdir + "/" + fname;
+        string fullpath = g->curdir + "/" + fname;
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISREG(statbuf.st_mode)) {
             try {
@@ -115,6 +117,7 @@ DetectedFile Scanner::next(FileGenerator* g) {
 
     // Nothing left in this directory so on to the next.
     g->dir.reset();
+    g->entry.reset();
     return next(g);
 }
 
