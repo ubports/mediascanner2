@@ -22,6 +22,7 @@
 
 #include<string>
 #include<vector>
+#include<exception>
 
 #include <mediascanner/scannercore.hh>
 
@@ -30,13 +31,22 @@ namespace mediascanner {
 class DetectedFile;
 class MetadataExtractor;
 
+// A helper class to go through the file system one entry at a time.
+// This is just the same as Python's generators.
+struct FileGenerator;
+
+class StopIteration : std::exception {
+
+};
+
 class Scanner final {
 public:
     Scanner();
     ~Scanner();
 
     std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
-
+    FileGenerator* generator(MetadataExtractor *extractor, const std::string &root, const MediaType type);
+    DetectedFile next(FileGenerator* g);
 };
 
 }
