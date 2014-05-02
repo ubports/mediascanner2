@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include<cstdio>
 #include<memory>
+#include<cassert>
 
 using namespace std;
 
@@ -41,8 +42,8 @@ struct FileGenerator {
     struct dirent *de;
 };
 
-FileGenerator::FileGenerator() : entry(nullptr, free), dir(nullptr, closedir), type(AllMedia), extractor(nullptr) {
-
+FileGenerator::FileGenerator() : entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free),
+        dir(nullptr, closedir), type(AllMedia), extractor(nullptr), de(nullptr){
 }
 
 Scanner::Scanner() {
@@ -73,7 +74,7 @@ FileGenerator* Scanner::generator(MetadataExtractor *extractor, const std::strin
 }
 
 DetectedFile Scanner::next(FileGenerator* g) {
-    if(!g->entry) {
+    if(!g->de) {
         while(!g->dir) {
             if(g->dirs.empty()) {
                 throw StopIteration();
@@ -90,9 +91,6 @@ DetectedFile Scanner::next(FileGenerator* g) {
             }
             printf("In subdir %s\n", g->curdir.c_str());
         }
-        unique_ptr<struct dirent, void(*)(void*)> tmpentry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
-                free);
-        g->entry = std::move(tmpentry);
     }
     while(readdir_r(g->dir.get(), g->entry.get(), &g->de) == 0 && g->de ) {
         struct stat statbuf;
@@ -116,8 +114,8 @@ DetectedFile Scanner::next(FileGenerator* g) {
     }
 
     // Nothing left in this directory so on to the next.
+    assert(!g->de);
     g->dir.reset();
-    g->entry.reset();
     return next(g);
 }
 

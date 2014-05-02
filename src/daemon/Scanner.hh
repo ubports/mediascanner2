@@ -32,7 +32,8 @@ class DetectedFile;
 class MetadataExtractor;
 
 // A helper class to go through the file system one entry at a time.
-// This is just the same as Python's generators.
+// This is just the same as Python's iterator. Because iterator is an
+// overloaded term in C++ we call this one a generator.
 struct FileGenerator;
 
 class StopIteration : std::exception {
