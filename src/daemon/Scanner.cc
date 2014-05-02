@@ -74,24 +74,23 @@ FileGenerator* Scanner::generator(MetadataExtractor *extractor, const std::strin
 }
 
 DetectedFile Scanner::next(FileGenerator* g) {
-    if(!g->de) {
-        while(!g->dir) {
-            if(g->dirs.empty()) {
-                throw StopIteration();
-            }
-            g->curdir = g->dirs.back();
-            g->dirs.pop_back();
-            unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(g->curdir.c_str()), closedir);
-            g->dir = move(tmp);
-            if(is_rootlike(g->curdir)) {
-                fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                        g->curdir.c_str(), __PRETTY_FUNCTION__);
-                g->dir.reset();
-            continue;
-            }
-            printf("In subdir %s\n", g->curdir.c_str());
+    while(!g->dir) {
+        if(g->dirs.empty()) {
+            throw StopIteration();
         }
+        g->curdir = g->dirs.back();
+        g->dirs.pop_back();
+        unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(g->curdir.c_str()), closedir);
+        g->dir = move(tmp);
+        if(is_rootlike(g->curdir)) {
+            fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                    g->curdir.c_str(), __PRETTY_FUNCTION__);
+            g->dir.reset();
+            continue;
+        }
+        printf("In subdir %s\n", g->curdir.c_str());
     }
+
     while(readdir_r(g->dir.get(), g->entry.get(), &g->de) == 0 && g->de ) {
         struct stat statbuf;
         string fname = g->entry.get()->d_name;
