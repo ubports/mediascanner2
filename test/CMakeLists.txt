@@ -49,3 +49,7 @@ target_link_libraries(test_qml mediascanner)
 add_test(test_qml test_qml -input ${CMAKE_CURRENT_SOURCE_DIR}/qml -import ${CMAKE_BINARY_DIR}/src/qml)
 set_tests_properties(test_qml
   PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal")
+
+add_executable(test_util test_util.cc ../src/daemon/util.cc)
+target_link_libraries(test_util gtest)
+add_test(test_util test_util)
