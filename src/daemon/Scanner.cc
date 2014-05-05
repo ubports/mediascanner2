@@ -30,8 +30,8 @@ using namespace std;
 
 namespace mediascanner {
 
-struct FileGenerator {
-    FileGenerator();
+struct Scanner::Private {
+    Private(MetadataExtractor *extractor_, const std::string &root, const MediaType type_);
 
     string curdir;
     vector<string> dirs;
@@ -42,86 +42,73 @@ struct FileGenerator {
     struct dirent *de;
 };
 
-FileGenerator::FileGenerator() : entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free),
-        dir(nullptr, closedir), type(AllMedia), extractor(nullptr), de(nullptr){
+Scanner::Private::Private(MetadataExtractor *extractor, const std::string &root, const MediaType type) :
+        entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free),
+        dir(nullptr, closedir),
+        type(type),
+        extractor(extractor),
+        de(nullptr)
+{
+    dirs.push_back(root);
 }
 
-Scanner::Scanner() {
+Scanner::Scanner(MetadataExtractor *extractor, const std::string &root, const MediaType type) :
+    p(new Scanner::Private(extractor, root, type)) {
 }
 
 Scanner::~Scanner() {
+    delete p;
 }
 
-vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type) {
-    unique_ptr<FileGenerator> g(generator(extractor, root, type));
-    vector<DetectedFile> result;
-    while(true) {
-        try {
-            result.push_back(next(g.get()));
-        } catch(const StopIteration &e) {
-            return result;
-        }
-    }
-    throw std::runtime_error("Unreachable code.");
-}
 
-FileGenerator* Scanner::generator(MetadataExtractor *extractor, const std::string &root, const MediaType type) {
-    FileGenerator *g = new FileGenerator();
-    g->dirs.push_back(root);
-    g->type = type;
-    g->extractor = extractor;
-    return g;
-}
-
-DetectedFile Scanner::next(FileGenerator* g) {
-    while(!g->dir) {
-        if(g->dirs.empty()) {
+DetectedFile Scanner::next() {
+begin:
+    while(!p->dir) {
+        if(p->dirs.empty()) {
             throw StopIteration();
         }
-        g->curdir = g->dirs.back();
-        g->dirs.pop_back();
-        unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(g->curdir.c_str()), closedir);
-        g->dir = move(tmp);
-        if(is_rootlike(g->curdir)) {
+        p->curdir = p->dirs.back();
+        p->dirs.pop_back();
+        unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(p->curdir.c_str()), closedir);
+        p->dir = move(tmp);
+        if(is_rootlike(p->curdir)) {
             fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                    g->curdir.c_str(), __PRETTY_FUNCTION__);
-            g->dir.reset();
+                    p->curdir.c_str(), __PRETTY_FUNCTION__);
+            p->dir.reset();
             continue;
         }
-        printf("In subdir %s\n", g->curdir.c_str());
+        printf("In subdir %s\n", p->curdir.c_str());
     }
 
-    while(readdir_r(g->dir.get(), g->entry.get(), &g->de) == 0 && g->de ) {
+    while(readdir_r(p->dir.get(), p->entry.get(), &p->de) == 0 && p->de ) {
         struct stat statbuf;
-        string fname = g->entry.get()->d_name;
+        string fname = p->entry.get()->d_name;
         if(fname[0] == '.') // Ignore hidden files and dirs.
             continue;
-        string fullpath = g->curdir + "/" + fname;
+        string fullpath = p->curdir + "/" + fname;
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISREG(statbuf.st_mode)) {
             try {
-                DetectedFile d = g->extractor->detect(fullpath);
-                if (g->type == AllMedia || d.type == g->type) {
+                DetectedFile d = p->extractor->detect(fullpath);
+                if (p->type == AllMedia || d.type == p->type) {
                     return d;
                 }
             } catch (const exception &e) {
                 /* Ignore non-media files */
             }
         } else if(S_ISDIR(statbuf.st_mode)) {
-            g->dirs.push_back(fullpath);
+            p->dirs.push_back(fullpath);
         }
     }
 
     // Nothing left in this directory so on to the next.
-    assert(!g->de);
-    g->dir.reset();
-    return next(g);
+    assert(!p->de);
+    p->dir.reset();
+    // This should be just return next(s) but we can't guarantee
+    // that GCC can optimize away the tail recursion so we do this
+    // instead. Using goto instead of wrapping the whole function body in
+    // a while(true) to avoid the extra indentation.
+    goto begin;
 }
 
-// We need this because FileGenerator is an opaque type,
-// its definition is only inside this file and thus we can
-// only call delete here.
-void Scanner::deleteGenerator(FileGenerator*g) {
-    delete g;
-}
 }

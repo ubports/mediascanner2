@@ -31,24 +31,22 @@ namespace mediascanner {
 class DetectedFile;
 class MetadataExtractor;
 
-// A helper class to go through the file system one entry at a time.
-// This is just the same as Python's iterator. Because iterator is an
-// overloaded term in C++ we call this one a generator.
-struct FileGenerator;
-
 class StopIteration : std::exception {
-
 };
+
 
 class Scanner final {
 public:
-    Scanner();
+    Scanner(MetadataExtractor *extractor, const std::string &root, const MediaType type);
     ~Scanner();
+    Scanner(const Scanner &o) = delete;
+    Scanner& operator=(const Scanner &o) = delete;
 
-    std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
-    FileGenerator* generator(MetadataExtractor *extractor, const std::string &root, const MediaType type);
-    DetectedFile next(FileGenerator* g);
-    void deleteGenerator(FileGenerator *g);
+    DetectedFile next();
+
+private:
+    struct Private;
+    Private *p;
 };
 
 }

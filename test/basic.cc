@@ -145,14 +145,17 @@ TEST_F(ScanTest, subdir) {
 
 // FIXME move this somewhere in the implementation.
 void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
-    Scanner s;
     MetadataExtractor extractor;
-    vector<DetectedFile> files = s.scanFiles(&extractor, subdir, type);
-    for(auto &d : files) {
-        // If the file is unchanged, skip it.
-        if (d.etag == store.getETag(d.filename))
-            continue;
-        store.insert(extractor.extract(d));
+    Scanner s(&extractor, subdir, type);
+    try {
+        while(true) {
+            auto d  = s.next();
+            // If the file is unchanged, skip it.
+            if (d.etag == store.getETag(d.filename))
+                continue;
+            store.insert(extractor.extract(d));
+        }
+    } catch(const StopIteration &e) {
     }
 }
 
@@ -215,9 +218,9 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
 TEST(Mediascanner, root_skip) {
     MetadataExtractor e;
     string root(SOURCE_DIR);
-    Scanner s;
-    auto res = s.scanFiles(&e, root, AudioMedia);
-    ASSERT_EQ(res.size(), 1);
+    Scanner s(&e, root, AudioMedia);
+    s.next();
+    ASSERT_THROW(s.next(), StopIteration);
 }
 
 int main(int argc, char **argv) {

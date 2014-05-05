@@ -161,13 +161,10 @@ void ScannerDaemon::removeDir(const string &dir) {
 }
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
-    Scanner s;
-    auto deleter = [&s](FileGenerator *g) { s.deleteGenerator(g); };
-    unique_ptr<FileGenerator, decltype(deleter)> g(s.generator(extractor.get(), subdir, type),
-            deleter);
+    Scanner s(extractor.get(), subdir, type);
     while(true) {
         try {
-            auto d = s.next(g.get());
+            auto d = s.next();
             // If the file is unchanged, skip it.
             if (d.etag == store.getETag(d.filename))
                 continue;
