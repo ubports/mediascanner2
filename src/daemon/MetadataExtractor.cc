@@ -129,6 +129,8 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
                 mfb->setAlbum(g_value_get_string(val));
             else if (tagname == GST_TAG_ALBUM_ARTIST)
                 mfb->setAlbumArtist(g_value_get_string(val));
+            else if (tagname == GST_TAG_GENRE)
+                mfb->setGenre(g_value_get_string(val));
         } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
             if (tagname == GST_TAG_DATE_TIME) {
                 GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));
@@ -139,6 +141,8 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
         } else if (G_VALUE_HOLDS_UINT(val)) {
             if (tagname == GST_TAG_TRACK_NUMBER) {
                 mfb->setTrackNumber(g_value_get_uint(val));
+            } else if (tagname == GST_TAG_ALBUM_VOLUME_NUMBER) {
+                mfb->setDiscNumber(g_value_get_uint(val));
             }
         }
 
