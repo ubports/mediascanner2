@@ -31,6 +31,7 @@ namespace qml {
 class AlbumModelBase : public QAbstractListModel {
     Q_OBJECT
     Q_ENUMS(Roles)
+    Q_PROPERTY(int rowCount READ rowCount) // NOTIFY modelReset
 public:
     enum Roles {
         RoleTitle,
