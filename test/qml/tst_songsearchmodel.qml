@@ -22,6 +22,7 @@ Item {
             compare(songs_model.rowCount, 7, "songs_model.rowCount == 7");
             songs_model.query = "revolution";
             compare(songs_model.rowCount, 1, "songs_model.rowCount == 1");
+            compare(songs_model.get(0, SongsSearchModel.RoleTitle), "Revolution");
         }
     }
 }
