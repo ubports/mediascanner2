@@ -39,6 +39,8 @@ class MediaFileWrapper : public QObject {
     Q_PROPERTY(QString album READ album CONSTANT)
     Q_PROPERTY(QString albumArtist READ albumArtist CONSTANT)
     Q_PROPERTY(QString date READ date CONSTANT)
+    Q_PROPERTY(QString genre READ genre CONSTANT)
+    Q_PROPERTY(int discNumber READ discNumber CONSTANT)
     Q_PROPERTY(int trackNumber READ trackNumber CONSTANT)
     Q_PROPERTY(int duration READ duration CONSTANT)
     Q_PROPERTY(QString art READ art CONSTANT)
@@ -53,6 +55,8 @@ public:
     QString album() const;
     QString albumArtist() const;
     QString date() const;
+    QString genre() const;
+    int discNumber() const;
     int trackNumber() const;
     int duration() const;
     QString art() const;

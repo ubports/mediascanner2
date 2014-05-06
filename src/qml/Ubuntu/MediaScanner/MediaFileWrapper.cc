@@ -62,6 +62,14 @@ QString MediaFileWrapper::date() const {
     return QString::fromStdString(media.getDate());
 }
 
+QString MediaFileWrapper::genre() const {
+    return QString::fromStdString(media.getGenre());
+}
+
+int MediaFileWrapper::discNumber() const {
+    return media.getDiscNumber();
+}
+
 int MediaFileWrapper::trackNumber() const {
     return media.getTrackNumber();
 }

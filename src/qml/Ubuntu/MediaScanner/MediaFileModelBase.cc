@@ -35,6 +35,8 @@ MediaFileModelBase::MediaFileModelBase(QObject *parent)
     roles[Roles::RoleAlbum] = "album";
     roles[Roles::RoleAlbumArtist] = "albumArtist";
     roles[Roles::RoleDate] = "date";
+    roles[Roles::RoleGenre] = "genre";
+    roles[Roles::RoleDiscNumber] = "discNumber";
     roles[Roles::RoleTrackNumber] = "trackNumber";
     roles[Roles::RoleDuration] = "duration";
     roles[Roles::RoleArt] = "art";
@@ -70,6 +72,10 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
         return QString::fromStdString(media.getAlbumArtist());
     case RoleDate:
         return QString::fromStdString(media.getDate());
+    case RoleGenre:
+        return QString::fromStdString(media.getGenre());
+    case RoleDiscNumber:
+        return media.getDiscNumber();
     case RoleTrackNumber:
         return media.getTrackNumber();
     case RoleDuration:

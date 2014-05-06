@@ -43,6 +43,8 @@ public:
         RoleAlbum,
         RoleAlbumArtist,
         RoleDate,
+        RoleGenre,
+        RoleDiscNumber,
         RoleTrackNumber,
         RoleDuration,
         RoleArt,
