@@ -330,7 +330,7 @@ static MediaFile make_media(Statement &query) {
     int track_number = query.getInt(8);
     int duration = query.getInt(9);
     MediaType type = (MediaType)query.getInt(10);
-    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, track_number, duration, type);
+    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, "", 0, track_number, duration, type);
 }
 
 static vector<MediaFile> collect_media(Statement &query) {
