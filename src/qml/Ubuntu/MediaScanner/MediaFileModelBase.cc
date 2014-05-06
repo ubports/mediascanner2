@@ -87,6 +87,10 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
     }
 }
 
+QVariant MediaFileModelBase::get(int row, MediaFileModelBase::Roles role) const {
+    return data(index(row, 0), role);
+}
+
 QHash<int, QByteArray> MediaFileModelBase::roleNames() const {
     return roles;
 }
