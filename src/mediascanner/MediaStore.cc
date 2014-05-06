@@ -41,7 +41,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 4;
+static const int schemaVersion = 5;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -175,9 +175,11 @@ CREATE TABLE media (
     etag TEXT,
     title TEXT,
     date TEXT,
-    artist TEXT,       -- Only relevant to audio
-    album TEXT,        -- Only relevant to audio
-    album_artist TEXT, -- Only relevant to audio
+    artist TEXT,          -- Only relevant to audio
+    album TEXT,           -- Only relevant to audio
+    album_artist TEXT,    -- Only relevant to audio
+    genre TEXT,           -- Only relevant to audio
+    disc_number INTEGER,  -- Only relevant to audio
     track_number INTEGER, -- Only relevant to audio
     duration INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
@@ -191,9 +193,11 @@ CREATE TABLE media_attic (
     etag TEXT,
     title TEXT,
     date TEXT,
-    artist TEXT,    -- Only relevant to audio
-    album TEXT,     -- Only relevant to audio
-    album_artist TEXT, -- Only relevant to audio
+    artist TEXT,          -- Only relevant to audio
+    album TEXT,           -- Only relevant to audio
+    album_artist TEXT,    -- Only relevant to audio
+    genre TEXT,           -- Only relevant to audio
+    disc_number INTEGER,  -- Only relevant to audio
     track_number INTEGER, -- Only relevant to audio
     duration INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
@@ -283,7 +287,7 @@ size_t MediaStorePrivate::size() const {
 }
 
 void MediaStorePrivate::insert(const MediaFile &m) const {
-    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     string fname = m.getFileName();
     string title = m.getTitle();
     if(title.empty())
@@ -299,9 +303,11 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
     if (album_artist.empty())
         album_artist = m.getAuthor();
     query.bind(8, album_artist);
-    query.bind(9, m.getTrackNumber());
-    query.bind(10, m.getDuration());
-    query.bind(11, (int)m.getType());
+    query.bind(9, m.getGenre());
+    query.bind(10, m.getDiscNumber());
+    query.bind(11, m.getTrackNumber());
+    query.bind(12, m.getDuration());
+    query.bind(13, (int)m.getType());
     query.step();
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -327,10 +333,12 @@ static MediaFile make_media(Statement &query) {
     const string author = query.getText(5);
     const string album = query.getText(6);
     const string album_artist = query.getText(7);
-    int track_number = query.getInt(8);
-    int duration = query.getInt(9);
-    MediaType type = (MediaType)query.getInt(10);
-    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, "", 0, track_number, duration, type);
+    const string genre = query.getText(8);
+    int disc_number = query.getInt(9);
+    int track_number = query.getInt(10);
+    int duration = query.getInt(11);
+    MediaType type = (MediaType)query.getInt(12);
+    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, genre, disc_number, track_number, duration, type);
 }
 
 static vector<MediaFile> collect_media(Statement &query) {
@@ -343,7 +351,7 @@ static vector<MediaFile> collect_media(Statement &query) {
 
 MediaFile MediaStorePrivate::lookup(const std::string &filename) const {
     Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type
   FROM media
   WHERE filename = ?
 )");
@@ -357,7 +365,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
 vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, int limit) const {
     if (core_term == "") {
         Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type
   FROM media
   WHERE type == ?
   LIMIT ?
@@ -367,7 +375,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
         return collect_media(query);
     } else {
         Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type
   FROM media JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
@@ -425,9 +433,9 @@ LIMIT ?
 
 vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
     Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type FROM media
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
-ORDER BY track_number
+ORDER BY disc_number, track_number
 )");
     query.bind(1, album.getTitle());
     query.bind(2, album.getArtist());
@@ -449,7 +457,7 @@ SELECT etag FROM media WHERE filename = ?
 
 std::vector<MediaFile> MediaStore::listSongs(const std::string& artist, const std::string& album, const std::string& album_artist, int limit) const {
     std::string qs(R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, track_number, duration, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type
   FROM media
   WHERE type = ?
 )");
@@ -463,7 +471,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, t
         qs += " AND album_artist = ?";
     }
     qs += R"(
-ORDER BY album_artist, album, track_number, title
+ORDER BY album_artist, album, disc_number, track_number, title
 LIMIT ?
 )";
     Statement query(p->db, qs.c_str());
