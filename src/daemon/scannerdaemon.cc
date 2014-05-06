@@ -150,6 +150,10 @@ void ScannerDaemon::addDir(const string &dir) {
         fprintf(stderr, "Directory %s looks like an optical disc, skipping it.\n", dir.c_str());
         return;
     }
+    if(has_scanblock(dir)) {
+        fprintf(stderr, "Directory %s has a scan block file, skipping it.\n", dir.c_str());
+        return;
+    }
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
     store->restoreItems(dir);
     store->pruneDeleted();

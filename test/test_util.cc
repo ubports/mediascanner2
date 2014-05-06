@@ -42,6 +42,13 @@ TEST_F(UtilTest, optical) {
     ASSERT_FALSE(is_optical_disc(nodisc_root));
 }
 
+TEST_F(UtilTest, scanblock) {
+    std::string noblock_root(SOURCE_DIR "/media");
+    std::string block_root(SOURCE_DIR "/noscan");
+    ASSERT_TRUE(has_scanblock(block_root));
+    ASSERT_FALSE(has_scanblock(noblock_root));
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

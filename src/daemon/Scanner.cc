@@ -49,6 +49,11 @@ vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std:
                 root.c_str(), __PRETTY_FUNCTION__);
         return result;
     }
+    if(has_scanblock(root)) {
+        fprintf(stderr, "Directory %s has a scan block file, skipping it.\n",
+                root.c_str());
+        return result;
+    }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
                 free);
     struct dirent *de;
