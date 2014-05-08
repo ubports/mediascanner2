@@ -23,5 +23,6 @@
 #include<string>
 
 bool is_rootlike(const std::string &path);
+bool is_optical_disc(const std::string &path);
 
 #endif

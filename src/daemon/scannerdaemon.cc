@@ -146,6 +146,10 @@ void ScannerDaemon::addDir(const string &dir) {
                 dir.c_str(), __PRETTY_FUNCTION__);
         return;
     }
+    if(is_optical_disc(dir)) {
+        fprintf(stderr, "Directory %s looks like an optical disc, skipping it.\n", dir.c_str());
+        return;
+    }
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
     store->restoreItems(dir);
     store->pruneDeleted();
