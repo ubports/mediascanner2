@@ -1,3 +1,17 @@
+mediascanner2 (0.100+14.10.20140508-0ubuntu1) utopic; urgency=low
+
+  [ James Henstridge ]
+  * Add genre and discNumber metadata fields to the media index, and
+    expose it in the QML binding. Add rowCount property and get(row,
+    role) method to each of the model classes in the QML binding. (LP:
+    #1246172)
+
+  [ Jussi Pakkanen ]
+  * Don't scan optical discs.
+  * Use generator for file traversal instead of a vector.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 08 May 2014 10:18:14 +0000
+
 mediascanner2 (0.100+14.04.20140403-0ubuntu1) trusty; urgency=low
 
   [ James Henstridge ]
