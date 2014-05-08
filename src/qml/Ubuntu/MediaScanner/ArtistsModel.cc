@@ -45,6 +45,10 @@ QVariant ArtistsModel::data(const QModelIndex &index, int role) const {
     }
 }
 
+QVariant ArtistsModel::get(int row, ArtistsModel::Roles role) const {
+    return data(index(row, 0), role);
+}
+
 QHash<int, QByteArray> ArtistsModel::roleNames() const {
     return roles;
 }

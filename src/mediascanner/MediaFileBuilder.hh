@@ -57,6 +57,8 @@ public:
     void setAuthor(const std::string &a);
     void setAlbum(const std::string &a);
     void setAlbumArtist(const std::string &a);
+    void setGenre(const std::string &g);
+    void setDiscNumber(int n);
     void setTrackNumber(int n);
     void setDuration(int d);
 
@@ -87,11 +89,17 @@ private:
     bool album_artist_set = false;
     std::string album_artist;
 
-    int track_number = 0;
-    bool track_number_set = false;
+    bool genre_set = false;
+    std::string genre;
 
-    int duration = 0;
+    bool disc_number_set = false;
+    int disc_number = 0;
+
+    bool track_number_set = false;
+    int track_number = 0;
+
     bool duration_set = false;
+    int duration = 0;
 };
 
 }

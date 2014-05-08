@@ -50,6 +50,10 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
     }
 }
 
+QVariant AlbumModelBase::get(int row, AlbumModelBase::Roles role) const {
+    return data(index(row, 0), role);
+}
+
 QHash<int, QByteArray> AlbumModelBase::roleNames() const {
     return roles;
 }

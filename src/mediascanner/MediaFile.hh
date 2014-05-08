@@ -29,9 +29,9 @@ class MediaFile final {
 public:
 
     MediaFile(std::string filename) : filename(filename), content_type(""), etag(""), title(""), date(""), author(""),
-        album(""), album_artist(""), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist,
-              int track_number, int duration, MediaType type);
+        album(""), album_artist(""), genre(""), disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
+    MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist, std::string genre,
+              int disc_number, int track_number, int duration, MediaType type);
     MediaFile() = delete;
 
     const std::string& getFileName() const noexcept;
@@ -42,8 +42,10 @@ public:
     const std::string& getAlbum() const noexcept;
     const std::string& getAlbumArtist() const noexcept;
     const std::string& getDate() const noexcept;
+    const std::string& getGenre() const noexcept;
     std::string getUri() const;
 
+    int getDiscNumber() const noexcept;
     int getTrackNumber() const noexcept;
     int getDuration() const noexcept;
     MediaType getType() const noexcept;
@@ -62,6 +64,8 @@ private:
     std::string author;
     std::string album;
     std::string album_artist;
+    std::string genre;
+    int disc_number;
     int track_number;
     int duration; // In seconds.
     MediaType type;

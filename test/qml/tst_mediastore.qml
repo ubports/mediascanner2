@@ -31,6 +31,8 @@ Item {
             checkAttr("album", "Spiderbait");
             checkAttr("albumArtist", "Spiderbait");
             checkAttr("date", "2013-11-15");
+            checkAttr("genre", "rock");
+            checkAttr("discNumber", 1);
             checkAttr("trackNumber", 1);
             checkAttr("duration", 235);
             checkAttr("art", "image://albumart/artist=Spiderbait&album=Spiderbait");

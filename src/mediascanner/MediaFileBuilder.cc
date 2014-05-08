@@ -37,13 +37,15 @@ MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) :
     author(mf.getAuthor()),
     album(mf.getAlbum()),
     album_artist(mf.getAlbumArtist()),
+    genre(mf.getGenre()),
+    disc_number(mf.getDiscNumber()),
     track_number(mf.getTrackNumber()),
     duration(mf.getDuration()) {
 }
 
 MediaFile MediaFileBuilder::build() const {
     return MediaFile(filename, content_type, etag, title, date, author,
-            album, album_artist, track_number, duration, type);
+        album, album_artist, genre, disc_number, track_number, duration, type);
 }
 
 void MediaFileBuilder::setType(MediaType t) {
@@ -101,6 +103,20 @@ void MediaFileBuilder::setAlbumArtist(const std::string &a) {
         throw std::invalid_argument("Tried to set album artist when it was already set.");
     album_artist = a;
     album_artist_set = true;
+}
+
+void MediaFileBuilder::setGenre(const std::string &g) {
+    if(genre_set)
+        throw std::invalid_argument("Tried to set genre when it was already set.");
+    genre = g;
+    genre_set = true;
+}
+
+void MediaFileBuilder::setDiscNumber(int n) {
+    if(disc_number_set)
+        throw std::invalid_argument("Tried to set disc number when it was already set.");
+    disc_number = n;
+    disc_number_set = true;
 }
 
 void MediaFileBuilder::setTrackNumber(int n) {
