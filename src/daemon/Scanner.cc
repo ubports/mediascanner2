@@ -24,56 +24,91 @@
 #include <sys/stat.h>
 #include<cstdio>
 #include<memory>
+#include<cassert>
 
 using namespace std;
 
 namespace mediascanner {
 
-Scanner::Scanner() {
+struct Scanner::Private {
+    Private(MetadataExtractor *extractor_, const std::string &root, const MediaType type_);
 
+    string curdir;
+    vector<string> dirs;
+    unique_ptr<struct dirent, void(*)(void*)> entry;
+    unique_ptr<DIR, int(*)(DIR*)> dir;
+    MediaType type;
+    MetadataExtractor *extractor;
+    struct dirent *de;
+};
+
+Scanner::Private::Private(MetadataExtractor *extractor, const std::string &root, const MediaType type) :
+        entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free),
+        dir(nullptr, closedir),
+        type(type),
+        extractor(extractor),
+        de(nullptr)
+{
+    dirs.push_back(root);
+}
+
+Scanner::Scanner(MetadataExtractor *extractor, const std::string &root, const MediaType type) :
+    p(new Scanner::Private(extractor, root, type)) {
 }
 
 Scanner::~Scanner() {
-
+    delete p;
 }
 
-vector<DetectedFile> Scanner::scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type) {
-    vector<DetectedFile> result;
-    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(root.c_str()), closedir);
-    printf("In subdir %s\n", root.c_str());
-    if(!dir) {
-        return result;
+
+DetectedFile Scanner::next() {
+begin:
+    while(!p->dir) {
+        if(p->dirs.empty()) {
+            throw StopIteration();
+        }
+        p->curdir = p->dirs.back();
+        p->dirs.pop_back();
+        unique_ptr<DIR, int(*)(DIR*)> tmp(opendir(p->curdir.c_str()), closedir);
+        p->dir = move(tmp);
+        if(is_rootlike(p->curdir)) {
+            fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
+                    p->curdir.c_str(), __PRETTY_FUNCTION__);
+            p->dir.reset();
+            continue;
+        }
+        printf("In subdir %s\n", p->curdir.c_str());
     }
-    if(is_rootlike(root)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                root.c_str(), __PRETTY_FUNCTION__);
-        return result;
-    }
-    unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
-                free);
-    struct dirent *de;
-    while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
+
+    while(readdir_r(p->dir.get(), p->entry.get(), &p->de) == 0 && p->de ) {
         struct stat statbuf;
-        string fname = entry.get()->d_name;
+        string fname = p->entry.get()->d_name;
         if(fname[0] == '.') // Ignore hidden files and dirs.
             continue;
-        string fullpath = root + "/" + fname;
+        string fullpath = p->curdir + "/" + fname;
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISREG(statbuf.st_mode)) {
             try {
-                DetectedFile d = extractor->detect(fullpath);
-                if (type == AllMedia || d.type == type) {
-                    result.push_back(d);
+                DetectedFile d = p->extractor->detect(fullpath);
+                if (p->type == AllMedia || d.type == p->type) {
+                    return d;
                 }
             } catch (const exception &e) {
                 /* Ignore non-media files */
             }
         } else if(S_ISDIR(statbuf.st_mode)) {
-            vector<DetectedFile> subdir = scanFiles(extractor, fullpath, type);
-            result.insert(result.end(), subdir.begin(), subdir.end());
+            p->dirs.push_back(fullpath);
         }
     }
-    return result;
+
+    // Nothing left in this directory so on to the next.
+    assert(!p->de);
+    p->dir.reset();
+    // This should be just return next(s) but we can't guarantee
+    // that GCC can optimize away the tail recursion so we do this
+    // instead. Using goto instead of wrapping the whole function body in
+    // a while(true) to avoid the extra indentation.
+    goto begin;
 }
 
 }

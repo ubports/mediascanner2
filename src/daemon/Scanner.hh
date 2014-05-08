@@ -22,6 +22,7 @@
 
 #include<string>
 #include<vector>
+#include<exception>
 
 #include <mediascanner/scannercore.hh>
 
@@ -30,13 +31,22 @@ namespace mediascanner {
 class DetectedFile;
 class MetadataExtractor;
 
+class StopIteration : std::exception {
+};
+
+
 class Scanner final {
 public:
-    Scanner();
+    Scanner(MetadataExtractor *extractor, const std::string &root, const MediaType type);
     ~Scanner();
+    Scanner(const Scanner &o) = delete;
+    Scanner& operator=(const Scanner &o) = delete;
 
-    std::vector<DetectedFile> scanFiles(MetadataExtractor *extractor, const std::string &root, const MediaType type);
+    DetectedFile next();
 
+private:
+    struct Private;
+    Private *p;
 };
 
 }
