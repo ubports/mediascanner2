@@ -18,6 +18,13 @@ Module {
                 "RoleArt": 2
             }
         }
+        Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Method {
+            name: "get"
+            type: "QVariant"
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "role"; type: "Roles" }
+        }
     }
     Component {
         name: "mediascanner::qml::AlbumsModel"
@@ -43,6 +50,13 @@ Module {
         Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "albumArtists"; type: "bool" }
         Property { name: "limit"; type: "int" }
+        Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Method {
+            name: "get"
+            type: "QVariant"
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "role"; type: "Roles" }
+        }
     }
     Component {
         name: "mediascanner::qml::MediaFileModelBase"
@@ -60,10 +74,19 @@ Module {
                 "RoleAlbum": 7,
                 "RoleAlbumArtist": 8,
                 "RoleDate": 9,
-                "RoleTrackNumber": 10,
-                "RoleDuration": 11,
-                "RoleArt": 12
+                "RoleGenre": 10,
+                "RoleDiscNumber": 11,
+                "RoleTrackNumber": 12,
+                "RoleDuration": 13,
+                "RoleArt": 14
             }
+        }
+        Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Method {
+            name: "get"
+            type: "QVariant"
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "role"; type: "Roles" }
         }
     }
     Component {
@@ -80,6 +103,8 @@ Module {
         Property { name: "album"; type: "string"; isReadonly: true }
         Property { name: "albumArtist"; type: "string"; isReadonly: true }
         Property { name: "date"; type: "string"; isReadonly: true }
+        Property { name: "genre"; type: "string"; isReadonly: true }
+        Property { name: "discNumber"; type: "int"; isReadonly: true }
         Property { name: "trackNumber"; type: "int"; isReadonly: true }
         Property { name: "duration"; type: "int"; isReadonly: true }
         Property { name: "art"; type: "string"; isReadonly: true }
