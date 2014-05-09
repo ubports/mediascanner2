@@ -130,18 +130,26 @@ wrong_number_args:
     sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
 }
 
-static bool has_block_in_path(const std::string &filename) {
+static bool has_block_in_path(std::map<std::string, bool> &cache, const std::string &filename) {
     std::vector<std::string> path_segments;
     std::istringstream f(filename);
     std::string s;
     while (std::getline(f, s, '/')) {
         path_segments.push_back(s);
     }
+    path_segments.pop_back();
     std::string trial_path;
     for(const auto &seg : path_segments) {
         trial_path += "/" + seg;
+        auto r = cache.find(trial_path);
+        if(r != cache.end()) {
+            return *r;
+        }
         if(has_scanblock(trial_path)) {
+            cache[trial_path] = true;
             return true;
+        } else {
+            cache[trial_path] = false;
         }
     }
     return false;
@@ -560,12 +568,13 @@ SELECT artist FROM media
 }
 
 void MediaStorePrivate::pruneDeleted() {
+    std::map<std::string, bool> &path_cache;
     vector<string> deleted;
     Statement query(db, "SELECT filename FROM media");
     while (query.step()) {
         const string filename = query.getText(0);
         if (access(filename.c_str(), F_OK) != 0 ||
-            has_block_in_path(filename)) {
+            has_block_in_path(path_cache, filename)) {
             deleted.push_back(filename);
             continue;
         }
