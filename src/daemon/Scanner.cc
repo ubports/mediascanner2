@@ -19,7 +19,7 @@
 
 #include "MetadataExtractor.hh"
 #include "Scanner.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>

@@ -27,6 +27,9 @@ namespace mediascanner {
 std::string sqlQuote(const std::string &input);
 std::string filenameToTitle(const std::string &filename);
 std::string getUri(const std::string &filename);
+bool is_rootlike(const std::string &path);
+bool is_optical_disc(const std::string &path);
+bool has_scanblock(const std::string &path);
 
 }
 

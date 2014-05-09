@@ -40,7 +40,7 @@
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
 #include "InvalidationSender.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 
 using namespace std;
 

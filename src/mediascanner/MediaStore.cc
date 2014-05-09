@@ -24,6 +24,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <mutex>
+#include <sstream>
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -127,6 +128,23 @@ static void rankfunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal) {
     /* Jump here if the wrong number of arguments are passed to this function */
 wrong_number_args:
     sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
+}
+
+static bool has_block_in_path(const std::string &filename) {
+    std::vector<std::string> path_segments;
+    std::istringstream f(filename);
+    std::string s;
+    while (std::getline(f, s, '/')) {
+        path_segments.push_back(s);
+    }
+    std::string trial_path;
+    for(const auto &seg : path_segments) {
+        trial_path += "/" + seg;
+        if(has_scanblock(trial_path)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static void register_functions(sqlite3 *db) {
@@ -546,8 +564,10 @@ void MediaStorePrivate::pruneDeleted() {
     Statement query(db, "SELECT filename FROM media");
     while (query.step()) {
         const string filename = query.getText(0);
-        if (access(filename.c_str(), F_OK) != 0) {
+        if (access(filename.c_str(), F_OK) != 0 ||
+            has_block_in_path(filename)) {
             deleted.push_back(filename);
+            continue;
         }
     }
     query.finalize();
