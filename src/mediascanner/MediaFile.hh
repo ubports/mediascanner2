@@ -32,11 +32,7 @@ class MediaFile final {
     friend class MediaFileBuilder;
 public:
 
-    MediaFile(std::string filename);
-    MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist, std::string genre,
-              int disc_number, int track_number, int duration, MediaType type);
     MediaFile() = delete;
-
     MediaFile(const MediaFile &other);
     MediaFile(const MediaFileBuilder &builder);
     ~MediaFile();

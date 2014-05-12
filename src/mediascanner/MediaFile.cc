@@ -26,15 +26,6 @@ using namespace std;
 
 namespace mediascanner {
 
-MediaFile::MediaFile(std::string filename) :
-    p(new MediaFilePrivate(filename)) {
-}
-
-MediaFile::MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist, std::string genre,
-    int disc_number, int track_number, int duration, MediaType type) :
-    p(new MediaFilePrivate(filename, content_type, etag, title, date, author, album, album_artist, genre, disc_number, track_number, duration, type)) {
-}
-
 MediaFile::MediaFile(const MediaFile &other) :
     p(new MediaFilePrivate(*other.p)) {
 }

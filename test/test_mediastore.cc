@@ -50,7 +50,7 @@ TEST_F(MediaStoreTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
 }
 TEST_F(MediaStoreTest, mediafile_uri) {
-    MediaFile media("/path/to/file.ogg");
+    MediaFile media = MediaFileBuilder("/path/to/file.ogg");
     EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
 }
 

@@ -43,30 +43,14 @@ struct MediaFilePrivate {
         filename(""), content_type(""), etag(""), title(""), date(""),
         author(""), album(""), album_artist(""), genre(""),
         disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFilePrivate(const MediaFilePrivate &other) {
-        *this = other;
-    }
     MediaFilePrivate(const std::string &filename) :
         filename(filename), content_type(""), etag(""), title(""), date(""),
         author(""), album(""), album_artist(""), genre(""),
         disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFilePrivate(const std::string &filename,
-                     const std::string &content_type,
-                     const std::string &etag,
-                     const std::string &title,
-                     const std::string &date,
-                     const std::string &author,
-                     const std::string &album,
-                     const std::string &album_artist,
-                     const std::string &genre,
-                     int disc_number,
-                     int track_number,
-                     int duration, MediaType type) :
-    filename(filename), content_type(content_type), etag(etag),
-        title(title), date(date), author(author), album(album),
-        album_artist(album_artist), genre(genre),
-        disc_number(disc_number), track_number(track_number),
-        duration(duration), type(type) {}
+
+    MediaFilePrivate(const MediaFilePrivate &other) {
+        *this = other;
+    }
 };
 
 }
