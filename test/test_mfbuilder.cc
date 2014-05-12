@@ -48,6 +48,8 @@ TEST_F(MFBTest, basic) {
     std::string album_artist("pqr");
     std::string etag("stu");
     std::string content_type("vwx");
+    std::string genre("yz");
+    int disc_number = 2;
     int track_number = 13;
     int duration = 99;
 
@@ -59,6 +61,8 @@ TEST_F(MFBTest, basic) {
     b.setAuthor(author);
     b.setAlbum(album);
     b.setAlbumArtist(album_artist);
+    b.setGenre(genre);
+    b.setDiscNumber(disc_number);
     b.setTrackNumber(track_number);
     b.setDuration(duration);
     b.setETag(etag);
@@ -73,6 +77,8 @@ TEST_F(MFBTest, basic) {
     ASSERT_EQ(mf.getAuthor(), author);
     ASSERT_EQ(mf.getAlbum(), album);
     ASSERT_EQ(mf.getAlbumArtist(), album_artist);
+    ASSERT_EQ(mf.getGenre(), genre);
+    ASSERT_EQ(mf.getDiscNumber(), disc_number);
     ASSERT_EQ(mf.getTrackNumber(), track_number);
     ASSERT_EQ(mf.getDuration(), duration);
     ASSERT_EQ(mf.getETag(), etag);
@@ -81,6 +87,51 @@ TEST_F(MFBTest, basic) {
     MediaFileBuilder mfb2(mf);
     MediaFile mf2 = mfb2.build();
     ASSERT_EQ(mf, mf2);
+}
+
+TEST_F(MFBTest, chaining) {
+    MediaType type(AudioMedia);
+    std::string fname("abc");
+    std::string title("def");
+    std::string date("ghi");
+    std::string author("jkl");
+    std::string album("mno");
+    std::string album_artist("pqr");
+    std::string etag("stu");
+    std::string content_type("vwx");
+    std::string genre("yz");
+    int disc_number = 2;
+    int track_number = 13;
+    int duration = 99;
+
+    MediaFile mf = MediaFileBuilder(fname)
+        .setType(type)
+        .setTitle(title)
+        .setDate(date)
+        .setAuthor(author)
+        .setAlbum(album)
+        .setAlbumArtist(album_artist)
+        .setGenre(genre)
+        .setDiscNumber(disc_number)
+        .setTrackNumber(track_number)
+        .setDuration(duration)
+        .setETag(etag)
+        .setContentType(content_type);
+
+    // Now see if data survives a round trip.
+    ASSERT_EQ(mf.getType(), type);
+    ASSERT_EQ(mf.getFileName(), fname);
+    ASSERT_EQ(mf.getTitle(), title);
+    ASSERT_EQ(mf.getDate(), date);
+    ASSERT_EQ(mf.getAuthor(), author);
+    ASSERT_EQ(mf.getAlbum(), album);
+    ASSERT_EQ(mf.getAlbumArtist(), album_artist);
+    ASSERT_EQ(mf.getGenre(), genre);
+    ASSERT_EQ(mf.getDiscNumber(), disc_number);
+    ASSERT_EQ(mf.getTrackNumber(), track_number);
+    ASSERT_EQ(mf.getDuration(), duration);
+    ASSERT_EQ(mf.getETag(), etag);
+    ASSERT_EQ(mf.getContentType(), content_type);
 }
 
 int main(int argc, char **argv) {

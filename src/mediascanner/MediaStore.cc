@@ -29,8 +29,9 @@
 #include <sqlite3.h>
 
 #include "mozilla/fts3_tokenizer.h"
-#include"MediaStore.hh"
-#include"MediaFile.hh"
+#include "MediaStore.hh"
+#include "MediaFile.hh"
+#include "MediaFileBuilder.hh"
 #include "Album.hh"
 #include "internal/sqliteutils.hh"
 #include "internal/utils.hh"
@@ -325,20 +326,19 @@ void MediaStorePrivate::remove(const string &fname) const {
 }
 
 static MediaFile make_media(Statement &query) {
-    const string filename = query.getText(0);
-    const string content_type = query.getText(1);
-    const string etag = query.getText(2);
-    const string title = query.getText(3);
-    const string date = query.getText(4);
-    const string author = query.getText(5);
-    const string album = query.getText(6);
-    const string album_artist = query.getText(7);
-    const string genre = query.getText(8);
-    int disc_number = query.getInt(9);
-    int track_number = query.getInt(10);
-    int duration = query.getInt(11);
-    MediaType type = (MediaType)query.getInt(12);
-    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, genre, disc_number, track_number, duration, type);
+    return MediaFileBuilder(query.getText(0))
+        .setContentType(query.getText(1))
+        .setETag(query.getText(2))
+        .setTitle(query.getText(3))
+        .setDate(query.getText(4))
+        .setAuthor(query.getText(5))
+        .setAlbum(query.getText(6))
+        .setAlbumArtist(query.getText(7))
+        .setGenre(query.getText(8))
+        .setDiscNumber(query.getInt(9))
+        .setTrackNumber(query.getInt(10))
+        .setDuration(query.getInt(11))
+        .setType((MediaType)query.getInt(12));
 }
 
 static vector<MediaFile> collect_media(Statement &query) {

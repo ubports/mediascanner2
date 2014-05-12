@@ -46,7 +46,10 @@ struct MediaFilePrivate {
     MediaFilePrivate(const MediaFilePrivate &other) {
         *this = other;
     }
-    MediaFilePrivate(const std::string &filename) : filename(filename) {}
+    MediaFilePrivate(const std::string &filename) :
+        filename(filename), content_type(""), etag(""), title(""), date(""),
+        author(""), album(""), album_artist(""), genre(""),
+        disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
     MediaFilePrivate(const std::string &filename,
                      const std::string &content_type,
                      const std::string &etag,
