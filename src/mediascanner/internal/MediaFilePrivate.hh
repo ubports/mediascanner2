@@ -1,0 +1,68 @@
+/*
+ * Copyright (C) 2013 Canonical, Ltd.
+ *
+ * Authors:
+ *    James Henstridge <james.henstridge@canonical.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef MEDIAFILEPRIVATE_HH
+#define MEDIAFILEPRIVATE_HH
+
+#include <string>
+
+namespace mediascanner {
+
+struct MediaFilePrivate {
+    std::string filename;
+    std::string content_type;
+    std::string etag;
+    std::string title;
+    std::string date; // ISO date string.  Should this be time since epoch?
+    std::string author;
+    std::string album;
+    std::string album_artist;
+    std::string genre;
+    int disc_number;
+    int track_number;
+    int duration; // In seconds.
+    MediaType type;
+
+    MediaFilePrivate() {}
+    MediaFilePrivate(const MediaFilePrivate &other) {
+        *this = other;
+    }
+    MediaFilePrivate(const std::string &filename) : filename(filename) {}
+    MediaFilePrivate(const std::string &filename,
+                     const std::string &content_type,
+                     const std::string &etag,
+                     const std::string &title,
+                     const std::string &date,
+                     const std::string &author,
+                     const std::string &album,
+                     const std::string &album_artist,
+                     const std::string &genre,
+                     int disc_number,
+                     int track_number,
+                     int duration, MediaType type) :
+    filename(filename), content_type(content_type), etag(etag),
+        title(title), date(date), author(author), album(album),
+        album_artist(album_artist), genre(genre),
+        disc_number(disc_number), track_number(track_number),
+        duration(duration), type(type) {}
+};
+
+}
+
+#endif
