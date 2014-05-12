@@ -51,18 +51,18 @@ public:
 
     MediaFile build() const;
 
-    void setType(MediaType t);
-    void setETag(const std::string &e);
-    void setContentType(const std::string &c);
-    void setTitle(const std::string &t);
-    void setDate(const std::string &d);
-    void setAuthor(const std::string &a);
-    void setAlbum(const std::string &a);
-    void setAlbumArtist(const std::string &a);
-    void setGenre(const std::string &g);
-    void setDiscNumber(int n);
-    void setTrackNumber(int n);
-    void setDuration(int d);
+    MediaFileBuilder &setType(MediaType t);
+    MediaFileBuilder &setETag(const std::string &e);
+    MediaFileBuilder &setContentType(const std::string &c);
+    MediaFileBuilder &setTitle(const std::string &t);
+    MediaFileBuilder &setDate(const std::string &d);
+    MediaFileBuilder &setAuthor(const std::string &a);
+    MediaFileBuilder &setAlbum(const std::string &a);
+    MediaFileBuilder &setAlbumArtist(const std::string &a);
+    MediaFileBuilder &setGenre(const std::string &g);
+    MediaFileBuilder &setDiscNumber(int n);
+    MediaFileBuilder &setTrackNumber(int n);
+    MediaFileBuilder &setDuration(int d);
 
 private:
     MediaFilePrivate *p;

@@ -39,7 +39,10 @@ struct MediaFilePrivate {
     int duration; // In seconds.
     MediaType type;
 
-    MediaFilePrivate() {}
+    MediaFilePrivate() :
+        filename(""), content_type(""), etag(""), title(""), date(""),
+        author(""), album(""), album_artist(""), genre(""),
+        disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
     MediaFilePrivate(const MediaFilePrivate &other) {
         *this = other;
     }

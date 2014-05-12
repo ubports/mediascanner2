@@ -35,52 +35,64 @@ MediaFile MediaFileBuilder::build() const {
     return MediaFile(*this);
 }
 
-void MediaFileBuilder::setType(MediaType t) {
+MediaFileBuilder &MediaFileBuilder::setType(MediaType t) {
     p->type = t;
+    return *this;
 }
 
-void MediaFileBuilder::setETag(const std::string &e) {
+MediaFileBuilder &MediaFileBuilder::setETag(const std::string &e) {
     p->etag = e;
+    return *this;
 }
 
-void MediaFileBuilder::setContentType(const std::string &c) {
+MediaFileBuilder &MediaFileBuilder::setContentType(const std::string &c) {
     p->content_type = c;
+    return *this;
 }
 
-void MediaFileBuilder::setTitle(const std::string &t) {
+MediaFileBuilder &MediaFileBuilder::setTitle(const std::string &t) {
     p->title = t;
+    return *this;
 }
 
-void MediaFileBuilder::setDate(const std::string &d) {
+MediaFileBuilder &MediaFileBuilder::setDate(const std::string &d) {
     p->date = d;
+    return *this;
 }
 
-void MediaFileBuilder::setAuthor(const std::string &a) {
+MediaFileBuilder &MediaFileBuilder::setAuthor(const std::string &a) {
     p->author = a;
+    return *this;
 }
 
-void MediaFileBuilder::setAlbum(const std::string &a) {
+MediaFileBuilder &MediaFileBuilder::setAlbum(const std::string &a) {
     p->album = a;
+    return *this;
 }
 
-void MediaFileBuilder::setAlbumArtist(const std::string &a) {
+MediaFileBuilder &MediaFileBuilder::setAlbumArtist(const std::string &a) {
     p->album_artist = a;
+    return *this;
 }
 
-void MediaFileBuilder::setGenre(const std::string &g) {
+MediaFileBuilder &MediaFileBuilder::setGenre(const std::string &g) {
     p->genre = g;
+    return *this;
 }
 
-void MediaFileBuilder::setDiscNumber(int n) {
+MediaFileBuilder &MediaFileBuilder::setDiscNumber(int n) {
     p->disc_number = n;
+    return *this;
 }
 
-void MediaFileBuilder::setTrackNumber(int n) {
+MediaFileBuilder &MediaFileBuilder::setTrackNumber(int n) {
     p->track_number = n;
+    return *this;
 }
 
-void MediaFileBuilder::setDuration(int n) {
+MediaFileBuilder &MediaFileBuilder::setDuration(int n) {
     p->duration = n;
+    return *this;
 }
 
 }
