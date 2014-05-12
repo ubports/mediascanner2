@@ -25,9 +25,11 @@
 
 namespace mediascanner {
 
+class MediaFileBuilder;
 struct MediaFilePrivate;
 
 class MediaFile final {
+    friend class MediaFileBuilder;
 public:
 
     MediaFile(std::string filename);
@@ -36,6 +38,7 @@ public:
     MediaFile() = delete;
 
     MediaFile(const MediaFile &other);
+    MediaFile(const MediaFileBuilder &builder);
     ~MediaFile();
 
     const std::string& getFileName() const noexcept;

@@ -26,6 +26,7 @@
 namespace mediascanner {
 
 class MediaFile;
+struct MediaFilePrivate;
 
 /**
  * This is a helper class to build MediaFiles. Since we want MediaFiles
@@ -41,6 +42,7 @@ class MediaFile;
  */
 
 class MediaFileBuilder final {
+    friend class MediaFile;
 public:
     MediaFileBuilder(const std::string &filename);
     MediaFileBuilder(const MediaFile &mf);
@@ -63,43 +65,7 @@ public:
     void setDuration(int d);
 
 private:
-    bool type_set = false;
-    MediaType type = UnknownMedia;
-
-    std::string filename;
-
-    bool content_type_set = false;
-    std::string content_type;
-
-    bool etag_set = false;
-    std::string etag;
-
-    bool title_set = false;
-    std::string title;
-
-    bool date_set = false;
-    std::string date;
-
-    bool author_set = false;
-    std::string author;
-
-    bool album_set = false;
-    std::string album;
-
-    bool album_artist_set = false;
-    std::string album_artist;
-
-    bool genre_set = false;
-    std::string genre;
-
-    bool disc_number_set = false;
-    int disc_number = 0;
-
-    bool track_number_set = false;
-    int track_number = 0;
-
-    bool duration_set = false;
-    int duration = 0;
+    MediaFilePrivate *p;
 };
 
 }

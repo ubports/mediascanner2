@@ -18,6 +18,7 @@
  */
 
 #include "MediaFile.hh"
+#include "MediaFileBuilder.hh"
 #include "internal/MediaFilePrivate.hh"
 #include "internal/utils.hh"
 
@@ -36,6 +37,10 @@ MediaFile::MediaFile(std::string filename, std::string content_type, std::string
 
 MediaFile::MediaFile(const MediaFile &other) :
     p(new MediaFilePrivate(*other.p)) {
+}
+
+MediaFile::MediaFile(const MediaFileBuilder &builder) :
+    p(new MediaFilePrivate(*builder.p)) {
 }
 
 MediaFile::~MediaFile() {

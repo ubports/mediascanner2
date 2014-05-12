@@ -18,7 +18,6 @@
  */
 
 #include<gtest/gtest.h>
-#include<stdexcept>
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
 
@@ -55,34 +54,15 @@ TEST_F(MFBTest, basic) {
     MediaFileBuilder b(fname);
 
     b.setType(type);
-    ASSERT_THROW(b.setType(type), std::invalid_argument);
-
     b.setTitle(title);
-    ASSERT_THROW(b.setTitle(fname), std::invalid_argument);
-
     b.setDate(date);
-    ASSERT_THROW(b.setDate(date), std::invalid_argument);
-
     b.setAuthor(author);
-    ASSERT_THROW(b.setAuthor(author), std::invalid_argument);
-
     b.setAlbum(album);
-    ASSERT_THROW(b.setAlbum(album), std::invalid_argument);
-
     b.setAlbumArtist(album_artist);
-    ASSERT_THROW(b.setAlbumArtist(album_artist), std::invalid_argument);
-
     b.setTrackNumber(track_number);
-    ASSERT_THROW(b.setTrackNumber(track_number), std::invalid_argument);
-
     b.setDuration(duration);
-    ASSERT_THROW(b.setDuration(duration), std::invalid_argument);
-
     b.setETag(etag);
-    ASSERT_THROW(b.setETag(etag), std::invalid_argument);
-
     b.setContentType(content_type);
-    ASSERT_THROW(b.setContentType(content_type), std::invalid_argument);
 
     // Now see if data survives a round trip.
     MediaFile mf = b.build();
