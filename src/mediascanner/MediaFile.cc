@@ -32,11 +32,13 @@ MediaFile::MediaFile(const MediaFile &other) :
 
 MediaFile::MediaFile(const MediaFileBuilder &builder) :
     p(new MediaFilePrivate(*builder.p)) {
+    p->setFallbackMetadata();
 }
 
 MediaFile::MediaFile(MediaFileBuilder &&builder) {
     p = builder.p;
     builder.p = nullptr;
+    p->setFallbackMetadata();
 }
 
 MediaFile::~MediaFile() {

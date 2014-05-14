@@ -45,6 +45,8 @@ struct MediaFilePrivate {
 
     bool operator==(const MediaFilePrivate &other) const;
     bool operator!=(const MediaFilePrivate &other) const;
+
+    void setFallbackMetadata();
 };
 
 }

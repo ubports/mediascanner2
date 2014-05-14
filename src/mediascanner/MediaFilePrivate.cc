@@ -20,6 +20,7 @@
 
 #include "scannercore.hh"
 #include "internal/MediaFilePrivate.hh"
+#include "internal/utils.hh"
 
 namespace mediascanner {
 
@@ -56,5 +57,15 @@ bool MediaFilePrivate::operator==(const MediaFilePrivate &other) const {
 bool MediaFilePrivate::operator!=(const MediaFilePrivate &other) const {
     return !(*this == other);
 }
+
+void MediaFilePrivate::setFallbackMetadata() {
+    if (title.empty()) {
+        title = filenameToTitle(filename);
+    }
+    if (album_artist.empty()) {
+        album_artist = author;
+    }
+}
+
 
 }

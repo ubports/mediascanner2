@@ -134,6 +134,19 @@ TEST_F(MFBTest, chaining) {
     ASSERT_EQ(mf.getContentType(), content_type);
 }
 
+TEST_F(MFBTest, fallback_title) {
+    // Fallback title is derived from file name.
+    MediaFile mf = MediaFileBuilder("/path/to/abc.ogg");
+    EXPECT_EQ(mf.getTitle(), "abc");
+}
+
+TEST_F(MFBTest, fallback_album_artist) {
+    // Fallback album_artist is the author.
+    MediaFile mf = MediaFileBuilder("abc")
+        .setAuthor("author");
+    EXPECT_EQ(mf.getAlbumArtist(), "author");
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
