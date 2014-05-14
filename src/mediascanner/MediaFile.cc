@@ -100,20 +100,7 @@ std::string MediaFile::getUri() const {
 }
 
 bool MediaFile::operator==(const MediaFile &other) const {
-    return
-        p->filename == other.p->filename &&
-        p->content_type == other.p->content_type &&
-        p->etag == other.p->etag &&
-        p->title == other.p->title &&
-        p->author == other.p->author &&
-        p->album == other.p->album &&
-        p->album_artist == other.p->album_artist &&
-        p->date == other.p->date &&
-        p->genre == other.p->genre &&
-        p->disc_number == other.p->disc_number &&
-        p->track_number == other.p->track_number &&
-        p->duration == other.p->duration &&
-        p->type == other.p->type;
+    return *p == *other.p;
 }
 
 bool MediaFile::operator!=(const MediaFile &other) const {

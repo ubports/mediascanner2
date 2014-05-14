@@ -39,18 +39,12 @@ struct MediaFilePrivate {
     int duration; // In seconds.
     MediaType type;
 
-    MediaFilePrivate() :
-        filename(""), content_type(""), etag(""), title(""), date(""),
-        author(""), album(""), album_artist(""), genre(""),
-        disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFilePrivate(const std::string &filename) :
-        filename(filename), content_type(""), etag(""), title(""), date(""),
-        author(""), album(""), album_artist(""), genre(""),
-        disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
+    MediaFilePrivate();
+    MediaFilePrivate(const std::string &filename);
+    MediaFilePrivate(const MediaFilePrivate &other);
 
-    MediaFilePrivate(const MediaFilePrivate &other) {
-        *this = other;
-    }
+    bool operator==(const MediaFilePrivate &other) const;
+    bool operator!=(const MediaFilePrivate &other) const;
 };
 
 }
