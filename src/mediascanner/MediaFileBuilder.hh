@@ -48,6 +48,7 @@ public:
     MediaFileBuilder(const MediaFile &mf);
     MediaFileBuilder(const MediaFileBuilder &) = delete;
     MediaFileBuilder& operator=(MediaFileBuilder &) = delete;
+    ~MediaFileBuilder();
 
     MediaFile build() const;
 
