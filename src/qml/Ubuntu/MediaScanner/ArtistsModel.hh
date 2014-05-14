@@ -35,6 +35,7 @@ class ArtistsModel : public QAbstractListModel {
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(bool albumArtists READ getAlbumArtists WRITE setAlbumArtists)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
+    Q_PROPERTY(int rowCount READ rowCount) // NOTIFY modelReset
 public:
     enum Roles {
         RoleArtist,
@@ -43,6 +44,8 @@ public:
     explicit ArtistsModel(QObject *parent = 0);
     int rowCount(const QModelIndex &parent=QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+
+    Q_INVOKABLE QVariant get(int row, Roles role) const;
 protected:
     QHash<int, QByteArray> roleNames() const override;
 

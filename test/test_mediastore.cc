@@ -54,11 +54,11 @@ TEST_F(MediaStoreTest, mediafile_uri) {
 }
 
 TEST_F(MediaStoreTest, equality) {
-    MediaFile audio1("a", "type", "etag", "1900", "b", "c", "d", "e", 1, 5, AudioMedia);
-    MediaFile audio2("aa", "type", "etag", "1900", "b", "c", "d", "e", 1, 5, AudioMedia);
+    MediaFile audio1("a", "type", "etag", "1900", "b", "c", "d", "e", "f", 0, 1, 5, AudioMedia);
+    MediaFile audio2("aa", "type", "etag", "1900", "b", "c", "d", "e", "f", 0, 1, 5, AudioMedia);
 
-    MediaFile video1("a", "type", "etag", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
-    MediaFile video2("aa", "type", "etag", "b", "1900", "c", "d", "e", 0, 5, VideoMedia);
+    MediaFile video1("a", "type", "etag", "b", "1900", "c", "d", "e", "f", 0, 0, 5, VideoMedia);
+    MediaFile video2("aa", "type", "etag", "b", "1900", "c", "d", "e", "f", 0, 0, 5, VideoMedia);
 
     EXPECT_EQ(audio1, audio1);
     EXPECT_EQ(video1, video1);
@@ -70,7 +70,7 @@ TEST_F(MediaStoreTest, equality) {
 }
 
 TEST_F(MediaStoreTest, lookup) {
-    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
+    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "fff", 0, 3, 5, AudioMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -79,8 +79,8 @@ TEST_F(MediaStoreTest, lookup) {
 }
 
 TEST_F(MediaStoreTest, roundtrip) {
-    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 3, 5, AudioMedia);
-    MediaFile video("aaa2", "type", "etag", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", 0, 5, VideoMedia);
+    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "fff", 0, 3, 5, AudioMedia);
+    MediaFile video("aaa2", "type", "etag", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", "fff", 0, 0, 5, VideoMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
     store.insert(video);
@@ -93,7 +93,7 @@ TEST_F(MediaStoreTest, roundtrip) {
 }
 
 TEST_F(MediaStoreTest, query_by_album) {
-    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 0, 3, 5, AudioMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -103,7 +103,7 @@ TEST_F(MediaStoreTest, query_by_album) {
  }
 
 TEST_F(MediaStoreTest, query_by_artist) {
-    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -113,18 +113,18 @@ TEST_F(MediaStoreTest, query_by_artist) {
  }
 
 TEST_F(MediaStoreTest, query_ranking) {
-   MediaFile audio1("/path/foo1.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
-   MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
-   MediaFile audio3("/path/foo3.ogg", "", "", "title", "1900-01-01", "artist aaa", "album", "albumartist", 3, 5, AudioMedia);
-   MediaFile audio4("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
-   MediaFile audio5("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio1("/path/foo1.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio3("/path/foo3.ogg", "", "", "title", "1900-01-01", "artist aaa", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio4("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio5("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
 
-   MediaStore store(":memory:", MS_READ_WRITE);
-   store.insert(audio1);
-   store.insert(audio2);
-   store.insert(audio3);
-   store.insert(audio4);
-   store.insert(audio5);
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+    store.insert(audio5);
 
     vector<MediaFile> result = store.query("aaa", AudioMedia);
     ASSERT_EQ(result.size(), 4);
@@ -135,9 +135,9 @@ TEST_F(MediaStoreTest, query_ranking) {
 }
 
 TEST_F(MediaStoreTest, query_limit) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
-    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -151,8 +151,8 @@ TEST_F(MediaStoreTest, query_limit) {
 }
 
 TEST_F(MediaStoreTest, query_short) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title xyz", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title xzy", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio1("/path/foo5.ogg", "", "", "title xyz", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title xzy", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -165,9 +165,9 @@ TEST_F(MediaStoreTest, query_short) {
 }
 
 TEST_F(MediaStoreTest, query_empty) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", 3, 5, AudioMedia);
-    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", 3, 5, AudioMedia);
+    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -180,8 +180,8 @@ TEST_F(MediaStoreTest, query_empty) {
 }
 
 TEST_F(MediaStoreTest, unmount) {
-    MediaFile audio1("/media/username/dir/fname.ogg", "", "", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/fname.ogg", "", "", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", 42, 5, AudioMedia);
+    MediaFile audio1("/media/username/dir/fname.ogg", "", "", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", "ffff", 0, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/fname.ogg", "", "", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "ffff", 0, 42, 5, AudioMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
     store.insert(audio2);
@@ -210,10 +210,10 @@ TEST_F(MediaStoreTest, utils) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", 1, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -241,10 +241,10 @@ TEST_F(MediaStoreTest, queryAlbums) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums_limit) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", 1, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -259,10 +259,10 @@ TEST_F(MediaStoreTest, queryAlbums_limit) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums_empty) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", 1, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -277,9 +277,9 @@ TEST_F(MediaStoreTest, queryAlbums_empty) {
 }
 
 TEST_F(MediaStoreTest, getAlbumSongs) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", 3, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -295,7 +295,7 @@ TEST_F(MediaStoreTest, getAlbumSongs) {
 }
 
 TEST_F(MediaStoreTest, getETag) {
-    MediaFile file("/path/file.ogg", "audio/ogg", "etag", "title", "2013", "artist", "album", "artist", 1, 5, AudioMedia);
+    MediaFile file("/path/file.ogg", "audio/ogg", "etag", "title", "2013", "artist", "album", "artist", "genre", 1, 1, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(file);
@@ -305,12 +305,12 @@ TEST_F(MediaStoreTest, getETag) {
 }
 
 TEST_F(MediaStoreTest, listSongs) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio6("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio6("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -352,11 +352,11 @@ TEST_F(MediaStoreTest, listSongs) {
 }
 
 TEST_F(MediaStoreTest, listAlbums) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -387,11 +387,11 @@ TEST_F(MediaStoreTest, listAlbums) {
 }
 
 TEST_F(MediaStoreTest, listArtists) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", 3, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", 1, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", 2, 5, AudioMedia);
+    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
