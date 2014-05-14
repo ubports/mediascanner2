@@ -35,6 +35,7 @@ public:
     MediaFile() = delete;
     MediaFile(const MediaFile &other);
     MediaFile(const MediaFileBuilder &builder);
+    MediaFile(MediaFileBuilder &&builder);
     ~MediaFile();
 
     const std::string& getFileName() const noexcept;

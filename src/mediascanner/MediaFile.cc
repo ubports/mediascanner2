@@ -34,6 +34,11 @@ MediaFile::MediaFile(const MediaFileBuilder &builder) :
     p(new MediaFilePrivate(*builder.p)) {
 }
 
+MediaFile::MediaFile(MediaFileBuilder &&builder) {
+    p = builder.p;
+    builder.p = nullptr;
+}
+
 MediaFile::~MediaFile() {
     delete p;
 }
