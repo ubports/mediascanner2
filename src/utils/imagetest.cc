@@ -19,6 +19,7 @@
 
 #include<libexif/exif-loader.h>
 #include<iostream>
+#include<time.h>
 
 static void print_exif(const char *infile) {
     ExifLoader *l;
@@ -27,6 +28,54 @@ static void print_exif(const char *infile) {
     exif_loader_write_file(l, infile);
     ed = exif_loader_get_data(l);
     exif_loader_unref(l);
+    ExifByteOrder bo = exif_data_get_byte_order(ed);
+    if(ed) {
+        ExifEntry *e = exif_data_get_entry(ed, EXIF_TAG_IMAGE_WIDTH);
+        if(!e) {
+            std::cout << "Image size not in exif tags." << std::endl;
+        } else {
+            int w = exif_get_long(e->data, bo);
+            e = exif_data_get_entry(ed, EXIF_TAG_IMAGE_LENGTH);
+            int h = exif_get_long(e->data, exif_data_get_byte_order(ed));
+            std::cout << "Image size (" << w << ", " << h << ")" << std::endl;
+        }
+        e = exif_data_get_entry(ed, (ExifTag)EXIF_TAG_GPS_LATITUDE);
+        if(!e) {
+            std::cout << "Image does not contain GPS latitude." << std::endl;
+        } else {
+            ExifRational latitude = exif_get_rational(e->data, bo);
+            e = exif_data_get_entry(ed, (ExifTag)EXIF_TAG_GPS_LONGITUDE);
+            if(!e) {
+                std::cout << "Image does not contain GPS longitude." << std::endl;
+            } else {
+                ExifRational longitude = exif_get_rational(e->data, bo);
+                double lat = ((double) latitude.numerator) / latitude.denominator;
+                double lon = ((double) longitude.numerator) / longitude.denominator;
+                std::cout << "Image coordinates: (" << lat << ", " << lon << ")." << std::endl;
+            }
+        }
+        e = exif_data_get_entry(ed, EXIF_TAG_DATE_TIME);
+        if(!e) {
+            std::cout << "Image does not contain time data." << std::endl;
+        } else {
+            struct tm timeinfo;
+            if(getdate_r((const char*)e->data, &timeinfo) != 0) {
+                const char templ[] = "%Y:%m:%d %H:%M:%S";
+                if(strptime((const char*)e->data, templ, &timeinfo) == nullptr) {
+                    std::cout << "Could not parse exif date string "
+                            << e->data << "." << std::endl;
+                } else {
+                    std::cout << "Image taken " << timeinfo.tm_year << "/" << timeinfo.tm_mon
+                            << "/" << timeinfo.tm_mday << std::endl;
+                }
+            } else {
+                std::cout << "Image taken " << timeinfo.tm_year << "/" << timeinfo.tm_mon
+                        << "/" << timeinfo.tm_mday << std::endl;
+            }
+        }
+    } else {
+        std::cout << "Could not read exif data." << std::endl;
+    }
     exif_data_unref(ed);
 }
 
