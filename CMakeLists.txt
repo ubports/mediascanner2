@@ -15,6 +15,7 @@ pkg_check_modules(MEDIASCANNER REQUIRED
   sqlite3
 )
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
+pkg_check_modules(EXIF libexif REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
 
