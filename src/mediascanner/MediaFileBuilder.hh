@@ -34,11 +34,6 @@ struct MediaFilePrivate;
  * all variables in the constructor. This is cumbersome so this class
  * allows you to gather them one by one and then finally construct
  * a fully valid MediaFile.
- *
- * If you try to assign the same property twice, an exception is thrown.
- * This means that MediaFileBuilders are meant to build only one
- * MediaFile. To build a new one create a new MediaFileBuilder. This is to
- * ensure that no state leaks from the first MediaFile to the second.
  */
 
 class MediaFileBuilder final {
