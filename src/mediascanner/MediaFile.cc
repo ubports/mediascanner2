@@ -21,6 +21,7 @@
 #include "MediaFileBuilder.hh"
 #include "internal/MediaFilePrivate.hh"
 #include "internal/utils.hh"
+#include <stdexcept>
 
 using namespace std;
 
@@ -30,12 +31,18 @@ MediaFile::MediaFile(const MediaFile &other) :
     p(new MediaFilePrivate(*other.p)) {
 }
 
-MediaFile::MediaFile(const MediaFileBuilder &builder) :
-    p(new MediaFilePrivate(*builder.p)) {
+MediaFile::MediaFile(const MediaFileBuilder &builder) {
+    if(!builder.p) {
+        throw logic_error("Tried to construct a Mediafile with an empty MediaFileBuilder.");
+    }
+    p = new MediaFilePrivate(*builder.p);
     p->setFallbackMetadata();
 }
 
 MediaFile::MediaFile(MediaFileBuilder &&builder) {
+    if(!builder.p) {
+        throw logic_error("Tried to construct a Mediafile with an empty MediaFileBuilder.");
+    }
     p = builder.p;
     builder.p = nullptr;
     p->setFallbackMetadata();
