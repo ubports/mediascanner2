@@ -15,6 +15,7 @@ pkg_check_modules(MEDIASCANNER REQUIRED
   sqlite3
 )
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
+pkg_check_modules(DBUSCPP dbus-cpp REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
 
@@ -32,6 +33,7 @@ enable_testing()
 
 add_subdirectory(src/mediascanner)
 add_subdirectory(src/daemon)
+add_subdirectory(src/dbus)
 add_subdirectory(src/qml/Ubuntu/MediaScanner)
 add_subdirectory(src/utils)
 add_subdirectory(test)
