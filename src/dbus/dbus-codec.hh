@@ -26,6 +26,7 @@
 
 namespace mediascanner {
 class MediaFile;
+class Album;
 }
 
 namespace core {
@@ -35,6 +36,12 @@ template <>
 struct Codec<mediascanner::MediaFile> {
     static void encode_argument(Message::Writer &out, const mediascanner::MediaFile &file);
     static void decode_argument(Message::Reader &in, mediascanner::MediaFile &file);
+};
+
+template <>
+struct Codec<mediascanner::Album> {
+    static void encode_argument(Message::Writer &out, const mediascanner::Album &album);
+    static void decode_argument(Message::Reader &in, mediascanner::Album &album);
 };
 
 namespace helper {
@@ -52,6 +59,23 @@ struct TypeMapper<mediascanner::MediaFile> {
     }
     static const std::string &signature() {
         static const std::string s = "(sssssssssiiii)";
+        return s;
+    }
+};
+
+template<>
+struct TypeMapper<mediascanner::Album> {
+    constexpr static ArgumentType type_value() {
+        return ArgumentType::structure;
+    }
+    constexpr static bool is_basic_type() {
+        return false;
+    }
+    constexpr static bool requires_signature() {
+        return true;
+    }
+    static const std::string &signature() {
+        static const std::string s = "(ss)";
         return s;
     }
 };

@@ -68,6 +68,84 @@ struct MediaStoreInterface {
             return std::chrono::seconds{1};
         }
     };
+
+    struct QueryAlbums {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "QueryAlbums";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct GetAlbumSongs {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "GetAlbumSongs";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct GetETag {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "GetETag";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct ListSongs {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "ListSongs";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct ListAlbums {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "ListAlbums";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct ListArtists {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "ListArtists";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
 };
 
 }

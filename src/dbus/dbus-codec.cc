@@ -23,6 +23,7 @@
 
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
+#include <mediascanner/Album.hh>
 #include "dbus-codec.hh"
 
 using core::dbus::Message;
@@ -30,10 +31,10 @@ using core::dbus::Codec;
 using mediascanner::MediaFile;
 using mediascanner::MediaFileBuilder;
 using mediascanner::MediaType;
+using mediascanner::Album;
 using std::string;
 
 void Codec<MediaFile>::encode_argument(Message::Writer &out, const MediaFile &file) {
-    out.open_structure();
     auto w = out.open_structure();
     core::dbus::encode_argument(w, file.getFileName());
     core::dbus::encode_argument(w, file.getContentType());
@@ -66,4 +67,17 @@ void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
         .setTrackNumber(core::dbus::decode_argument<int32_t>(r))
         .setDuration(core::dbus::decode_argument<int32_t>(r))
         .setType((MediaType)core::dbus::decode_argument<int32_t>(r));
+}
+
+void Codec<Album>::encode_argument(Message::Writer &out, const Album &album) {
+    auto w = out.open_structure();
+    core::dbus::encode_argument(w, album.getTitle());
+    core::dbus::encode_argument(w, album.getArtist());
+    out.close_structure(std::move(w));
+}
+
+void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
+    auto r = in.pop_structure();
+    album = Album(core::dbus::decode_argument<string>(r),
+                  core::dbus::decode_argument<string>(r));
 }
