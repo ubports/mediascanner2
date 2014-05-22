@@ -23,6 +23,9 @@ using namespace std;
 
 namespace mediascanner {
 
+Album::Album() {
+}
+
 Album::Album(const std::string &title, const std::string &artist)
     : title(title), artist(artist) {
 }

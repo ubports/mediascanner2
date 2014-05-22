@@ -514,7 +514,7 @@ LIMIT ?
     return collect_albums(query);
 }
 
-vector<std::string> MediaStore::listArtists(bool album_artists, int limit) {
+vector<std::string> MediaStore::listArtists(bool album_artists, int limit) const {
     const char *qs;
 
     if (album_artists) {

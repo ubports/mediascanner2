@@ -5,5 +5,6 @@ add_executable(ms-dbus
   main.cc
   dbus-codec.cc
   service-skeleton.cc
+  service-stub.cc
 )
 target_link_libraries(ms-dbus mediascanner ${DBUSCPP_LDFLAGS})

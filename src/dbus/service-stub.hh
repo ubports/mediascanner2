@@ -2,7 +2,7 @@
  * Copyright (C) 2013 Canonical, Ltd.
  *
  * Authors:
- *    Jussi Pakkanen <jussi.pakkanen@canonical.com>
+ *    James Henstridge <james.henstridge@canonical.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License version 3 as
@@ -17,37 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MEDIASTORE_HH_
-#define MEDIASTORE_HH_
+#include <memory>
+#include <string>
+#include <vector>
+#include <core/dbus/bus.h>
+#include <core/dbus/stub.h>
 
-#include"scannercore.hh"
-#include<vector>
-#include<string>
+#include "service.hh"
 
 namespace mediascanner {
 
-struct MediaStorePrivate;
-class MediaFile;
 class Album;
+class MediaFile;
 
-enum OpenType {
-    MS_READ_ONLY,
-    MS_READ_WRITE
-};
+namespace dbus {
 
-class MediaStore final {
-private:
-    MediaStorePrivate *p;
-
+class ServiceStub : public core::dbus::Stub<ScannerService> {
 public:
-    MediaStore(OpenType access, const std::string &retireprefix="");
-    MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix="");
-    MediaStore(const MediaStore &other) = delete;
-    MediaStore operator=(const MediaStore &other) = delete;
-    ~MediaStore();
+    ServiceStub(core::dbus::Bus::Ptr bus);
+    ~ServiceStub();
 
-    void insert(const MediaFile &m) const;
-    void remove(const std::string &fname) const;
     MediaFile lookup(const std::string &filename) const;
     std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
     std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
@@ -57,12 +46,10 @@ public:
     std::vector<Album> listAlbums(const std::string& artist="", const std::string& album_artist="", int limit=-1) const;
     std::vector<std::string> listArtists(bool album_artists, int limit=-1) const;
 
-    size_t size() const;
-    void pruneDeleted();
-    void archiveItems(const std::string &prefix);
-    void restoreItems(const std::string &prefix);
+private:
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
 }
-
-#endif
+}

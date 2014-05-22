@@ -27,8 +27,8 @@ namespace mediascanner {
 class Album final {
 public:
 
+    Album();
     Album(const std::string &title, const std::string &artist);
-    Album() = delete;
 
     const std::string& getTitle() const noexcept;
     const std::string& getArtist() const noexcept;
