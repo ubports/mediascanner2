@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MEDIASCANNER_DBUS_SERVICE_SKELETON_HH
+#define MEDIASCANNER_DBUS_SERVICE_SKELETON_HH
+
 #include <memory>
 #include <core/dbus/bus.h>
 #include <core/dbus/skeleton.h>
@@ -29,7 +32,7 @@ class MediaStore;
 
 namespace dbus {
 
-class ServiceSkeleton : public core::dbus::Skeleton<ScannerService> {
+class ServiceSkeleton : public core::dbus::Skeleton<MediaStoreService> {
 public:
     ServiceSkeleton(core::dbus::Bus::Ptr bus, std::shared_ptr<MediaStore> store);
     ~ServiceSkeleton();
@@ -44,3 +47,5 @@ private:
 
 }
 }
+
+#endif

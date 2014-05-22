@@ -17,20 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MEDIASCANNER_DBUS_SERVICE_HH
+#define MEDIASCANNER_DBUS_SERVICE_HH
+
 #include <core/dbus/traits/service.h>
 
 namespace mediascanner {
 namespace dbus {
 
-class ScannerService {
+class MediaStoreService {
 public:
-    ScannerService() {}
+    MediaStoreService() {}
 
-    ScannerService(const ScannerService&) = delete;
-    virtual ~ScannerService() = default;
+    MediaStoreService(const MediaStoreService&) = delete;
+    virtual ~MediaStoreService() = default;
 
-    ScannerService& operator=(const ScannerService&) = delete;
-    bool operator==(const ScannerService&) const = delete;
+    MediaStoreService& operator=(const MediaStoreService&) = delete;
+    bool operator==(const MediaStoreService&) const = delete;
 };
 
 }
@@ -41,7 +44,7 @@ namespace dbus {
 namespace traits {
 
 template<>
-struct Service<mediascanner::dbus::ScannerService> {
+struct Service<mediascanner::dbus::MediaStoreService> {
     inline static const std::string& interface_name() {
         static const std::string iface("com.canonical.MediaScaner2");
         return iface;
@@ -55,3 +58,5 @@ struct Service<mediascanner::dbus::ScannerService> {
 }
 }
 }
+
+#endif

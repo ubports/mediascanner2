@@ -36,9 +36,9 @@ struct ServiceStub::Private
 };
 
 ServiceStub::ServiceStub(core::dbus::Bus::Ptr bus)
-    : core::dbus::Stub<ScannerService>(bus),
+    : core::dbus::Stub<MediaStoreService>(bus),
       p(new Private{access_service()->object_for_path(
-                  core::dbus::types::ObjectPath(core::dbus::traits::Service<ScannerService>::object_path()))}) {
+                  core::dbus::types::ObjectPath(core::dbus::traits::Service<MediaStoreService>::object_path()))}) {
 }
 
 ServiceStub::~ServiceStub() {

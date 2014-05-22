@@ -26,7 +26,7 @@ struct ServiceSkeleton::Private {
         impl(impl),
         store(store),
         object(impl->access_service()->add_object_for_path(
-                   core::dbus::traits::Service<ScannerService>::object_path())) {
+                   core::dbus::traits::Service<MediaStoreService>::object_path())) {
         object->install_method_handler<MediaStoreInterface::Lookup>(
             std::bind(
                 &Private::handle_lookup,
@@ -213,7 +213,7 @@ struct ServiceSkeleton::Private {
 
 ServiceSkeleton::ServiceSkeleton(core::dbus::Bus::Ptr bus,
                                  std::shared_ptr<MediaStore> store) :
-    core::dbus::Skeleton<ScannerService>(bus),
+    core::dbus::Skeleton<MediaStoreService>(bus),
     p(new Private(this, store)) {
 }
 

@@ -24,10 +24,11 @@
 #include <QObject>
 #include <QString>
 
-#include <mediascanner/MediaStore.hh>
+#include <ms-dbus/service-stub.hh>
 #include "MediaFileWrapper.hh"
 
 namespace mediascanner {
+
 namespace qml {
 
 class MediaStoreWrapper : public QObject {
@@ -44,7 +45,7 @@ public:
     Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
     Q_INVOKABLE mediascanner::qml::MediaFileWrapper *lookup(const QString &filename);
 
-    mediascanner::MediaStore store;
+    mediascanner::dbus::ServiceStub store;
 };
 
 }

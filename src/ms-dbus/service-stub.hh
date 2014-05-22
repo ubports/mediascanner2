@@ -17,12 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MEDIASCANNER_DBUS_SERVICE_STUB_HH
+#define MEDIASCANNER_DBUS_SERVICE_STUB_HH
+
 #include <memory>
 #include <string>
 #include <vector>
 #include <core/dbus/bus.h>
 #include <core/dbus/stub.h>
 
+#include <mediascanner/scannercore.hh>
 #include "service.hh"
 
 namespace mediascanner {
@@ -32,7 +36,7 @@ class MediaFile;
 
 namespace dbus {
 
-class ServiceStub : public core::dbus::Stub<ScannerService> {
+class ServiceStub : public core::dbus::Stub<MediaStoreService> {
 public:
     ServiceStub(core::dbus::Bus::Ptr bus);
     ~ServiceStub();
@@ -53,3 +57,5 @@ private:
 
 }
 }
+
+#endif
