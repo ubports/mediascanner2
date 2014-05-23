@@ -54,19 +54,25 @@ void Codec<MediaFile>::encode_argument(Message::Writer &out, const MediaFile &fi
 
 void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
     auto r = in.pop_structure();
-    file = MediaFileBuilder(core::dbus::decode_argument<string>(r))
-        .setContentType(core::dbus::decode_argument<string>(r))
-        .setETag(core::dbus::decode_argument<string>(r))
-        .setTitle(core::dbus::decode_argument<string>(r))
-        .setAuthor(core::dbus::decode_argument<string>(r))
-        .setAlbum(core::dbus::decode_argument<string>(r))
-        .setAlbumArtist(core::dbus::decode_argument<string>(r))
-        .setDate(core::dbus::decode_argument<string>(r))
-        .setGenre(core::dbus::decode_argument<string>(r))
-        .setDiscNumber(core::dbus::decode_argument<int32_t>(r))
-        .setTrackNumber(core::dbus::decode_argument<int32_t>(r))
-        .setDuration(core::dbus::decode_argument<int32_t>(r))
-        .setType((MediaType)core::dbus::decode_argument<int32_t>(r));
+    string filename, content_type, etag, title, author;
+    string album, album_artist, date, genre;
+    int32_t disc_number, track_number, duration, type;
+    r >> filename >> content_type >> etag >> title >> author
+      >> album >> album_artist >> date >> genre
+      >> disc_number >> track_number >> duration >> type;
+    file = MediaFileBuilder(filename)
+        .setContentType(content_type)
+        .setETag(etag)
+        .setTitle(title)
+        .setAuthor(author)
+        .setAlbum(album)
+        .setAlbumArtist(album_artist)
+        .setDate(date)
+        .setGenre(genre)
+        .setDiscNumber(disc_number)
+        .setTrackNumber(track_number)
+        .setDuration(duration)
+        .setType((MediaType)type);
 }
 
 void Codec<Album>::encode_argument(Message::Writer &out, const Album &album) {
@@ -78,6 +84,7 @@ void Codec<Album>::encode_argument(Message::Writer &out, const Album &album) {
 
 void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
     auto r = in.pop_structure();
-    album = Album(core::dbus::decode_argument<string>(r),
-                  core::dbus::decode_argument<string>(r));
+    string title, artist;
+    r >> title >> artist;
+    album = Album(title, artist);
 }

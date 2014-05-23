@@ -1,11 +1,18 @@
 #include <stdlib.h>
+#include <cstdio>
+#include <memory>
 #include <string>
 
+#include <QProcess>
 #include <QtQuickTest/quicktest.h>
+
+#include <core/dbus/fixture.h>
 
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
+
+#include "test_config.h"
 
 using namespace mediascanner;
 
@@ -18,8 +25,34 @@ public:
         }
         setenv("MEDIASCANNER_CACHEDIR", db_path.c_str(), true);
         populate();
+
+        // Start up private bus, and start daemon.
+        fprintf(stderr, "Setting up isolated session bus\n");
+        dbus_fixture.reset(
+            new core::dbus::Fixture(
+                core::dbus::Fixture::default_session_bus_config_file(),
+                core::dbus::Fixture::default_system_bus_config_file()));
+
+        fprintf(stderr, "Starting " TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0" "\n");
+        daemon.setProgram(TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0");
+        daemon.setProcessChannelMode(QProcess::ForwardedChannels);
+        daemon.start();
+        daemon.closeWriteChannel();
+        if (!daemon.waitForStarted()) {
+            fprintf(stderr, "Failed to start mediascanner-dbus-2.0\n");
+            throw std::runtime_error("Failed to start mediascanner-dbus-2.0");
+        }
+        fprintf(stderr, "Setup done\n");
     }
     ~MediaStoreData() {
+        fprintf(stderr, "Killing mediascanner-dbus-2.0\n");
+        daemon.kill();
+        daemon.waitForFinished();
+
+        fprintf(stderr, "Tearing down dbus fixture\n");
+        dbus_fixture.reset();
+
+        fprintf(stderr, "Deleting mediascanner cache dir\n");
         if (system("rm -rf \"$MEDIASCANNER_CACHEDIR\"") == -1) {
             throw std::runtime_error("rm -rf failed");
         }
@@ -126,6 +159,8 @@ public:
 
 private:
     std::string db_path;
+    std::unique_ptr<core::dbus::Fixture> dbus_fixture;
+    QProcess daemon;
 };
 
 MediaStoreData data;
