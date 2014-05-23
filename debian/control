@@ -4,7 +4,9 @@ Priority: optional
 Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Standards-Version: 3.9.5
 Build-Depends: cmake,
+               dbus,
                debhelper (>= 9),
+               libdbus-cpp-dev (>= 3.0.0),
                libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
                libgstreamer1.0-dev,
