@@ -41,6 +41,13 @@ struct MediaStoreInterface {
                 return s;
             }
         };
+
+        struct Unauthorized {
+            inline static const std::string& name() {
+                static std::string s = "com.canonical.MediaScanner2.Error.Unauthorized";
+                return s;
+            }
+        };
     };
 
     struct Lookup {
