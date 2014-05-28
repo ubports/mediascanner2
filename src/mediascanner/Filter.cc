@@ -17,13 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MediaFilter.hh"
+#include "Filter.hh"
 
 using std::string;
 
 namespace mediascanner {
 
-struct MediaFilter::Private {
+struct Filter::Private {
     string artist;
     string album;
     string album_artist;
@@ -33,93 +33,114 @@ struct MediaFilter::Private {
     bool have_album;
     bool have_album_artist;
     bool have_genre;
+
+    Private() :
+        have_artist(false), have_album(false), have_album_artist(false),
+        have_genre(false) {
+    }
 };
 
-MediaFilter::MediaFilter() : p(new Private) {
+Filter::Filter() : p(new Private) {
 }
 
-MediaFilter::MediaFilter(const MediaFilter &other) : MediaFilter() {
+Filter::Filter(const Filter &other) : Filter() {
     *p = *other.p;
 }
 
-MediaFilter::~MediaFilter() {
+Filter::~Filter() {
     delete p;
 }
 
-MediaFilter &MediaFilter::operator=(const MediaFilter &other) {
+bool Filter::operator==(const Filter &other) const {
+    return
+        p->have_artist == other.p->have_artist &&
+        p->have_album == other.p->have_album &&
+        p->have_album_artist == other.p->have_album_artist &&
+        p->have_genre == other.p->have_genre &&
+        p->artist == other.p->artist &&
+        p->album == other.p->album &&
+        p->album_artist == other.p->album_artist &&
+        p->genre == other.p->genre;
+}
+
+bool Filter::operator!=(const Filter &other) const {
+    return !(*this == other);
+}
+
+Filter &Filter::operator=(const Filter &other) {
     *p = *other.p;
     return *this;
 }
 
-void MediaFilter::setArtist(const std::string &artist) {
+void Filter::setArtist(const std::string &artist) {
     p->artist = artist;
     p->have_artist = true;
 }
 
-void MediaFilter::unsetArtist() {
+void Filter::unsetArtist() {
     p->artist = "";
     p->have_artist = false;
 }
 
-bool MediaFilter::hasArtist() const {
+bool Filter::hasArtist() const {
     return p->have_artist;
 }
 
-const std::string &MediaFilter::getArtist() const {
+const std::string &Filter::getArtist() const {
     return p->artist;
 }
 
-void MediaFilter::setAlbum(const std::string &album) {
+void Filter::setAlbum(const std::string &album) {
     p->album = album;
     p->have_album = true;
 }
 
-void MediaFilter::unsetAlbum() {
+void Filter::unsetAlbum() {
     p->album = "";
     p->have_album = false;
 }
 
-bool MediaFilter::hasAlbum() const {
+bool Filter::hasAlbum() const {
     return p->have_album;
 }
 
-const std::string &MediaFilter::getAlbum() const {
+const std::string &Filter::getAlbum() const {
     return p->album;
 }
 
-void MediaFilter::setAlbumArtist(const std::string &album_artist) {
+void Filter::setAlbumArtist(const std::string &album_artist) {
     p->album_artist = album_artist;
     p->have_album_artist = true;
 }
 
-void MediaFilter::unsetAlbumArtist() {
+void Filter::unsetAlbumArtist() {
     p->album_artist = "";
     p->have_album_artist = false;
 }
 
-bool MediaFilter::hasAlbumArtist() const {
+bool Filter::hasAlbumArtist() const {
     return p->have_album_artist;
 }
 
-const std::string &MediaFilter::getAlbumArtist() const {
+const std::string &Filter::getAlbumArtist() const {
     return p->album_artist;
 }
 
-void MediaFilter::setGenre(const std::string &genre) {
+void Filter::setGenre(const std::string &genre) {
     p->genre = genre;
     p->have_genre = true;
 }
 
-void MediaFilter::unsetGenre() {
+void Filter::unsetGenre() {
     p->genre = "";
     p->have_genre = false;
 }
 
-bool MediaFilter::hasGenre() const {
+bool Filter::hasGenre() const {
     return p->have_genre;
 }
 
-const std::string &MediaFilter::getGenre() const {
+const std::string &Filter::getGenre() const {
     return p->genre;
 }
 

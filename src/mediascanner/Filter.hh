@@ -24,13 +24,15 @@
 
 namespace mediascanner {
 
-class MediaFilter final {
+class Filter final {
 public:
-    MediaFilter();
-    MediaFilter(const MediaFilter &other);
-    ~MediaFilter();
+    Filter();
+    Filter(const Filter &other);
+    ~Filter();
 
-    MediaFilter &operator=(const MediaFilter &other);
+    Filter &operator=(const Filter &other);
+    bool operator==(const Filter &other) const;
+    bool operator!=(const Filter &other) const;
 
     void setArtist(const std::string &artist);
     void unsetArtist();

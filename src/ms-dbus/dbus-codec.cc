@@ -24,6 +24,7 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/Album.hh>
+#include <mediascanner/Filter.hh>
 #include "dbus-codec.hh"
 
 using core::dbus::Message;
@@ -32,6 +33,7 @@ using mediascanner::MediaFile;
 using mediascanner::MediaFileBuilder;
 using mediascanner::MediaType;
 using mediascanner::Album;
+using mediascanner::Filter;
 using std::string;
 
 void Codec<MediaFile>::encode_argument(Message::Writer &out, const MediaFile &file) {
@@ -87,4 +89,46 @@ void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
     string title, artist;
     r >> title >> artist;
     album = Album(title, artist);
+}
+
+void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) {
+    auto w = out.open_array(core::dbus::types::Signature("{ss}"));
+
+    if (filter.hasArtist()) {
+        w.close_dict_entry(
+            w.open_dict_entry() << string("artist") << filter.getArtist());
+    }
+    if (filter.hasAlbum()) {
+        w.close_dict_entry(
+            w.open_dict_entry() << string("album") << filter.getAlbum());
+    }
+    if (filter.hasAlbumArtist()) {
+        w.close_dict_entry(
+            w.open_dict_entry() << string("album_artist") << filter.getAlbumArtist());
+    }
+    if (filter.hasGenre()) {
+        w.close_dict_entry(
+            w.open_dict_entry() << string("genre") << filter.getGenre());
+    }
+
+    out.close_array(std::move(w));
+}
+
+void Codec<Filter>::decode_argument(Message::Reader &in, Filter &filter) {
+    auto r = in.pop_array();
+
+    while (r.type() != ArgumentType::invalid) {
+        string key, value;
+        r.pop_dict_entry() >> key >> value;
+
+        if (key == "artist") {
+            filter.setArtist(value);
+        } else if (key == "album") {
+            filter.setAlbum(value);
+        } else if (key == "album_artist") {
+            filter.setAlbumArtist(value);
+        } else if (key == "genre") {
+            filter.setGenre(value);
+        }
+    }
 }
