@@ -19,6 +19,7 @@ Item {
 
         function cleanup() {
             model.albumArtists = false;
+            model.genre = undefined;
             model.limit = -1;
         }
 
@@ -48,6 +49,19 @@ Item {
 
             compare(model.get(0, ArtistsModel.RoleArtist), "Spiderbait");
             compare(model.get(1, ArtistsModel.RoleArtist), "The John Butler Trio");
+        }
+
+        function test_genre() {
+            model.genre = "rock";
+            compare(model.rowCount, 1);
+            compare(model.get(0, ArtistsModel.RoleArtist), "Spiderbait");
+
+            model.genre = "roots";
+            compare(model.rowCount, 1);
+            compare(model.get(0, ArtistsModel.RoleArtist), "The John Butler Trio");
+
+            model.genre = "unknown";
+            compare(model.rowCount, 0);
         }
 
     }

@@ -35,6 +35,7 @@ class ArtistsModel : public QAbstractListModel {
     Q_ENUMS(Roles)
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(bool albumArtists READ getAlbumArtists WRITE setAlbumArtists)
+    Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
     Q_PROPERTY(int rowCount READ rowCount) // NOTIFY modelReset
 public:
@@ -54,6 +55,8 @@ protected:
     void setStore(MediaStoreWrapper *store);
     bool getAlbumArtists();
     void setAlbumArtists(bool album_artists);
+    QVariant getGenre();
+    void setGenre(QVariant genre);
     int getLimit();
     void setLimit(int limit);
 
