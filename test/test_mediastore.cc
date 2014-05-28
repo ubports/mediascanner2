@@ -20,6 +20,7 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/Album.hh>
+#include <mediascanner/Filter.hh>
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/internal/utils.hh>
 
@@ -617,34 +618,56 @@ TEST_F(MediaStoreTest, listSongs) {
     store.insert(audio5);
     store.insert(audio6);
 
-    vector<MediaFile> tracks = store.listSongs();
+    Filter filter;
+    vector<MediaFile> tracks = store.listSongs(filter);
     ASSERT_EQ(6, tracks.size());
     EXPECT_EQ("TitleOne", tracks[0].getTitle());
 
     // Apply a limit
-    tracks = store.listSongs("", "", "", 4);
+    tracks = store.listSongs(filter, 4);
     EXPECT_EQ(4, tracks.size());
 
     // List songs by artist
-    tracks = store.listSongs("ArtistOne");
+    filter.setArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(4, tracks.size());
 
     // List songs by album
-    tracks = store.listSongs("", "AlbumOne");
+    filter.clear();
+    filter.setAlbum("AlbumOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
 
     // List songs by album artist
-    tracks = store.listSongs("", "", "Various Artists");
+    filter.clear();
+    filter.setAlbumArtist("Various Artists");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
 
     // Combinations
-    tracks = store.listSongs("ArtistOne", "AlbumOne", "");
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbum("AlbumOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("", "AlbumOne", "ArtistOne");
+
+    filter.clear();
+    filter.setAlbum("AlbumOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("ArtistOne", "AlbumOne", "ArtistOne");
+
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbum("AlbumOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("ArtistOne", "", "ArtistOne");
+
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(3, tracks.size());
 }
 
@@ -687,24 +710,31 @@ TEST_F(MediaStoreTest, listAlbums) {
     store.insert(audio4);
     store.insert(audio5);
 
-    vector<Album> albums = store.listAlbums();
+    Filter filter;
+    vector<Album> albums = store.listAlbums(filter);
     ASSERT_EQ(4, albums.size());
     EXPECT_EQ("AlbumOne", albums[0].getTitle());
 
     // test limit
-    albums = store.listAlbums("", "", 2);
+    albums = store.listAlbums(filter, 2);
     EXPECT_EQ(2, albums.size());
 
     // Songs by artist
-    albums = store.listAlbums("ArtistOne");
+    filter.setArtist("ArtistOne");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(3, albums.size());
 
     // Songs by album artist
-    albums = store.listAlbums("", "ArtistOne");
+    filter.clear();
+    filter.setAlbumArtist("ArtistOne");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(2, albums.size());
 
     // Combination
-    albums = store.listAlbums("ArtistOne", "Various Artists");
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbumArtist("Various Artists");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(1, albums.size());
 }
 
@@ -747,17 +777,18 @@ TEST_F(MediaStoreTest, listArtists) {
     store.insert(audio4);
     store.insert(audio5);
 
-    vector<string> artists = store.listArtists(false);
+    Filter filter;
+    vector<string> artists = store.listArtists(filter);
     ASSERT_EQ(2, artists.size());
     EXPECT_EQ("ArtistOne", artists[0]);
     EXPECT_EQ("ArtistTwo", artists[1]);
 
     // Test limit clause
-    artists = store.listArtists(false, 1);
+    artists = store.listArtists(filter, 1);
     EXPECT_EQ(1, artists.size());
 
     // List "album artists"
-    artists = store.listArtists(true);
+    artists = store.listAlbumArtists(filter);
     ASSERT_EQ(3, artists.size());
     EXPECT_EQ("ArtistOne", artists[0]);
     EXPECT_EQ("ArtistTwo", artists[1]);

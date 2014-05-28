@@ -117,6 +117,7 @@ void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) 
 void Codec<Filter>::decode_argument(Message::Reader &in, Filter &filter) {
     auto r = in.pop_array();
 
+    filter.clear();
     while (r.type() != ArgumentType::invalid) {
         string key, value;
         r.pop_dict_entry() >> key >> value;

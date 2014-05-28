@@ -72,6 +72,13 @@ Filter &Filter::operator=(const Filter &other) {
     return *this;
 }
 
+void Filter::clear() {
+    unsetArtist();
+    unsetAlbum();
+    unsetAlbumArtist();
+    unsetGenre();
+}
+
 void Filter::setArtist(const std::string &artist) {
     p->artist = artist;
     p->have_artist = true;

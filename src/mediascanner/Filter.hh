@@ -34,6 +34,8 @@ public:
     bool operator==(const Filter &other) const;
     bool operator!=(const Filter &other) const;
 
+    void clear();
+
     void setArtist(const std::string &artist);
     void unsetArtist();
     bool hasArtist() const;

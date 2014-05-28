@@ -29,6 +29,7 @@ namespace mediascanner {
 struct MediaStorePrivate;
 class MediaFile;
 class Album;
+class Filter;
 
 enum OpenType {
     MS_READ_ONLY,
@@ -53,9 +54,11 @@ public:
     std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
-    std::vector<MediaFile> listSongs(const std::string& artist="", const std::string& album="", const std::string& album_artist="", int limit=-1) const;
-    std::vector<Album> listAlbums(const std::string& artist="", const std::string& album_artist="", int limit=-1) const;
-    std::vector<std::string> listArtists(bool album_artists, int limit=-1) const;
+    std::vector<MediaFile> listSongs(const Filter &filter, int limit=-1) const;
+    std::vector<Album> listAlbums(const Filter &filter, int limit=-1) const;
+    std::vector<std::string> listArtists(const Filter &filter, int limit=-1) const;
+    std::vector<std::string>listAlbumArtists(const Filter &filter, int limit=-1) const;
+    std::vector<std::string>listGenres(int limit=-1) const;
 
     size_t size() const;
     void pruneDeleted();

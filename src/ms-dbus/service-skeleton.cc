@@ -5,6 +5,7 @@
 #include <core/dbus/types/object_path.h>
 
 #include <mediascanner/Album.hh>
+#include <mediascanner/Filter.hh>
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaStore.hh>
 
@@ -163,7 +164,11 @@ struct ServiceSkeleton::Private {
         message->reader() >> artist >> album >> album_artist >> limit;
         Message::Ptr reply;
         try {
-            auto results = store->listSongs(artist, album, album_artist, limit);
+            Filter filter;
+            filter.setArtist(artist);
+            filter.setAlbum(album);
+            filter.setAlbumArtist(album_artist);
+            auto results = store->listSongs(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << results;
         } catch (const std::exception &e) {
@@ -181,7 +186,10 @@ struct ServiceSkeleton::Private {
         message->reader() >> artist >> album_artist >> limit;
         Message::Ptr reply;
         try {
-            auto albums = store->listAlbums(artist, album_artist, limit);
+            Filter filter;
+            filter.setArtist(artist);
+            filter.setAlbumArtist(album_artist);
+            auto albums = store->listAlbums(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
         } catch (const std::exception &e) {
@@ -199,7 +207,12 @@ struct ServiceSkeleton::Private {
         message->reader() >> album_artists >> limit;
         Message::Ptr reply;
         try {
-            auto artists = store->listArtists(album_artists, limit);
+            Filter filter;
+            std::vector<std::string>artists;
+            if (album_artists)
+                artists = store->listAlbumArtists(filter, limit);
+            else
+                artists = store->listArtists(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
         } catch (const std::exception &e) {
