@@ -38,27 +38,45 @@ void AlbumsModel::setStore(MediaStoreWrapper *store) {
     }
 }
 
-QString AlbumsModel::getArtist() {
+QVariant AlbumsModel::getArtist() {
+    if (!filter.hasArtist())
+        return QVariant();
     return QString::fromStdString(filter.getArtist());
 }
 
-void AlbumsModel::setArtist(const QString artist) {
-    const std::string std_artist = artist.toStdString();
-    if (filter.getArtist() != std_artist) {
-        filter.setArtist(std_artist);
-        update();
+void AlbumsModel::setArtist(const QVariant artist) {
+    if (artist.isNull()) {
+        if (filter.hasArtist()) {
+            filter.unsetArtist();
+            update();
+        }
+    } else {
+        const std::string std_artist = artist.value<QString>().toStdString();
+        if (!filter.hasArtist() || filter.getArtist() != std_artist) {
+            filter.setArtist(std_artist);
+            update();
+        }
     }
 }
 
-QString AlbumsModel::getAlbumArtist() {
+QVariant AlbumsModel::getAlbumArtist() {
+    if (!filter.hasAlbumArtist())
+        return QVariant();
     return QString::fromStdString(filter.getAlbumArtist());
 }
 
-void AlbumsModel::setAlbumArtist(const QString album_artist) {
-    const std::string std_album_artist = album_artist.toStdString();
-    if (filter.getAlbumArtist() != std_album_artist) {
-        filter.setAlbumArtist(std_album_artist);
-        update();
+void AlbumsModel::setAlbumArtist(const QVariant album_artist) {
+    if (album_artist.isNull()) {
+        if (filter.hasAlbumArtist()) {
+            filter.unsetAlbumArtist();
+            update();
+        }
+    } else {
+        const std::string std_album_artist = album_artist.value<QString>().toStdString();
+        if (!filter.hasAlbumArtist() || filter.getAlbumArtist() != std_album_artist) {
+            filter.setAlbumArtist(std_album_artist);
+            update();
+        }
     }
 }
 
