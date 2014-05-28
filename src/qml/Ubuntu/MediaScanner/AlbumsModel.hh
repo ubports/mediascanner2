@@ -22,6 +22,7 @@
 
 #include <QString>
 
+#include <mediascanner/Filter.hh>
 #include "MediaStoreWrapper.hh"
 #include "AlbumModelBase.hh"
 
@@ -50,7 +51,7 @@ private:
     void update();
 
     MediaStoreWrapper *store;
-    QString artist, album_artist;
+    Filter filter;
     int limit;
 };
 

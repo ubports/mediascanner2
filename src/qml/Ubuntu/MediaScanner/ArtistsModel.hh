@@ -24,6 +24,7 @@
 #include <QAbstractListModel>
 #include <QString>
 
+#include <mediascanner/Filter.hh>
 #include "MediaStoreWrapper.hh"
 
 namespace mediascanner {
@@ -62,6 +63,7 @@ private:
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
     MediaStoreWrapper *store;
+    Filter filter;
     bool album_artists;
     int limit;
 };

@@ -24,8 +24,6 @@ using namespace mediascanner::qml;
 AlbumsModel::AlbumsModel(QObject *parent)
     : AlbumModelBase(parent),
       store(nullptr),
-      artist(""),
-      album_artist(""),
       limit(-1) {
 }
 
@@ -41,23 +39,25 @@ void AlbumsModel::setStore(MediaStoreWrapper *store) {
 }
 
 QString AlbumsModel::getArtist() {
-    return artist;
+    return QString::fromStdString(filter.getArtist());
 }
 
 void AlbumsModel::setArtist(const QString artist) {
-    if (this->artist != artist) {
-        this->artist = artist;
+    const std::string std_artist = artist.toStdString();
+    if (filter.getArtist() != std_artist) {
+        filter.setArtist(std_artist);
         update();
     }
 }
 
 QString AlbumsModel::getAlbumArtist() {
-    return album_artist;
+    return QString::fromStdString(filter.getAlbumArtist());
 }
 
 void AlbumsModel::setAlbumArtist(const QString album_artist) {
-    if (this->album_artist != album_artist) {
-        this->album_artist = album_artist;
+    const std::string std_album_artist = album_artist.toStdString();
+    if (filter.getAlbumArtist() != std_album_artist) {
+        filter.setAlbumArtist(std_album_artist);
         update();
     }
 }
@@ -77,6 +77,6 @@ void AlbumsModel::update() {
     if (store == nullptr) {
         updateResults(std::vector<mediascanner::Album>());
     } else {
-        updateResults(store->store.listAlbums(artist.toStdString(), album_artist.toStdString(), limit));
+        updateResults(store->store.listAlbums(filter, limit));
     }
 }

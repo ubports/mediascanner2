@@ -68,6 +68,16 @@ struct ServiceSkeleton::Private {
                 &Private::handle_list_artists,
                 this,
                 std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::ListAlbumArtists>(
+            std::bind(
+                &Private::handle_list_album_artists,
+                this,
+                std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::ListGenres>(
+            std::bind(
+                &Private::handle_list_genres,
+                this,
+                std::placeholders::_1));
     }
 
     void handle_lookup(const Message::Ptr &message) {
@@ -158,16 +168,12 @@ struct ServiceSkeleton::Private {
     }
 
     void handle_list_songs(const Message::Ptr &message) {
-        std::string artist, album, album_artist;
+        Filter filter;
         int32_t limit;
 
-        message->reader() >> artist >> album >> album_artist >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            Filter filter;
-            filter.setArtist(artist);
-            filter.setAlbum(album);
-            filter.setAlbumArtist(album_artist);
             auto results = store->listSongs(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << results;
@@ -180,15 +186,12 @@ struct ServiceSkeleton::Private {
     }
 
     void handle_list_albums(const Message::Ptr &message) {
-        std::string artist, album_artist;
+        Filter filter;
         int32_t limit;
 
-        message->reader() >> artist >> album_artist >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            Filter filter;
-            filter.setArtist(artist);
-            filter.setAlbumArtist(album_artist);
             auto albums = store->listAlbums(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
@@ -201,20 +204,50 @@ struct ServiceSkeleton::Private {
     }
 
     void handle_list_artists(const Message::Ptr &message) {
-        bool album_artists;
+        Filter filter;
         int32_t limit;
 
-        message->reader() >> album_artists >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            Filter filter;
-            std::vector<std::string>artists;
-            if (album_artists)
-                artists = store->listAlbumArtists(filter, limit);
-            else
-                artists = store->listArtists(filter, limit);
+            auto artists = store->listArtists(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_list_album_artists(const Message::Ptr &message) {
+        Filter filter;
+        int32_t limit;
+
+        message->reader() >> filter >> limit;
+        Message::Ptr reply;
+        try {
+            auto artists = store->listAlbumArtists(filter, limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << artists;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_list_genres(const Message::Ptr &message) {
+        int32_t limit;
+
+        message->reader() >> limit;
+        Message::Ptr reply;
+        try {
+            auto genres = store->listGenres(limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << genres;
         } catch (const std::exception &e) {
             reply = Message::make_error(
                 message, MediaStoreInterface::Errors::Error::name(),

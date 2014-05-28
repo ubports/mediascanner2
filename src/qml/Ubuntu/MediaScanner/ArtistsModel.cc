@@ -91,7 +91,11 @@ void ArtistsModel::update() {
     if (store == nullptr) {
         this->results.clear();
     } else {
-        this->results = store->store.listArtists(album_artists, limit);
+        if (album_artists) {
+            this->results = store->store.listAlbumArtists(filter, limit);
+        } else {
+            this->results = store->store.listArtists(filter, limit);
+        }
     }
     this->results = results;
     endResetModel();
