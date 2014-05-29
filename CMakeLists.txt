@@ -1,4 +1,4 @@
-project(scantest CXX C)
+project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
 set(MEDIASCANNER_VERSION "0.99")
