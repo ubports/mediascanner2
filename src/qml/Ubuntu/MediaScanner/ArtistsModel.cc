@@ -119,4 +119,5 @@ void ArtistsModel::update() {
         }
     }
     endResetModel();
+    Q_EMIT rowCountChanged();
 }

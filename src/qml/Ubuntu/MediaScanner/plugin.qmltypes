@@ -61,6 +61,27 @@ Module {
         }
     }
     Component {
+        name: "mediascanner::qml::GenresModel"
+        prototype: "QAbstractListModel"
+        exports: ["Ubuntu.MediaScanner/GenresModel 0.1"]
+        exportMetaObjectRevisions: [0]
+        Enum {
+            name: "Roles"
+            values: {
+                "RoleGenre": 0
+            }
+        }
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "limit"; type: "int" }
+        Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Method {
+            name: "get"
+            type: "QVariant"
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "role"; type: "Roles" }
+        }
+    }
+    Component {
         name: "mediascanner::qml::MediaFileModelBase"
         prototype: "QAbstractListModel"
         Enum {

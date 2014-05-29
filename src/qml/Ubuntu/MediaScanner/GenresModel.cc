@@ -82,4 +82,5 @@ void GenresModel::update() {
         this->results = store->store.listGenres(limit);
     }
     endResetModel();
+    Q_EMIT rowCountChanged();
 }

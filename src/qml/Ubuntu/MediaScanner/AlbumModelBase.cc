@@ -62,4 +62,5 @@ void AlbumModelBase::updateResults(const std::vector<mediascanner::Album> &resul
     beginResetModel();
     this->results = results;
     endResetModel();
+    Q_EMIT rowCountChanged();
 }

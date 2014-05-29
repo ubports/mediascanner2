@@ -31,7 +31,7 @@ namespace qml {
 class MediaFileModelBase : public QAbstractListModel {
     Q_OBJECT
     Q_ENUMS(Roles)
-    Q_PROPERTY(int rowCount READ rowCount) // NOTIFY modelReset
+    Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
 public:
     enum Roles {
         RoleModelData,
@@ -56,6 +56,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
     Q_INVOKABLE QVariant get(int row, Roles role) const;
+Q_SIGNALS:
+    void rowCountChanged();
 protected:
     QHash<int, QByteArray> roleNames() const override;
     void updateResults(const std::vector<mediascanner::MediaFile> &results);
