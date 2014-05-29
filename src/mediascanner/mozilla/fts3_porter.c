@@ -55,6 +55,7 @@
 */
 #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
 
+#define UNUSED __attribute__ ((unused))
 
 #include <assert.h>
 #include <stdlib.h>
@@ -211,7 +212,7 @@ extern unsigned int normalize_character(const unsigned int c);
 ** Create a new tokenizer instance.
 */
 static int porterCreate(
-  int argc, const char * const *argv,
+  int UNUSED argc, const char UNUSED * const *argv,
   sqlite3_tokenizer **ppTokenizer
 ){
   porter_tokenizer *t;
@@ -237,7 +238,7 @@ static int porterDestroy(sqlite3_tokenizer *pTokenizer){
 ** *ppCursor.
 */
 static int porterOpen(
-  sqlite3_tokenizer *pTokenizer,         /* The tokenizer */
+  sqlite3_tokenizer UNUSED *pTokenizer,  /* The tokenizer */
   const char *zInput, int nInput,        /* String to be tokenized */
   sqlite3_tokenizer_cursor **ppCursor    /* OUT: Tokenization cursor */
 ){
@@ -1111,7 +1112,7 @@ static int porterNext(
       } else {
         porter_stemmer(&z[iStartOffset], n, c->zToken, pnBytes);
       }
-      *pzToken = c->zToken;
+      *pzToken = (const char*)c->zToken;
       *piStartOffset = iStartOffset;
       *piEndOffset = c->iOffset;
       *piPosition = c->iToken++;
