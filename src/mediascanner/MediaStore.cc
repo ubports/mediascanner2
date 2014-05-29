@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <mutex>
 #include <sstream>
+#include <map>
 
 #include <glib.h>
 #include <sqlite3.h>
@@ -143,7 +144,7 @@ static bool has_block_in_path(std::map<std::string, bool> &cache, const std::str
         trial_path += "/" + seg;
         auto r = cache.find(trial_path);
         if(r != cache.end()) {
-            return *r;
+            return r->second;
         }
         if(has_scanblock(trial_path)) {
             cache[trial_path] = true;
@@ -568,7 +569,7 @@ SELECT artist FROM media
 }
 
 void MediaStorePrivate::pruneDeleted() {
-    std::map<std::string, bool> &path_cache;
+    std::map<std::string, bool> path_cache;
     vector<string> deleted;
     Statement query(db, "SELECT filename FROM media");
     while (query.step()) {
