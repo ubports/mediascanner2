@@ -12,6 +12,7 @@ add_library(mediascanner-qml MODULE
   AlbumModelBase.cc
   AlbumsModel.cc
   ArtistsModel.cc
+  GenresModel.cc
   SongsModel.cc
   SongsSearchModel.cc
 )

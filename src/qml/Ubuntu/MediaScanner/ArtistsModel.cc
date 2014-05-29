@@ -118,6 +118,5 @@ void ArtistsModel::update() {
             this->results = store->store.listArtists(filter, limit);
         }
     }
-    this->results = results;
     endResetModel();
 }
