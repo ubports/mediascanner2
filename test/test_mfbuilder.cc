@@ -20,6 +20,7 @@
 #include<gtest/gtest.h>
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
+#include<stdexcept>
 
 using namespace mediascanner;
 
@@ -145,6 +146,13 @@ TEST_F(MFBTest, fallback_album_artist) {
     MediaFile mf = MediaFileBuilder("abc")
         .setAuthor("author");
     EXPECT_EQ(mf.getAlbumArtist(), "author");
+}
+
+TEST_F(MFBTest, faulty_usage) {
+    MediaFileBuilder mfb("/foo/bar/baz.mp3");
+    MediaFile m1(std::move(mfb));
+    ASSERT_THROW(MediaFile m2(std::move(mfb)), std::logic_error);
+    ASSERT_THROW(MediaFile m3(mfb), std::logic_error);
 }
 
 int main(int argc, char **argv) {
