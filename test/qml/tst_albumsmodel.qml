@@ -20,12 +20,14 @@ Item {
         function cleanup() {
             model.artist = undefined;
             model.albumArtist = undefined;
+            model.genre = undefined;
             model.limit = -1;
         }
 
         function test_initial_state() {
             compare(model.artist, undefined);
             compare(model.albumArtist, undefined);
+            compare(model.genre, undefined);
             compare(model.limit, -1);
 
             compare(model.rowCount, 4);
@@ -72,6 +74,16 @@ Item {
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.albumArtist = "unknown";
+            compare(model.rowCount, 0);
+        }
+
+        function test_genre() {
+            model.genre = "rock";
+            compare(model.rowCount, 2);
+            compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
+            compare(model.get(1, AlbumsModel.RoleTitle), "Spiderbait");
+
+            model.genre = "unknown";
             compare(model.rowCount, 0);
         }
 

@@ -21,6 +21,7 @@ Item {
             model.artist = undefined;
             model.albumArtist = undefined;
             model.album = undefined;
+            model.genre = undefined;
             model.limit = -1;
         }
 
@@ -82,6 +83,18 @@ Item {
 
             compare(model.get(0, SongsModel.RoleTitle), "Peaches & Cream");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
+
+            model.albumArtist = "unknown";
+            compare(model.rowCount, 0);
+        }
+
+        function test_genre() {
+            model.genre = "rock";
+            compare(model.rowCount, 3);
+
+            compare(model.get(0, SongsModel.RoleTitle), "Buy Me a Pony");
+            compare(model.get(1, SongsModel.RoleTitle), "Straight Through The Sun");
+            compare(model.get(2, SongsModel.RoleTitle), "It's Beautiful");
 
             model.albumArtist = "unknown";
             compare(model.rowCount, 0);
