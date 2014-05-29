@@ -12,10 +12,16 @@ mediascanner2 (0.101-0ubuntu1) UNRELEASED; urgency=low
     processes.
     The trust-store API does not exist yet, so it just hard codes support 
     for the "com.ubuntu.music" application.
+  * Introduce a mediascanner::Filter type to hold search parameters for
+    the various MediaStore::list*() methods, and expand them to handle
+    genres. The new API also distinguishes between an unset filter and
+    a filter set to "". Make similar changes to the QML API, and add
+    notify signals to the rowCount properties.
+    (LP: #1319168, LP: #1319174).
 
   [ Jussi Pakkanen ]
   * Add support for .nomedia files to prevent chosen subtrees from being 
-    scanned. (LP: #1294303)
+    scanned. (LP: #1294303).
   * Fix a few warnings emitted by clang.
   * Guard against empty MediaFileBuilders.
   * Fix CMake Project name.
