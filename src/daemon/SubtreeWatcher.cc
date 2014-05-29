@@ -22,7 +22,7 @@
 #include "InvalidationSender.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 
 #include<sys/select.h>
 #include<stdexcept>

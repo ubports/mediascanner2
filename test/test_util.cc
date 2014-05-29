@@ -18,8 +18,10 @@
  */
 
 #include <gtest/gtest.h>
-#include"../src/daemon/util.h"
+#include"../src/mediascanner/internal/utils.hh"
 #include "test_config.h"
+
+using namespace mediascanner;
 
 class UtilTest : public ::testing::Test {
 public:
