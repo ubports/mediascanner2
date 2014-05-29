@@ -77,6 +77,12 @@ begin:
             p->dir.reset();
             continue;
         }
+        if(has_scanblock(p->curdir)) {
+            fprintf(stderr, "Directory %s has a scan block file, skipping it.\n",
+                    p->curdir.c_str());
+            p->dir.reset();
+            continue;
+        }
         printf("In subdir %s\n", p->curdir.c_str());
     }
 

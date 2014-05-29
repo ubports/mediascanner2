@@ -35,6 +35,17 @@ static bool dir_exists(const string &path) {
     return S_ISDIR(statbuf.st_mode) ;
 }
 
+static bool file_exists(const string &path) {
+    struct stat statbuf;
+    if(stat(path.c_str(), &statbuf) < 0) {
+        if(errno != ENOENT) {
+            printf("Error while trying to determine state of file %s: %s\n", path.c_str(), strerror(errno));
+        }
+        return false;
+    }
+    return S_ISREG(statbuf.st_mode) ;
+}
+
 bool is_rootlike(const string &path) {
     string s1 = path + "/usr";
     string s2 = path + "/var";
@@ -48,4 +59,8 @@ bool is_optical_disc(const string &path) {
     string dvd2 = path + "/VIDEO_TS";
     string bluray = path + "/BDMV";
     return (dir_exists(dvd1) && dir_exists(dvd2)) || dir_exists(bluray);
+}
+
+bool has_scanblock(const std::string &path) {
+    return file_exists(path + "/.nomedia");
 }
