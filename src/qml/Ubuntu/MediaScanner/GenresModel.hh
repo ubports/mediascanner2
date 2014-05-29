@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MEDIASCANNER_QML_ARTISTSMODEL_H
-#define MEDIASCANNER_QML_ARTISTSMODEL_H
+#ifndef MEDIASCANNER_QML_GENRESMODEL_H
+#define MEDIASCANNER_QML_GENRESMODEL_H
 
 #include <string>
 #include <QAbstractListModel>
@@ -30,20 +30,18 @@
 namespace mediascanner {
 namespace qml {
 
-class ArtistsModel : public QAbstractListModel {
+class GenresModel : public QAbstractListModel {
     Q_OBJECT
     Q_ENUMS(Roles)
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
-    Q_PROPERTY(bool albumArtists READ getAlbumArtists WRITE setAlbumArtists)
-    Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
     Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
 public:
     enum Roles {
-        RoleArtist,
+        RoleGenre,
     };
 
-    explicit ArtistsModel(QObject *parent = 0);
+    explicit GenresModel(QObject *parent = 0);
     int rowCount(const QModelIndex &parent=QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
@@ -55,10 +53,6 @@ protected:
 
     MediaStoreWrapper *getStore();
     void setStore(MediaStoreWrapper *store);
-    bool getAlbumArtists();
-    void setAlbumArtists(bool album_artists);
-    QVariant getGenre();
-    void setGenre(QVariant genre);
     int getLimit();
     void setLimit(int limit);
 
@@ -68,8 +62,6 @@ private:
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
     MediaStoreWrapper *store;
-    Filter filter;
-    bool album_artists;
     int limit;
 };
 

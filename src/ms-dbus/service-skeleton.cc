@@ -6,6 +6,7 @@
 #include <sys/apparmor.h>
 
 #include <mediascanner/Album.hh>
+#include <mediascanner/Filter.hh>
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaStore.hh>
 
@@ -86,6 +87,16 @@ struct ServiceSkeleton::Private {
         object->install_method_handler<MediaStoreInterface::ListArtists>(
             std::bind(
                 &Private::handle_list_artists,
+                this,
+                std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::ListAlbumArtists>(
+            std::bind(
+                &Private::handle_list_album_artists,
+                this,
+                std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::ListGenres>(
+            std::bind(
+                &Private::handle_list_genres,
                 this,
                 std::placeholders::_1));
     }
@@ -253,12 +264,12 @@ struct ServiceSkeleton::Private {
         if (!check_access(message, AudioMedia))
             return;
 
-        std::string artist, album, album_artist;
+        Filter filter;
         int32_t limit;
-        message->reader() >> artist >> album >> album_artist >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            auto results = store->listSongs(artist, album, album_artist, limit);
+            auto results = store->listSongs(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << results;
         } catch (const std::exception &e) {
@@ -273,12 +284,12 @@ struct ServiceSkeleton::Private {
         if (!check_access(message, AudioMedia))
             return;
 
-        std::string artist, album_artist;
+        Filter filter;
         int32_t limit;
-        message->reader() >> artist >> album_artist >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            auto albums = store->listAlbums(artist, album_artist, limit);
+            auto albums = store->listAlbums(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
         } catch (const std::exception &e) {
@@ -293,14 +304,53 @@ struct ServiceSkeleton::Private {
         if (!check_access(message, AudioMedia))
             return;
 
-        bool album_artists;
+        Filter filter;
         int32_t limit;
-        message->reader() >> album_artists >> limit;
+        message->reader() >> filter >> limit;
         Message::Ptr reply;
         try {
-            auto artists = store->listArtists(album_artists, limit);
+            auto artists = store->listArtists(filter, limit);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_list_album_artists(const Message::Ptr &message) {
+        if (!check_access(message, AudioMedia))
+            return;
+
+        Filter filter;
+        int32_t limit;
+        message->reader() >> filter >> limit;
+        Message::Ptr reply;
+        try {
+            auto artists = store->listAlbumArtists(filter, limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << artists;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_list_genres(const Message::Ptr &message) {
+        if (!check_access(message, AudioMedia))
+            return;
+
+        int32_t limit;
+        message->reader() >> limit;
+        Message::Ptr reply;
+        try {
+            auto genres = store->listGenres(limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << genres;
         } catch (const std::exception &e) {
             reply = Message::make_error(
                 message, MediaStoreInterface::Errors::Error::name(),

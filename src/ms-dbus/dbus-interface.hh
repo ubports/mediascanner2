@@ -153,6 +153,32 @@ struct MediaStoreInterface {
             return std::chrono::seconds{1};
         }
     };
+
+    struct ListAlbumArtists {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "ListAlbumArtists";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
+    struct ListGenres {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "ListGenres";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
 };
 
 }

@@ -75,6 +75,27 @@ void ArtistsModel::setAlbumArtists(bool album_artists) {
     }
 }
 
+QVariant ArtistsModel::getGenre() {
+    if (!filter.hasGenre())
+        return QVariant();
+    return QString::fromStdString(filter.getGenre());
+}
+
+void ArtistsModel::setGenre(const QVariant genre) {
+    if (genre.isNull()) {
+        if (filter.hasGenre()) {
+            filter.unsetGenre();
+            update();
+        }
+    } else {
+        const std::string std_genre = genre.value<QString>().toStdString();
+        if (!filter.hasGenre() || filter.getGenre() != std_genre) {
+            filter.setGenre(std_genre);
+            update();
+        }
+    }
+}
+
 int ArtistsModel::getLimit() {
     return limit;
 }
@@ -91,8 +112,12 @@ void ArtistsModel::update() {
     if (store == nullptr) {
         this->results.clear();
     } else {
-        this->results = store->store.listArtists(album_artists, limit);
+        if (album_artists) {
+            this->results = store->store.listAlbumArtists(filter, limit);
+        } else {
+            this->results = store->store.listArtists(filter, limit);
+        }
     }
-    this->results = results;
     endResetModel();
+    Q_EMIT rowCountChanged();
 }

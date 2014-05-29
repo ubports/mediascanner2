@@ -17,50 +17,70 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AlbumModelBase.hh"
-#include "utils.hh"
+#include "GenresModel.hh"
 
 using namespace mediascanner::qml;
 
-AlbumModelBase::AlbumModelBase(QObject *parent)
-    : QAbstractListModel(parent) {
-    roles[Roles::RoleTitle] = "title";
-    roles[Roles::RoleArtist] = "artist";
-    roles[Roles::RoleArt] = "art";
+GenresModel::GenresModel(QObject *parent)
+    : QAbstractListModel(parent),
+      store(nullptr),
+      limit(-1) {
+    roles[Roles::RoleGenre] = "genre";
 }
 
-int AlbumModelBase::rowCount(const QModelIndex &) const {
+int GenresModel::rowCount(const QModelIndex &) const {
     return results.size();
 }
 
-QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
+QVariant GenresModel::data(const QModelIndex &index, int role) const {
     if (index.row() < 0 || index.row() >= (ptrdiff_t)results.size()) {
         return QVariant();
     }
-    const mediascanner::Album &album = results[index.row()];
     switch (role) {
-    case RoleTitle:
-        return QString::fromStdString(album.getTitle());
-    case RoleArtist:
-        return QString::fromStdString(album.getArtist());
-    case RoleArt:
-        return make_album_art_uri(album.getArtist(), album.getTitle());
+    case RoleGenre:
+        return QString::fromStdString(results[index.row()]);
     default:
         return QVariant();
     }
 }
 
-QVariant AlbumModelBase::get(int row, AlbumModelBase::Roles role) const {
+QVariant GenresModel::get(int row, GenresModel::Roles role) const {
     return data(index(row, 0), role);
 }
 
-QHash<int, QByteArray> AlbumModelBase::roleNames() const {
+QHash<int, QByteArray> GenresModel::roleNames() const {
     return roles;
 }
 
-void AlbumModelBase::updateResults(const std::vector<mediascanner::Album> &results) {
+MediaStoreWrapper *GenresModel::getStore() {
+    return store;
+}
+
+void GenresModel::setStore(MediaStoreWrapper *store) {
+    if (this->store != store) {
+        this->store = store;
+        update();
+    }
+}
+
+int GenresModel::getLimit() {
+    return limit;
+}
+
+void GenresModel::setLimit(int limit) {
+    if (this->limit != limit) {
+        this->limit = limit;
+        update();
+    }
+}
+
+void GenresModel::update() {
     beginResetModel();
-    this->results = results;
+    if (store == nullptr) {
+        this->results.clear();
+    } else {
+        this->results = store->store.listGenres(limit);
+    }
     endResetModel();
     Q_EMIT rowCountChanged();
 }
