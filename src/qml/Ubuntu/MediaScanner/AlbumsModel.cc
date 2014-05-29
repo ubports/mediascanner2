@@ -80,6 +80,27 @@ void AlbumsModel::setAlbumArtist(const QVariant album_artist) {
     }
 }
 
+QVariant AlbumsModel::getGenre() {
+    if (!filter.hasGenre())
+        return QVariant();
+    return QString::fromStdString(filter.getGenre());
+}
+
+void AlbumsModel::setGenre(const QVariant genre) {
+    if (genre.isNull()) {
+        if (filter.hasGenre()) {
+            filter.unsetGenre();
+            update();
+        }
+    } else {
+        const std::string std_genre = genre.value<QString>().toStdString();
+        if (!filter.hasGenre() || filter.getGenre() != std_genre) {
+            filter.setGenre(std_genre);
+            update();
+        }
+    }
+}
+
 int AlbumsModel::getLimit() {
     return limit;
 }

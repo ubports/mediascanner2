@@ -32,8 +32,9 @@ Module {
         exports: ["Ubuntu.MediaScanner/AlbumsModel 0.1"]
         exportMetaObjectRevisions: [0]
         Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
-        Property { name: "artist"; type: "string" }
-        Property { name: "albumArtist"; type: "string" }
+        Property { name: "artist"; type: "QVariant" }
+        Property { name: "albumArtist"; type: "QVariant" }
+        Property { name: "genre"; type: "QVariant" }
         Property { name: "limit"; type: "int" }
     }
     Component {
@@ -49,6 +50,7 @@ Module {
         }
         Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "albumArtists"; type: "bool" }
+        Property { name: "genre"; type: "QVariant" }
         Property { name: "limit"; type: "int" }
         Property { name: "rowCount"; type: "int"; isReadonly: true }
         Method {
@@ -140,9 +142,10 @@ Module {
         exports: ["Ubuntu.MediaScanner/SongsModel 0.1"]
         exportMetaObjectRevisions: [0]
         Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
-        Property { name: "artist"; type: "string" }
-        Property { name: "album"; type: "string" }
-        Property { name: "albumArtist"; type: "string" }
+        Property { name: "artist"; type: "QVariant" }
+        Property { name: "album"; type: "QVariant" }
+        Property { name: "albumArtist"; type: "QVariant" }
+        Property { name: "genre"; type: "QVariant" }
         Property { name: "limit"; type: "int" }
     }
     Component {

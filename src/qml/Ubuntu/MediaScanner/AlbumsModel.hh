@@ -34,6 +34,7 @@ class AlbumsModel : public AlbumModelBase {
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(QVariant artist READ getArtist WRITE setArtist)
     Q_PROPERTY(QVariant albumArtist READ getAlbumArtist WRITE setAlbumArtist)
+    Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
 public:
     explicit AlbumsModel(QObject *parent=0);
@@ -45,6 +46,8 @@ public:
     void setArtist(const QVariant artist);
     QVariant getAlbumArtist();
     void setAlbumArtist(const QVariant album_artist);
+    QVariant getGenre();
+    void setGenre(const QVariant genre);
     int getLimit();
     void setLimit(int limit);
 private:
