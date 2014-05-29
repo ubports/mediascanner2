@@ -25,14 +25,18 @@
 
 namespace mediascanner {
 
+class MediaFileBuilder;
+struct MediaFilePrivate;
+
 class MediaFile final {
+    friend class MediaFileBuilder;
 public:
 
-    MediaFile(std::string filename) : filename(filename), content_type(""), etag(""), title(""), date(""), author(""),
-        album(""), album_artist(""), genre(""), disc_number(0), track_number(0), duration(0), type(UnknownMedia) {}
-    MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist, std::string genre,
-              int disc_number, int track_number, int duration, MediaType type);
     MediaFile() = delete;
+    MediaFile(const MediaFile &other);
+    MediaFile(const MediaFileBuilder &builder);
+    MediaFile(MediaFileBuilder &&builder);
+    ~MediaFile();
 
     const std::string& getFileName() const noexcept;
     const std::string& getContentType() const noexcept;
@@ -51,24 +55,13 @@ public:
     MediaType getType() const noexcept;
     bool operator==(const MediaFile &other) const;
     bool operator!=(const MediaFile &other) const;
+    MediaFile &operator=(const MediaFile &other);
 
     // There are no setters. MediaFiles are immutable.
     // For piecewise construction use MediaFileBuilder.
 
 private:
-    std::string filename;
-    std::string content_type;
-    std::string etag;
-    std::string title;
-    std::string date; // ISO date string.  Should this be time since epoch?
-    std::string author;
-    std::string album;
-    std::string album_artist;
-    std::string genre;
-    int disc_number;
-    int track_number;
-    int duration; // In seconds.
-    MediaType type;
+    MediaFilePrivate *p;
 };
 
 }

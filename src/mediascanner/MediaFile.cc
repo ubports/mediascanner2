@@ -18,89 +18,96 @@
  */
 
 #include "MediaFile.hh"
+#include "MediaFileBuilder.hh"
+#include "internal/MediaFilePrivate.hh"
 #include "internal/utils.hh"
 
 using namespace std;
 
 namespace mediascanner {
 
-MediaFile::MediaFile(std::string filename, std::string content_type, std::string etag, std::string title, std::string date, std::string author, std::string album, std::string album_artist, std::string genre,
-    int disc_number, int track_number, int duration, MediaType type) :
-    filename(filename), content_type(content_type), etag(etag), title(title), date(date), author(author), album(album), album_artist(album_artist), genre(genre), disc_number(disc_number), track_number(track_number), duration(duration), type(type) {
+MediaFile::MediaFile(const MediaFile &other) :
+    p(new MediaFilePrivate(*other.p)) {
+}
 
+MediaFile::MediaFile(const MediaFileBuilder &builder) :
+    p(new MediaFilePrivate(*builder.p)) {
+    p->setFallbackMetadata();
+}
+
+MediaFile::MediaFile(MediaFileBuilder &&builder) {
+    p = builder.p;
+    builder.p = nullptr;
+    p->setFallbackMetadata();
+}
+
+MediaFile::~MediaFile() {
+    delete p;
+}
+
+MediaFile &MediaFile::operator=(const MediaFile &other) {
+    *p = *other.p;
+    return *this;
 }
 
 const std::string& MediaFile::getFileName() const noexcept {
-    return filename;
+    return p->filename;
 }
 
 const std::string& MediaFile::getContentType() const noexcept {
-    return content_type;
+    return p->content_type;
 }
 
 const std::string& MediaFile::getETag() const noexcept {
-    return etag;
+    return p->etag;
 }
 
 const std::string& MediaFile::getTitle() const noexcept {
-    return title;
+    return p->title;
 }
 
 const std::string& MediaFile::getAuthor() const noexcept {
-    return author;
+    return p->author;
 }
 
 const std::string& MediaFile::getAlbum() const noexcept {
-    return album;
+    return p->album;
 }
 
 const std::string& MediaFile::getAlbumArtist() const noexcept {
-    return album_artist;
+    return p->album_artist;
 }
 
 const std::string& MediaFile::getDate() const noexcept {
-    return date;
+    return p->date;
 }
 
 const std::string& MediaFile::getGenre() const noexcept {
-    return genre;
+    return p->genre;
 }
 
 int MediaFile::getDiscNumber() const noexcept {
-    return disc_number;
+    return p->disc_number;
 }
 
 int MediaFile::getTrackNumber() const noexcept {
-    return track_number;
+    return p->track_number;
 }
 
 int MediaFile::getDuration() const noexcept {
-    return duration;
+    return p->duration;
 }
 
 MediaType MediaFile::getType() const noexcept {
-    return type;
+    return p->type;
 }
 
 std::string MediaFile::getUri() const {
-    return mediascanner::getUri(filename);
+    return mediascanner::getUri(p->filename);
 }
 
 bool MediaFile::operator==(const MediaFile &other) const {
-    return
-        filename == other.filename &&
-        content_type == other.content_type &&
-        etag == other.etag &&
-        title == other.title &&
-        author == other.author &&
-        album == other.album &&
-        album_artist == other.album_artist &&
-        date == other.date &&
-        genre == other.genre &&
-        disc_number == other.disc_number &&
-        track_number == other.track_number &&
-        duration == other.duration &&
-        type == other.type;
+    return *p == *other.p;
 }
 
 bool MediaFile::operator!=(const MediaFile &other) const {

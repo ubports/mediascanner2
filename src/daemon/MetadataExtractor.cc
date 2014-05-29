@@ -187,7 +187,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     }
     mfb.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
-    return mfb.build();
+    return mfb;
 }
 
 }

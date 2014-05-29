@@ -19,118 +19,84 @@
 
 #include"MediaFileBuilder.hh"
 #include"MediaFile.hh"
-#include<stdexcept>
+#include"internal/MediaFilePrivate.hh"
 
 namespace mediascanner {
 
-MediaFileBuilder::MediaFileBuilder(const std::string &fname) {
-    filename = fname;
+MediaFileBuilder::MediaFileBuilder(const std::string &fname) :
+    p(new MediaFilePrivate(fname)) {
 }
 
 MediaFileBuilder::MediaFileBuilder(const MediaFile &mf) :
-    type(mf.getType()),
-    filename(mf.getFileName()),
-    content_type(mf.getContentType()),
-    etag(mf.getETag()),
-    title(mf.getTitle()),
-    date(mf.getDate()),
-    author(mf.getAuthor()),
-    album(mf.getAlbum()),
-    album_artist(mf.getAlbumArtist()),
-    genre(mf.getGenre()),
-    disc_number(mf.getDiscNumber()),
-    track_number(mf.getTrackNumber()),
-    duration(mf.getDuration()) {
+    p(new MediaFilePrivate(*mf.p)) {
+}
+
+MediaFileBuilder::~MediaFileBuilder() {
+    delete p;
 }
 
 MediaFile MediaFileBuilder::build() const {
-    return MediaFile(filename, content_type, etag, title, date, author,
-        album, album_artist, genre, disc_number, track_number, duration, type);
+    return MediaFile(*this);
 }
 
-void MediaFileBuilder::setType(MediaType t) {
-    if(type_set)
-        throw std::invalid_argument("Tried to set type when it was already set.");
-    type = t;
-    type_set = true;
+MediaFileBuilder &MediaFileBuilder::setType(MediaType t) {
+    p->type = t;
+    return *this;
 }
 
-void MediaFileBuilder::setETag(const std::string &e) {
-    if(etag_set)
-        throw std::invalid_argument("Tried to set filename when it was already set.");
-    etag = e;
-    etag_set = true;
-
-}
-void MediaFileBuilder::setContentType(const std::string &c) {
-    if(content_type_set)
-        throw std::invalid_argument("Tried to set filename when it was already set.");
-    content_type = c;
-    content_type_set = true;
-
+MediaFileBuilder &MediaFileBuilder::setETag(const std::string &e) {
+    p->etag = e;
+    return *this;
 }
 
-void MediaFileBuilder::setTitle(const std::string &t) {
-    if(title_set)
-        throw std::invalid_argument("Tried to set title when it was already set.");
-    title = t;
-    title_set = true;
+MediaFileBuilder &MediaFileBuilder::setContentType(const std::string &c) {
+    p->content_type = c;
+    return *this;
 }
 
-void MediaFileBuilder::setDate(const std::string &d) {
-    if(date_set)
-        throw std::invalid_argument("Tried to set date when it was already set.");
-    date = d;
-    date_set = true;
+MediaFileBuilder &MediaFileBuilder::setTitle(const std::string &t) {
+    p->title = t;
+    return *this;
 }
 
-void MediaFileBuilder::setAuthor(const std::string &a) {
-    if(author_set)
-        throw std::invalid_argument("Tried to set author when it was already set.");
-    author = a;
-    author_set = true;
+MediaFileBuilder &MediaFileBuilder::setDate(const std::string &d) {
+    p->date = d;
+    return *this;
 }
 
-void MediaFileBuilder::setAlbum(const std::string &a) {
-    if(album_set)
-        throw std::invalid_argument("Tried to set album when it was already set.");
-    album = a;
-    album_set = true;
+MediaFileBuilder &MediaFileBuilder::setAuthor(const std::string &a) {
+    p->author = a;
+    return *this;
 }
 
-void MediaFileBuilder::setAlbumArtist(const std::string &a) {
-    if(album_artist_set)
-        throw std::invalid_argument("Tried to set album artist when it was already set.");
-    album_artist = a;
-    album_artist_set = true;
+MediaFileBuilder &MediaFileBuilder::setAlbum(const std::string &a) {
+    p->album = a;
+    return *this;
 }
 
-void MediaFileBuilder::setGenre(const std::string &g) {
-    if(genre_set)
-        throw std::invalid_argument("Tried to set genre when it was already set.");
-    genre = g;
-    genre_set = true;
+MediaFileBuilder &MediaFileBuilder::setAlbumArtist(const std::string &a) {
+    p->album_artist = a;
+    return *this;
 }
 
-void MediaFileBuilder::setDiscNumber(int n) {
-    if(disc_number_set)
-        throw std::invalid_argument("Tried to set disc number when it was already set.");
-    disc_number = n;
-    disc_number_set = true;
+MediaFileBuilder &MediaFileBuilder::setGenre(const std::string &g) {
+    p->genre = g;
+    return *this;
 }
 
-void MediaFileBuilder::setTrackNumber(int n) {
-    if(track_number_set)
-        throw std::invalid_argument("Tried to set track number when it was already set.");
-    track_number = n;
-    track_number_set = true;
+MediaFileBuilder &MediaFileBuilder::setDiscNumber(int n) {
+    p->disc_number = n;
+    return *this;
 }
 
-void MediaFileBuilder::setDuration(int n) {
-    if(duration_set)
-        throw std::invalid_argument("Tried to set duration when it was already set.");
-    duration = n;
-    duration_set = true;
+MediaFileBuilder &MediaFileBuilder::setTrackNumber(int n) {
+    p->track_number = n;
+    return *this;
+}
+
+MediaFileBuilder &MediaFileBuilder::setDuration(int n) {
+    p->duration = n;
+    return *this;
 }
 
 }
