@@ -17,29 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ALBUM_HH
-#define ALBUM_HH
+#include <memory>
+#include <core/dbus/bus.h>
+#include <core/dbus/asio/executor.h>
 
-#include <string>
+#include <mediascanner/MediaStore.hh>
+#include "service-skeleton.hh"
 
-namespace mediascanner {
+using namespace mediascanner;
 
-class Album final {
-public:
+int main(int , char **) {
+    auto bus = std::make_shared<core::dbus::Bus>(core::dbus::WellKnownBus::session);
+    bus->install_executor(core::dbus::asio::make_executor(bus));
 
-    Album();
-    Album(const std::string &title, const std::string &artist);
+    auto store = std::make_shared<MediaStore>(MS_READ_ONLY);
 
-    const std::string& getTitle() const noexcept;
-    const std::string& getArtist() const noexcept;
-    bool operator==(const Album &other) const;
-    bool operator!=(const Album &other) const;
-
-private:
-    std::string title;
-    std::string artist;
-};
-
+    dbus::ServiceSkeleton service(bus, store);
+    service.run();
+    return 0;
 }
-
-#endif

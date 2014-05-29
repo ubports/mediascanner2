@@ -20,10 +20,24 @@
 #include "MediaStoreWrapper.hh"
 #include <QQmlEngine>
 
+#include <core/dbus/asio/executor.h>
+#include <ms-dbus/service-stub.hh>
+
 using namespace mediascanner::qml;
 
+static core::dbus::Bus::Ptr the_session_bus() {
+    static core::dbus::Bus::Ptr bus = std::make_shared<core::dbus::Bus>(
+        core::dbus::WellKnownBus::session);
+    static core::dbus::Executor::Ptr executor = core::dbus::asio::make_executor(bus);
+    static std::once_flag once;
+
+    std::call_once(once, []() {bus->install_executor(executor);});
+
+    return bus;
+}
+
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
-    : QObject(parent), store(MS_READ_ONLY) {
+    : QObject(parent), store(the_session_bus()) {
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {

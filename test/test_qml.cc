@@ -1,11 +1,18 @@
 #include <stdlib.h>
+#include <cstdio>
+#include <memory>
 #include <string>
 
+#include <QProcess>
 #include <QtQuickTest/quicktest.h>
+
+#include <core/dbus/fixture.h>
 
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
+
+#include "test_config.h"
 
 using namespace mediascanner;
 
@@ -18,8 +25,29 @@ public:
         }
         setenv("MEDIASCANNER_CACHEDIR", db_path.c_str(), true);
         populate();
+
+        // Start up private bus, and start daemon.
+        dbus_fixture.reset(
+            new core::dbus::Fixture(
+                core::dbus::Fixture::default_session_bus_config_file(),
+                core::dbus::Fixture::default_system_bus_config_file()));
+
+        daemon.setProgram(TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0");
+        daemon.setProcessChannelMode(QProcess::ForwardedChannels);
+        daemon.start();
+        daemon.closeWriteChannel();
+        if (!daemon.waitForStarted()) {
+            throw std::runtime_error("Failed to start mediascanner-dbus-2.0");
+        }
     }
     ~MediaStoreData() {
+        daemon.kill();
+        if (!daemon.waitForFinished()) {
+            fprintf(stderr, "Failed to stop mediascanner-dbus-2.0\n");
+        }
+
+        dbus_fixture.reset();
+
         if (system("rm -rf \"$MEDIASCANNER_CACHEDIR\"") == -1) {
             throw std::runtime_error("rm -rf failed");
         }
@@ -126,6 +154,8 @@ public:
 
 private:
     std::string db_path;
+    std::unique_ptr<core::dbus::Fixture> dbus_fixture;
+    QProcess daemon;
 };
 
 MediaStoreData data;

@@ -27,6 +27,9 @@ using namespace std;
 
 namespace mediascanner {
 
+MediaFile::MediaFile() : p(new MediaFilePrivate) {
+}
+
 MediaFile::MediaFile(const MediaFile &other) :
     p(new MediaFilePrivate(*other.p)) {
 }

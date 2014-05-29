@@ -17,29 +17,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ALBUM_HH
-#define ALBUM_HH
+#ifndef MEDIASCANNER_DBUS_SERVICE_SKELETON_HH
+#define MEDIASCANNER_DBUS_SERVICE_SKELETON_HH
 
-#include <string>
+#include <memory>
+#include <core/dbus/bus.h>
+#include <core/dbus/skeleton.h>
+
+#include "service.hh"
 
 namespace mediascanner {
 
-class Album final {
+class MediaStore;
+
+namespace dbus {
+
+class ServiceSkeleton : public core::dbus::Skeleton<MediaStoreService> {
 public:
+    ServiceSkeleton(core::dbus::Bus::Ptr bus, std::shared_ptr<MediaStore> store);
+    ~ServiceSkeleton();
 
-    Album();
-    Album(const std::string &title, const std::string &artist);
-
-    const std::string& getTitle() const noexcept;
-    const std::string& getArtist() const noexcept;
-    bool operator==(const Album &other) const;
-    bool operator!=(const Album &other) const;
+    void run();
+    void stop();
 
 private:
-    std::string title;
-    std::string artist;
+    struct Private;
+    std::unique_ptr<Private> p;
 };
 
+}
 }
 
 #endif

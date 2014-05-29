@@ -32,7 +32,7 @@ class MediaFile final {
     friend class MediaFileBuilder;
 public:
 
-    MediaFile() = delete;
+    MediaFile();
     MediaFile(const MediaFile &other);
     MediaFile(const MediaFileBuilder &builder);
     MediaFile(MediaFileBuilder &&builder);
