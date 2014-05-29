@@ -3,6 +3,7 @@
 #include <core/dbus/message.h>
 #include <core/dbus/object.h>
 #include <core/dbus/types/object_path.h>
+#include <sys/apparmor.h>
 
 #include <mediascanner/Album.hh>
 #include <mediascanner/MediaFile.hh>
@@ -90,7 +91,9 @@ struct ServiceSkeleton::Private {
     }
 
     std::string get_client_apparmor_context(const Message::Ptr &message) {
-        auto bus = impl->access_bus();
+        if (!aa_is_enabled()) {
+            return "unconfined";
+        }
         auto service = core::dbus::Service::use_service(
             impl->access_bus(), "org.freedesktop.DBus");
         auto obj = service->object_for_path(
@@ -116,7 +119,7 @@ struct ServiceSkeleton::Private {
             return false;
         }
         if (context == "unconfined") {
-            // Unconfined 
+            // Unconfined
             return true;
         }
 
@@ -129,7 +132,7 @@ struct ServiceSkeleton::Private {
 
         // TODO: when the trust store lands, check it to see if this
         // app can access the index.
-        if (pkgname == "com.ubuntu.music") {
+        if (type == AudioMedia && pkgname == "com.ubuntu.music") {
             return true;
         }
         return false;

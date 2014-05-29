@@ -6,6 +6,7 @@ Standards-Version: 3.9.5
 Build-Depends: cmake,
                dbus,
                debhelper (>= 9),
+               libapparmor-dev,
                libdbus-1-dev,
                libdbus-cpp-dev (>= 3.0.0),
                libglib2.0-dev,

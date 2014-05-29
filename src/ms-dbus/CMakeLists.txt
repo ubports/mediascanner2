@@ -1,5 +1,5 @@
 include_directories(..)
-add_definitions(${MEDIASCANNER_CFLAGS} ${DBUSCPP_CFLAGS})
+add_definitions(${MEDIASCANNER_CFLAGS} ${DBUSCPP_CFLAGS} ${APPARMOR_CFLAGS})
 
 add_library(ms-dbus STATIC
   dbus-codec.cc
@@ -7,7 +7,10 @@ add_library(ms-dbus STATIC
   service-stub.cc
 )
 
-target_link_libraries(ms-dbus mediascanner ${DBUSCPP_LDFLAGS})
+target_link_libraries(ms-dbus
+  mediascanner
+  ${DBUSCPP_LDFLAGS}
+  ${APPARMOR_LDFLAGS})
 # Compile with -fPIC, since this code is linked into the QML plugin.
 set_target_properties(ms-dbus PROPERTIES COMPILE_FLAGS "-fPIC")
 
