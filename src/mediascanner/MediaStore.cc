@@ -24,14 +24,18 @@
 #include <cstring>
 #include <stdexcept>
 #include <mutex>
+#include <sstream>
+#include <map>
 
 #include <glib.h>
 #include <sqlite3.h>
 
 #include "mozilla/fts3_tokenizer.h"
-#include"MediaStore.hh"
-#include"MediaFile.hh"
+#include "MediaStore.hh"
+#include "MediaFile.hh"
+#include "MediaFileBuilder.hh"
 #include "Album.hh"
+#include "Filter.hh"
 #include "internal/sqliteutils.hh"
 #include "internal/utils.hh"
 
@@ -127,6 +131,31 @@ static void rankfunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal) {
     /* Jump here if the wrong number of arguments are passed to this function */
 wrong_number_args:
     sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
+}
+
+static bool has_block_in_path(std::map<std::string, bool> &cache, const std::string &filename) {
+    std::vector<std::string> path_segments;
+    std::istringstream f(filename);
+    std::string s;
+    while (std::getline(f, s, '/')) {
+        path_segments.push_back(s);
+    }
+    path_segments.pop_back();
+    std::string trial_path;
+    for(const auto &seg : path_segments) {
+        trial_path += "/" + seg;
+        auto r = cache.find(trial_path);
+        if(r != cache.end()) {
+            return r->second;
+        }
+        if(has_scanblock(trial_path)) {
+            cache[trial_path] = true;
+            return true;
+        } else {
+            cache[trial_path] = false;
+        }
+    }
+    return false;
 }
 
 static void register_functions(sqlite3 *db) {
@@ -288,21 +317,14 @@ size_t MediaStorePrivate::size() const {
 
 void MediaStorePrivate::insert(const MediaFile &m) const {
     Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    string fname = m.getFileName();
-    string title = m.getTitle();
-    if(title.empty())
-        title = filenameToTitle(fname);
-    query.bind(1, fname);
+    query.bind(1, m.getFileName());
     query.bind(2, m.getContentType());
     query.bind(3, m.getETag());
-    query.bind(4, title);
+    query.bind(4, m.getTitle());
     query.bind(5, m.getDate());
     query.bind(6, m.getAuthor());
     query.bind(7, m.getAlbum());
-    string album_artist = m.getAlbumArtist();
-    if (album_artist.empty())
-        album_artist = m.getAuthor();
-    query.bind(8, album_artist);
+    query.bind(8, m.getAlbumArtist());
     query.bind(9, m.getGenre());
     query.bind(10, m.getDiscNumber());
     query.bind(11, m.getTrackNumber());
@@ -313,7 +335,7 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
     printf(" author   : '%s'\n", m.getAuthor().c_str());
-    printf(" title    : %s\n", title.c_str());
+    printf(" title    : %s\n", m.getTitle().c_str());
     printf(" album    : '%s'\n", m.getAlbum().c_str());
     printf(" duration : %d\n", m.getDuration());
 }
@@ -325,20 +347,19 @@ void MediaStorePrivate::remove(const string &fname) const {
 }
 
 static MediaFile make_media(Statement &query) {
-    const string filename = query.getText(0);
-    const string content_type = query.getText(1);
-    const string etag = query.getText(2);
-    const string title = query.getText(3);
-    const string date = query.getText(4);
-    const string author = query.getText(5);
-    const string album = query.getText(6);
-    const string album_artist = query.getText(7);
-    const string genre = query.getText(8);
-    int disc_number = query.getInt(9);
-    int track_number = query.getInt(10);
-    int duration = query.getInt(11);
-    MediaType type = (MediaType)query.getInt(12);
-    return MediaFile(filename, content_type, etag, title, date, author, album, album_artist, genre, disc_number, track_number, duration, type);
+    return MediaFileBuilder(query.getText(0))
+        .setContentType(query.getText(1))
+        .setETag(query.getText(2))
+        .setTitle(query.getText(3))
+        .setDate(query.getText(4))
+        .setAuthor(query.getText(5))
+        .setAlbum(query.getText(6))
+        .setAlbumArtist(query.getText(7))
+        .setGenre(query.getText(8))
+        .setDiscNumber(query.getInt(9))
+        .setTrackNumber(query.getInt(10))
+        .setDuration(query.getInt(11))
+        .setType((MediaType)query.getInt(12));
 }
 
 static vector<MediaFile> collect_media(Statement &query) {
@@ -455,20 +476,23 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
-std::vector<MediaFile> MediaStore::listSongs(const std::string& artist, const std::string& album, const std::string& album_artist, int limit) const {
+std::vector<MediaFile> MediaStore::listSongs(const Filter &filter, int limit) const {
     std::string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, type
   FROM media
   WHERE type = ?
 )");
-    if (!artist.empty()) {
+    if (filter.hasArtist()) {
         qs += " AND artist = ?";
     }
-    if (!album.empty()) {
+    if (filter.hasAlbum()) {
         qs += " AND album = ?";
     }
-    if (!album_artist.empty()) {
+    if (filter.hasAlbumArtist()) {
         qs += " AND album_artist = ?";
+    }
+    if (filter.hasGenre()) {
+        qs += " AND genre = ?";
     }
     qs += R"(
 ORDER BY album_artist, album, disc_number, track_number, title
@@ -477,30 +501,36 @@ LIMIT ?
     Statement query(p->db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
-    if (!artist.empty()) {
-        query.bind(param++, artist);
+    if (filter.hasArtist()) {
+        query.bind(param++, filter.getArtist());
     }
-    if (!album.empty()) {
-        query.bind(param++, album);
+    if (filter.hasAlbum()) {
+        query.bind(param++, filter.getAlbum());
     }
-    if (!album_artist.empty()) {
-        query.bind(param++, album_artist);
+    if (filter.hasAlbumArtist()) {
+        query.bind(param++, filter.getAlbumArtist());
+    }
+    if (filter.hasGenre()) {
+        query.bind(param++, filter.getGenre());
     }
     query.bind(param++, limit);
 
     return collect_media(query);
 }
 
-std::vector<Album> MediaStore::listAlbums(const std::string& artist, const std::string& album_artist, int limit) const {
+std::vector<Album> MediaStore::listAlbums(const Filter &filter, int limit) const {
     std::string qs(R"(
 SELECT album, album_artist FROM media
   WHERE type = ?
 )");
-    if (!artist.empty()) {
+    if (filter.hasArtist()) {
         qs += " AND artist = ?";
     }
-    if (!album_artist.empty()) {
+    if (filter.hasAlbumArtist()) {
         qs += " AND album_artist = ?";
+    }
+    if (filter.hasGenre()) {
+        qs += "AND genre = ?";
     }
     qs += R"(
 GROUP BY album, album_artist
@@ -510,37 +540,40 @@ LIMIT ?
     Statement query(p->db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
-    if (!artist.empty()) {
-        query.bind(param++, artist);
+    if (filter.hasArtist()) {
+        query.bind(param++, filter.getArtist());
     }
-    if (!album_artist.empty()) {
-        query.bind(param++, album_artist);
+    if (filter.hasAlbumArtist()) {
+        query.bind(param++, filter.getAlbumArtist());
+    }
+    if (filter.hasGenre()) {
+        query.bind(param++, filter.getGenre());
     }
     query.bind(param++, limit);
 
     return collect_albums(query);
 }
 
-vector<std::string> MediaStore::listArtists(bool album_artists, int limit) {
-    const char *qs;
-
-    if (album_artists) {
-        qs = R"(
-SELECT album_artist FROM media
-  GROUP BY album_artist
-  ORDER BY album_artist
-  LIMIT ?
-)";
-    } else {
-        qs = R"(
+vector<std::string> MediaStore::listArtists(const Filter &filter, int limit) const {
+    string qs(R"(
 SELECT artist FROM media
+  WHERE type = ?
+)");
+    if (filter.hasGenre()) {
+        qs += " AND genre = ?";
+    }
+    qs += R"(
   GROUP BY artist
   ORDER BY artist
   LIMIT ?
 )";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (filter.hasGenre()) {
+        query.bind(param++, filter.getGenre());
     }
-    Statement query(p->db, qs);
-    query.bind(1, limit);
+    query.bind(param++, limit);
 
     vector<string> artists;
     while (query.step()) {
@@ -549,13 +582,62 @@ SELECT artist FROM media
     return artists;
 }
 
+vector<std::string> MediaStore::listAlbumArtists(const Filter &filter, int limit) const {
+    string qs(R"(
+SELECT album_artist FROM media
+  WHERE type = ?
+)");
+    if (filter.hasGenre()) {
+        qs += " AND genre = ?";
+    }
+    qs += R"(
+  GROUP BY album_artist
+  ORDER BY album_artist
+  LIMIT ?
+)";
+    Statement query(p->db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (filter.hasGenre()) {
+        query.bind(param++, filter.getGenre());
+    }
+    query.bind(param++, limit);
+
+    vector<string> artists;
+    while (query.step()) {
+        artists.push_back(query.getText(0));
+    }
+    return artists;
+}
+
+vector<std::string> MediaStore::listGenres(int limit) const {
+    Statement query(p->db, R"(
+SELECT genre FROM media
+  WHERE type = ?
+  GROUP BY genre
+  ORDER BY genre
+  LIMIT ?
+)");
+    query.bind(1, (int)AudioMedia);
+    query.bind(2, limit);
+
+    vector<string> genres;
+    while (query.step()) {
+        genres.push_back(query.getText(0));
+    }
+    return genres;
+}
+
 void MediaStorePrivate::pruneDeleted() {
+    std::map<std::string, bool> path_cache;
     vector<string> deleted;
     Statement query(db, "SELECT filename FROM media");
     while (query.step()) {
         const string filename = query.getText(0);
-        if (access(filename.c_str(), F_OK) != 0) {
+        if (access(filename.c_str(), F_OK) != 0 ||
+            has_block_in_path(path_cache, filename)) {
             deleted.push_back(filename);
+            continue;
         }
     }
     query.finalize();

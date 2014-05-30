@@ -18,7 +18,9 @@
  */
 
 #include <mediascanner/MediaFile.hh>
+#include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/Album.hh>
+#include <mediascanner/Filter.hh>
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/internal/utils.hh>
 
@@ -49,16 +51,64 @@ TEST_F(MediaStoreTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
 }
 TEST_F(MediaStoreTest, mediafile_uri) {
-    MediaFile media("/path/to/file.ogg");
+    MediaFile media = MediaFileBuilder("/path/to/file.ogg");
     EXPECT_EQ(media.getUri(), "file:///path/to/file.ogg");
 }
 
 TEST_F(MediaStoreTest, equality) {
-    MediaFile audio1("a", "type", "etag", "1900", "b", "c", "d", "e", "f", 0, 1, 5, AudioMedia);
-    MediaFile audio2("aa", "type", "etag", "1900", "b", "c", "d", "e", "f", 0, 1, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("a")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setAuthor("c")
+        .setAlbum("d")
+        .setAlbumArtist("e")
+        .setGenre("f")
+        .setDiscNumber(0)
+        .setTrackNumber(1)
+        .setDuration(5)
+        .setType(AudioMedia);
+    MediaFile audio2 = MediaFileBuilder("aa")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setAuthor("c")
+        .setAlbum("d")
+        .setAlbumArtist("e")
+        .setGenre("f")
+        .setDiscNumber(0)
+        .setTrackNumber(1)
+        .setDuration(5)
+        .setType(AudioMedia);
 
-    MediaFile video1("a", "type", "etag", "b", "1900", "c", "d", "e", "f", 0, 0, 5, VideoMedia);
-    MediaFile video2("aa", "type", "etag", "b", "1900", "c", "d", "e", "f", 0, 0, 5, VideoMedia);
+    MediaFile video1 = MediaFileBuilder("a")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setAuthor("c")
+        .setAlbum("d")
+        .setAlbumArtist("e")
+        .setGenre("f")
+        .setDiscNumber(0)
+        .setTrackNumber(1)
+        .setDuration(5)
+        .setType(VideoMedia);
+    MediaFile video2 = MediaFileBuilder("aa")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setAuthor("c")
+        .setAlbum("d")
+        .setAlbumArtist("e")
+        .setGenre("f")
+        .setDiscNumber(0)
+        .setTrackNumber(1)
+        .setDuration(5)
+        .setType(VideoMedia);
 
     EXPECT_EQ(audio1, audio1);
     EXPECT_EQ(video1, video1);
@@ -70,7 +120,19 @@ TEST_F(MediaStoreTest, equality) {
 }
 
 TEST_F(MediaStoreTest, lookup) {
-    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "fff", 0, 3, 5, AudioMedia);
+    MediaFile audio = MediaFileBuilder("aaa")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900-01-01")
+        .setTitle("bbb bbb")
+        .setAuthor("ccc")
+        .setAlbum("ddd")
+        .setAlbumArtist("eee")
+        .setGenre("fff")
+        .setDiscNumber(0)
+        .setTrackNumber(3)
+        .setDuration(5)
+        .setType(AudioMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -79,8 +141,32 @@ TEST_F(MediaStoreTest, lookup) {
 }
 
 TEST_F(MediaStoreTest, roundtrip) {
-    MediaFile audio("aaa", "type", "etag", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "fff", 0, 3, 5, AudioMedia);
-    MediaFile video("aaa2", "type", "etag", "bbb bbb", "2012-01-01", "ccc", "ddd", "eee", "fff", 0, 0, 5, VideoMedia);
+    MediaFile audio = MediaFileBuilder("aaa")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900-01-01")
+        .setTitle("bbb bbb")
+        .setAuthor("ccc")
+        .setAlbum("ddd")
+        .setAlbumArtist("eee")
+        .setGenre("fff")
+        .setDiscNumber(0)
+        .setTrackNumber(3)
+        .setDuration(5)
+        .setType(AudioMedia);
+    MediaFile video = MediaFileBuilder("aaa2")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("2012-01-01")
+        .setTitle("bbb bbb")
+        .setAuthor("ccc")
+        .setAlbum("ddd")
+        .setAlbumArtist("eee")
+        .setGenre("fff")
+        .setDiscNumber(0)
+        .setTrackNumber(0)
+        .setDuration(5)
+        .setType(VideoMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
     store.insert(video);
@@ -93,7 +179,12 @@ TEST_F(MediaStoreTest, roundtrip) {
 }
 
 TEST_F(MediaStoreTest, query_by_album) {
-    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 0, 3, 5, AudioMedia);
+    MediaFile audio = MediaFileBuilder("/path/foo.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -103,7 +194,12 @@ TEST_F(MediaStoreTest, query_by_album) {
  }
 
 TEST_F(MediaStoreTest, query_by_artist) {
-    MediaFile audio("/path/foo.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio = MediaFileBuilder("/path/foo.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
@@ -113,11 +209,36 @@ TEST_F(MediaStoreTest, query_by_artist) {
  }
 
 TEST_F(MediaStoreTest, query_ranking) {
-    MediaFile audio1("/path/foo1.ogg", "", "", "title", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio3("/path/foo3.ogg", "", "", "title", "1900-01-01", "artist aaa", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio4("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio5("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/path/foo1.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio3 = MediaFileBuilder("/path/foo3.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist aaa")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio4 = MediaFileBuilder("/path/foo4.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
+    MediaFile audio5 = MediaFileBuilder("/path/foo5.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist aaa")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -135,9 +256,24 @@ TEST_F(MediaStoreTest, query_ranking) {
 }
 
 TEST_F(MediaStoreTest, query_limit) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/path/foo5.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist aaa")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio3 = MediaFileBuilder("/path/foo4.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -151,8 +287,18 @@ TEST_F(MediaStoreTest, query_limit) {
 }
 
 TEST_F(MediaStoreTest, query_short) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title xyz", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title xzy", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/path/foo5.ogg")
+        .setType(AudioMedia)
+        .setTitle("title xyz")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title xzy")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -165,9 +311,24 @@ TEST_F(MediaStoreTest, query_short) {
 }
 
 TEST_F(MediaStoreTest, query_empty) {
-    MediaFile audio1("/path/foo5.ogg", "", "", "title aaa", "1900-01-01", "artist aaa", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio2("/path/foo2.ogg", "", "", "title aaa", "1900-01-01", "artist", "album", "albumartist", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio3("/path/foo4.ogg", "", "", "title", "1900-01-01", "artist", "album aaa", "albumartist", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/path/foo5.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist aaa")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title aaa")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("albumartist");
+    MediaFile audio3 = MediaFileBuilder("/path/foo4.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setAuthor("artist")
+        .setAlbum("album aaa")
+        .setAlbumArtist("albumartist");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -180,8 +341,12 @@ TEST_F(MediaStoreTest, query_empty) {
 }
 
 TEST_F(MediaStoreTest, unmount) {
-    MediaFile audio1("/media/username/dir/fname.ogg", "", "", "bbb bbb", "2000-01-01", "ccc", "ddd", "eee", "ffff", 0, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/fname.ogg", "", "", "bbb bbb", "1900-01-01", "ccc", "ddd", "eee", "ffff", 0, 42, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/media/username/dir/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("bbb bbb");
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("bbb bbb");
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
     store.insert(audio2);
@@ -210,10 +375,37 @@ TEST_F(MediaStoreTest, utils) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistThree")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(2)
+        .setTrackNumber(1);
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistFour")
+        .setAlbum("AlbumTwo")
+        .setAlbumArtist("ArtistFour")
+        .setTrackNumber(1);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -241,10 +433,37 @@ TEST_F(MediaStoreTest, queryAlbums) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums_limit) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistThree")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(2)
+        .setTrackNumber(1);
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistFour")
+        .setAlbum("AlbumTwo")
+        .setAlbumArtist("ArtistFour")
+        .setTrackNumber(1);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -259,10 +478,37 @@ TEST_F(MediaStoreTest, queryAlbums_limit) {
 }
 
 TEST_F(MediaStoreTest, queryAlbums_empty) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/fname.ogg", "", "", "TitleFour", "1900-01-01", "ArtistFour", "AlbumTwo", "ArtistFour", "genre", 1, 1, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistThree")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(2)
+        .setTrackNumber(1);
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistFour")
+        .setAlbum("AlbumTwo")
+        .setAlbumArtist("ArtistFour")
+        .setTrackNumber(1);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -277,9 +523,30 @@ TEST_F(MediaStoreTest, queryAlbums_empty) {
 }
 
 TEST_F(MediaStoreTest, getAlbumSongs) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistTwo", "AlbumOne", "Various Artists", "genre", 1, 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistThree", "AlbumOne", "Various Artists", "genre", 1, 3, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistThree")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(2)
+        .setTrackNumber(1);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -295,7 +562,8 @@ TEST_F(MediaStoreTest, getAlbumSongs) {
 }
 
 TEST_F(MediaStoreTest, getETag) {
-    MediaFile file("/path/file.ogg", "audio/ogg", "etag", "title", "2013", "artist", "album", "artist", "genre", 1, 1, 5, AudioMedia);
+    MediaFile file = MediaFileBuilder("/path/file.ogg")
+        .setETag("etag");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(file);
@@ -305,12 +573,42 @@ TEST_F(MediaStoreTest, getETag) {
 }
 
 TEST_F(MediaStoreTest, listSongs) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track2.ogg", "", "", "TitleTwo", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 2, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio6("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumTwo");
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/track4.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumThree");
+    MediaFile audio5 = MediaFileBuilder("/home/username/Music/track5.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFive")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(1);
+    MediaFile audio6 = MediaFileBuilder("/home/username/Music/track6.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleSix")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(2);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -320,43 +618,90 @@ TEST_F(MediaStoreTest, listSongs) {
     store.insert(audio5);
     store.insert(audio6);
 
-    vector<MediaFile> tracks = store.listSongs();
+    Filter filter;
+    vector<MediaFile> tracks = store.listSongs(filter);
     ASSERT_EQ(6, tracks.size());
     EXPECT_EQ("TitleOne", tracks[0].getTitle());
 
     // Apply a limit
-    tracks = store.listSongs("", "", "", 4);
+    tracks = store.listSongs(filter, 4);
     EXPECT_EQ(4, tracks.size());
 
     // List songs by artist
-    tracks = store.listSongs("ArtistOne");
+    filter.setArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(4, tracks.size());
 
     // List songs by album
-    tracks = store.listSongs("", "AlbumOne");
+    filter.clear();
+    filter.setAlbum("AlbumOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
 
     // List songs by album artist
-    tracks = store.listSongs("", "", "Various Artists");
+    filter.clear();
+    filter.setAlbumArtist("Various Artists");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
 
     // Combinations
-    tracks = store.listSongs("ArtistOne", "AlbumOne", "");
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbum("AlbumOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("", "AlbumOne", "ArtistOne");
+
+    filter.clear();
+    filter.setAlbum("AlbumOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("ArtistOne", "AlbumOne", "ArtistOne");
+
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbum("AlbumOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(2, tracks.size());
-    tracks = store.listSongs("ArtistOne", "", "ArtistOne");
+
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbumArtist("ArtistOne");
+    tracks = store.listSongs(filter);
     EXPECT_EQ(3, tracks.size());
 }
 
 TEST_F(MediaStoreTest, listAlbums) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumTwo");
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track4.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumThree");
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/track5.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFive")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(1);
+    MediaFile audio5 = MediaFileBuilder("/home/username/Music/track6.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleSix")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(2);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -365,33 +710,65 @@ TEST_F(MediaStoreTest, listAlbums) {
     store.insert(audio4);
     store.insert(audio5);
 
-    vector<Album> albums = store.listAlbums();
+    Filter filter;
+    vector<Album> albums = store.listAlbums(filter);
     ASSERT_EQ(4, albums.size());
     EXPECT_EQ("AlbumOne", albums[0].getTitle());
 
     // test limit
-    albums = store.listAlbums("", "", 2);
+    albums = store.listAlbums(filter, 2);
     EXPECT_EQ(2, albums.size());
 
     // Songs by artist
-    albums = store.listAlbums("ArtistOne");
+    filter.setArtist("ArtistOne");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(3, albums.size());
 
     // Songs by album artist
-    albums = store.listAlbums("", "ArtistOne");
+    filter.clear();
+    filter.setAlbumArtist("ArtistOne");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(2, albums.size());
 
     // Combination
-    albums = store.listAlbums("ArtistOne", "Various Artists");
+    filter.clear();
+    filter.setArtist("ArtistOne");
+    filter.setAlbumArtist("Various Artists");
+    albums = store.listAlbums(filter);
     EXPECT_EQ(1, albums.size());
 }
 
 TEST_F(MediaStoreTest, listArtists) {
-    MediaFile audio1("/home/username/Music/track1.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumOne", "ArtistOne", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio2("/home/username/Music/track3.ogg", "", "", "TitleThree", "1900-01-01", "ArtistOne", "AlbumTwo", "ArtistOne", "genre", 1, 3, 5, AudioMedia);
-    MediaFile audio3("/home/username/Music/track4.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumThree", "ArtistTwo", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio4("/home/username/Music/track5.ogg", "", "", "TitleOne", "1900-01-01", "ArtistOne", "AlbumFour", "Various Artists", "genre", 1, 1, 5, AudioMedia);
-    MediaFile audio5("/home/username/Music/track6.ogg", "", "", "TitleFour", "1900-01-01", "ArtistTwo", "AlbumFour", "Various Artists", "genre", 1, 2, 5, AudioMedia);
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumTwo");
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track4.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumThree");
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/track5.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFive")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(1);
+    MediaFile audio5 = MediaFileBuilder("/home/username/Music/track6.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleSix")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumFour")
+        .setAlbumArtist("Various Artists")
+        .setTrackNumber(2);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -400,17 +777,18 @@ TEST_F(MediaStoreTest, listArtists) {
     store.insert(audio4);
     store.insert(audio5);
 
-    vector<string> artists = store.listArtists(false);
+    Filter filter;
+    vector<string> artists = store.listArtists(filter);
     ASSERT_EQ(2, artists.size());
     EXPECT_EQ("ArtistOne", artists[0]);
     EXPECT_EQ("ArtistTwo", artists[1]);
 
     // Test limit clause
-    artists = store.listArtists(false, 1);
+    artists = store.listArtists(filter, 1);
     EXPECT_EQ(1, artists.size());
 
     // List "album artists"
-    artists = store.listArtists(true);
+    artists = store.listAlbumArtists(filter);
     ASSERT_EQ(3, artists.size());
     EXPECT_EQ("ArtistOne", artists[0]);
     EXPECT_EQ("ArtistTwo", artists[1]);

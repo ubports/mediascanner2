@@ -26,6 +26,7 @@
 namespace mediascanner {
 
 class MediaFile;
+struct MediaFilePrivate;
 
 /**
  * This is a helper class to build MediaFiles. Since we want MediaFiles
@@ -33,73 +34,34 @@ class MediaFile;
  * all variables in the constructor. This is cumbersome so this class
  * allows you to gather them one by one and then finally construct
  * a fully valid MediaFile.
- *
- * If you try to assign the same property twice, an exception is thrown.
- * This means that MediaFileBuilders are meant to build only one
- * MediaFile. To build a new one create a new MediaFileBuilder. This is to
- * ensure that no state leaks from the first MediaFile to the second.
  */
 
 class MediaFileBuilder final {
+    friend class MediaFile;
 public:
     MediaFileBuilder(const std::string &filename);
     MediaFileBuilder(const MediaFile &mf);
     MediaFileBuilder(const MediaFileBuilder &) = delete;
     MediaFileBuilder& operator=(MediaFileBuilder &) = delete;
+    ~MediaFileBuilder();
 
     MediaFile build() const;
 
-    void setType(MediaType t);
-    void setETag(const std::string &e);
-    void setContentType(const std::string &c);
-    void setTitle(const std::string &t);
-    void setDate(const std::string &d);
-    void setAuthor(const std::string &a);
-    void setAlbum(const std::string &a);
-    void setAlbumArtist(const std::string &a);
-    void setGenre(const std::string &g);
-    void setDiscNumber(int n);
-    void setTrackNumber(int n);
-    void setDuration(int d);
+    MediaFileBuilder &setType(MediaType t);
+    MediaFileBuilder &setETag(const std::string &e);
+    MediaFileBuilder &setContentType(const std::string &c);
+    MediaFileBuilder &setTitle(const std::string &t);
+    MediaFileBuilder &setDate(const std::string &d);
+    MediaFileBuilder &setAuthor(const std::string &a);
+    MediaFileBuilder &setAlbum(const std::string &a);
+    MediaFileBuilder &setAlbumArtist(const std::string &a);
+    MediaFileBuilder &setGenre(const std::string &g);
+    MediaFileBuilder &setDiscNumber(int n);
+    MediaFileBuilder &setTrackNumber(int n);
+    MediaFileBuilder &setDuration(int d);
 
 private:
-    bool type_set = false;
-    MediaType type = UnknownMedia;
-
-    std::string filename;
-
-    bool content_type_set = false;
-    std::string content_type;
-
-    bool etag_set = false;
-    std::string etag;
-
-    bool title_set = false;
-    std::string title;
-
-    bool date_set = false;
-    std::string date;
-
-    bool author_set = false;
-    std::string author;
-
-    bool album_set = false;
-    std::string album;
-
-    bool album_artist_set = false;
-    std::string album_artist;
-
-    bool genre_set = false;
-    std::string genre;
-
-    bool disc_number_set = false;
-    int disc_number = 0;
-
-    bool track_number_set = false;
-    int track_number = 0;
-
-    bool duration_set = false;
-    int duration = 0;
+    MediaFilePrivate *p;
 };
 
 }

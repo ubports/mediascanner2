@@ -19,6 +19,7 @@
 
 #include "mediascanner/MediaStore.hh"
 #include "mediascanner/MediaFile.hh"
+#include "mediascanner/MediaFileBuilder.hh"
 #include "mediascanner/internal/utils.hh"
 
 #include<vector>
@@ -84,7 +85,15 @@ int createDb(const string &base) {
                     track += " " + RNDWORD;
                 }
                 string fname = to_string(i) + ".mp3";
-                MediaFile mf(fname, "audio/mp3", "", track, "2013-01-01", artist, album, artist, "", 0, trackCount, rnd() % 300, AudioMedia);
+                MediaFile mf = MediaFileBuilder(fname)
+                    .setType(AudioMedia)
+                    .setContentType("audio/mp3")
+                    .setTitle(track)
+                    .setDate("2013-01-01")
+                    .setAuthor(artist)
+                    .setAlbum(album)
+                    .setTrackNumber(trackCount)
+                    .setDuration(rnd() % 300);
                 store.insert(mf);
                 i++;
                 //printf("%s, %s, %s\n", artist.c_str(), album.c_str(), track.c_str());

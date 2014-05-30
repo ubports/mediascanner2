@@ -19,7 +19,7 @@
 
 #include "MetadataExtractor.hh"
 #include "Scanner.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>
@@ -74,6 +74,12 @@ begin:
         if(is_rootlike(p->curdir)) {
             fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
                     p->curdir.c_str(), __PRETTY_FUNCTION__);
+            p->dir.reset();
+            continue;
+        }
+        if(has_scanblock(p->curdir)) {
+            fprintf(stderr, "Directory %s has a scan block file, skipping it.\n",
+                    p->curdir.c_str());
             p->dir.reset();
             continue;
         }

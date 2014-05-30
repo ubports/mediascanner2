@@ -1,4 +1,5 @@
 include_directories(../../..)
+add_definitions(${DBUSCPP_CFLAGS} -DQT_NO_KEYWORDS)
 
 set(QML_PLUGIN_DIR "${CMAKE_INSTALL_LIBDIR}/qt5/qml/Ubuntu/MediaScanner.0.1")
 
@@ -11,13 +12,14 @@ add_library(mediascanner-qml MODULE
   AlbumModelBase.cc
   AlbumsModel.cc
   ArtistsModel.cc
+  GenresModel.cc
   SongsModel.cc
   SongsSearchModel.cc
 )
 
 set_target_properties(mediascanner-qml PROPERTIES AUTOMOC TRUE)
 qt5_use_modules(mediascanner-qml Qml)
-target_link_libraries(mediascanner-qml mediascanner)
+target_link_libraries(mediascanner-qml mediascanner ms-dbus)
 
 install(
   TARGETS mediascanner-qml

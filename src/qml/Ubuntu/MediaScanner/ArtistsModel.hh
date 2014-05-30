@@ -24,6 +24,7 @@
 #include <QAbstractListModel>
 #include <QString>
 
+#include <mediascanner/Filter.hh>
 #include "MediaStoreWrapper.hh"
 
 namespace mediascanner {
@@ -34,8 +35,9 @@ class ArtistsModel : public QAbstractListModel {
     Q_ENUMS(Roles)
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(bool albumArtists READ getAlbumArtists WRITE setAlbumArtists)
+    Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
-    Q_PROPERTY(int rowCount READ rowCount) // NOTIFY modelReset
+    Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
 public:
     enum Roles {
         RoleArtist,
@@ -46,6 +48,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
     Q_INVOKABLE QVariant get(int row, Roles role) const;
+Q_SIGNALS:
+    void rowCountChanged();
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -53,6 +57,8 @@ protected:
     void setStore(MediaStoreWrapper *store);
     bool getAlbumArtists();
     void setAlbumArtists(bool album_artists);
+    QVariant getGenre();
+    void setGenre(QVariant genre);
     int getLimit();
     void setLimit(int limit);
 
@@ -62,6 +68,7 @@ private:
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
     MediaStoreWrapper *store;
+    Filter filter;
     bool album_artists;
     int limit;
 };

@@ -40,7 +40,7 @@
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
 #include "InvalidationSender.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 
 using namespace std;
 
@@ -148,6 +148,10 @@ void ScannerDaemon::addDir(const string &dir) {
     }
     if(is_optical_disc(dir)) {
         fprintf(stderr, "Directory %s looks like an optical disc, skipping it.\n", dir.c_str());
+        return;
+    }
+    if(has_scanblock(dir)) {
+        fprintf(stderr, "Directory %s has a scan block file, skipping it.\n", dir.c_str());
         return;
     }
     unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));

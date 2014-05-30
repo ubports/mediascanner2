@@ -22,6 +22,7 @@
 
 #include <QString>
 
+#include <mediascanner/Filter.hh>
 #include "MediaStoreWrapper.hh"
 #include "MediaFileModelBase.hh"
 
@@ -31,9 +32,10 @@ namespace qml {
 class SongsModel : public MediaFileModelBase {
     Q_OBJECT
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
-    Q_PROPERTY(QString artist READ getArtist WRITE setArtist)
-    Q_PROPERTY(QString album READ getAlbum WRITE setAlbum)
-    Q_PROPERTY(QString albumArtist READ getAlbumArtist WRITE setAlbumArtist)
+    Q_PROPERTY(QVariant artist READ getArtist WRITE setArtist)
+    Q_PROPERTY(QVariant album READ getAlbum WRITE setAlbum)
+    Q_PROPERTY(QVariant albumArtist READ getAlbumArtist WRITE setAlbumArtist)
+    Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
 public:
     explicit SongsModel(QObject *parent=0);
@@ -41,19 +43,21 @@ public:
     MediaStoreWrapper *getStore();
     void setStore(MediaStoreWrapper *store);
 
-    QString getArtist();
-    void setArtist(const QString artist);
-    QString getAlbum();
-    void setAlbum(const QString album);
-    QString getAlbumArtist();
-    void setAlbumArtist(const QString album_artist);
+    QVariant getArtist();
+    void setArtist(const QVariant artist);
+    QVariant getAlbum();
+    void setAlbum(const QVariant album);
+    QVariant getAlbumArtist();
+    void setAlbumArtist(const QVariant album_artist);
+    QVariant getGenre();
+    void setGenre(const QVariant genre);
     int getLimit();
     void setLimit(int limit);
 private:
     void update();
 
     MediaStoreWrapper *store;
-    QString artist, album, album_artist;
+    Filter filter;
     int limit;
 };
 

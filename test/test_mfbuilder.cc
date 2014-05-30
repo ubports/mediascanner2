@@ -18,9 +18,9 @@
  */
 
 #include<gtest/gtest.h>
-#include<stdexcept>
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
+#include<stdexcept>
 
 using namespace mediascanner;
 
@@ -49,40 +49,25 @@ TEST_F(MFBTest, basic) {
     std::string album_artist("pqr");
     std::string etag("stu");
     std::string content_type("vwx");
+    std::string genre("yz");
+    int disc_number = 2;
     int track_number = 13;
     int duration = 99;
 
     MediaFileBuilder b(fname);
 
     b.setType(type);
-    ASSERT_THROW(b.setType(type), std::invalid_argument);
-
     b.setTitle(title);
-    ASSERT_THROW(b.setTitle(fname), std::invalid_argument);
-
     b.setDate(date);
-    ASSERT_THROW(b.setDate(date), std::invalid_argument);
-
     b.setAuthor(author);
-    ASSERT_THROW(b.setAuthor(author), std::invalid_argument);
-
     b.setAlbum(album);
-    ASSERT_THROW(b.setAlbum(album), std::invalid_argument);
-
     b.setAlbumArtist(album_artist);
-    ASSERT_THROW(b.setAlbumArtist(album_artist), std::invalid_argument);
-
+    b.setGenre(genre);
+    b.setDiscNumber(disc_number);
     b.setTrackNumber(track_number);
-    ASSERT_THROW(b.setTrackNumber(track_number), std::invalid_argument);
-
     b.setDuration(duration);
-    ASSERT_THROW(b.setDuration(duration), std::invalid_argument);
-
     b.setETag(etag);
-    ASSERT_THROW(b.setETag(etag), std::invalid_argument);
-
     b.setContentType(content_type);
-    ASSERT_THROW(b.setContentType(content_type), std::invalid_argument);
 
     // Now see if data survives a round trip.
     MediaFile mf = b.build();
@@ -93,6 +78,8 @@ TEST_F(MFBTest, basic) {
     ASSERT_EQ(mf.getAuthor(), author);
     ASSERT_EQ(mf.getAlbum(), album);
     ASSERT_EQ(mf.getAlbumArtist(), album_artist);
+    ASSERT_EQ(mf.getGenre(), genre);
+    ASSERT_EQ(mf.getDiscNumber(), disc_number);
     ASSERT_EQ(mf.getTrackNumber(), track_number);
     ASSERT_EQ(mf.getDuration(), duration);
     ASSERT_EQ(mf.getETag(), etag);
@@ -101,6 +88,71 @@ TEST_F(MFBTest, basic) {
     MediaFileBuilder mfb2(mf);
     MediaFile mf2 = mfb2.build();
     ASSERT_EQ(mf, mf2);
+}
+
+TEST_F(MFBTest, chaining) {
+    MediaType type(AudioMedia);
+    std::string fname("abc");
+    std::string title("def");
+    std::string date("ghi");
+    std::string author("jkl");
+    std::string album("mno");
+    std::string album_artist("pqr");
+    std::string etag("stu");
+    std::string content_type("vwx");
+    std::string genre("yz");
+    int disc_number = 2;
+    int track_number = 13;
+    int duration = 99;
+
+    MediaFile mf = MediaFileBuilder(fname)
+        .setType(type)
+        .setTitle(title)
+        .setDate(date)
+        .setAuthor(author)
+        .setAlbum(album)
+        .setAlbumArtist(album_artist)
+        .setGenre(genre)
+        .setDiscNumber(disc_number)
+        .setTrackNumber(track_number)
+        .setDuration(duration)
+        .setETag(etag)
+        .setContentType(content_type);
+
+    // Now see if data survives a round trip.
+    ASSERT_EQ(mf.getType(), type);
+    ASSERT_EQ(mf.getFileName(), fname);
+    ASSERT_EQ(mf.getTitle(), title);
+    ASSERT_EQ(mf.getDate(), date);
+    ASSERT_EQ(mf.getAuthor(), author);
+    ASSERT_EQ(mf.getAlbum(), album);
+    ASSERT_EQ(mf.getAlbumArtist(), album_artist);
+    ASSERT_EQ(mf.getGenre(), genre);
+    ASSERT_EQ(mf.getDiscNumber(), disc_number);
+    ASSERT_EQ(mf.getTrackNumber(), track_number);
+    ASSERT_EQ(mf.getDuration(), duration);
+    ASSERT_EQ(mf.getETag(), etag);
+    ASSERT_EQ(mf.getContentType(), content_type);
+}
+
+TEST_F(MFBTest, fallback_title) {
+    // Fallback title is derived from file name.
+    MediaFile mf = MediaFileBuilder("/path/to/abc.ogg");
+    EXPECT_EQ(mf.getTitle(), "abc");
+}
+
+TEST_F(MFBTest, fallback_album_artist) {
+    // Fallback album_artist is the author.
+    MediaFile mf = MediaFileBuilder("abc")
+        .setAuthor("author");
+    EXPECT_EQ(mf.getAlbumArtist(), "author");
+}
+
+TEST_F(MFBTest, faulty_usage) {
+    MediaFileBuilder mfb("/foo/bar/baz.mp3");
+    MediaFile m1(std::move(mfb));
+    ASSERT_THROW(MediaFile m2(std::move(mfb)), std::logic_error);
+    ASSERT_THROW(MediaFile m3(mfb), std::logic_error);
 }
 
 int main(int argc, char **argv) {

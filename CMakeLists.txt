@@ -1,4 +1,4 @@
-project(scantest CXX C)
+project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
 set(MEDIASCANNER_VERSION "0.99")
@@ -15,6 +15,9 @@ pkg_check_modules(MEDIASCANNER REQUIRED
   sqlite3
 )
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
+pkg_check_modules(GLIB glib-2.0 REQUIRED)
+pkg_check_modules(DBUSCPP dbus-cpp REQUIRED)
+pkg_check_modules(APPARMOR libapparmor REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
 
@@ -32,6 +35,7 @@ enable_testing()
 
 add_subdirectory(src/mediascanner)
 add_subdirectory(src/daemon)
+add_subdirectory(src/ms-dbus)
 add_subdirectory(src/qml/Ubuntu/MediaScanner)
 add_subdirectory(src/utils)
 add_subdirectory(test)

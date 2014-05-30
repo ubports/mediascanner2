@@ -17,7 +17,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set_target_properties(gtest PROPERTIES COMPILE_FLAGS "-Wno-unused-private-field")
 endif()
 
-add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS})
+add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS} ${DBUSCPP_CFLAGS} -DQT_NO_KEYWORDS)
 include_directories(../src)
 
 configure_file(test_config.h.in test_config.h)
@@ -43,13 +43,18 @@ add_executable(test_mfbuilder test_mfbuilder.cc)
 target_link_libraries(test_mfbuilder gtest mediascanner)
 add_test(test_mfbuilder test_mfbuilder)
 
+add_executable(test_dbus test_dbus.cc)
+target_link_libraries(test_dbus gtest mediascanner ms-dbus)
+add_test(test_dbus test_dbus)
+
 add_executable(test_qml test_qml.cc)
 qt5_use_modules(test_qml QuickTest)
-target_link_libraries(test_qml mediascanner)
+target_link_libraries(test_qml mediascanner ${DBUSCPP_LDFLAGS})
 add_test(test_qml test_qml -input ${CMAKE_CURRENT_SOURCE_DIR}/qml -import ${CMAKE_BINARY_DIR}/src/qml)
-set_tests_properties(test_qml
-  PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal")
+set_tests_properties(test_qml PROPERTIES
+  ENVIRONMENT "QT_QPA_PLATFORM=minimal"
+  TIMEOUT 600)
 
-add_executable(test_util test_util.cc ../src/daemon/util.cc)
-target_link_libraries(test_util gtest)
+add_executable(test_util test_util.cc ../src/mediascanner/utils.cc)
+target_link_libraries(test_util gtest ${GLIB_LDFLAGS})
 add_test(test_util test_util)

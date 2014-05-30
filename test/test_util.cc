@@ -18,8 +18,10 @@
  */
 
 #include <gtest/gtest.h>
-#include"../src/daemon/util.h"
+#include"../src/mediascanner/internal/utils.hh"
 #include "test_config.h"
+
+using namespace mediascanner;
 
 class UtilTest : public ::testing::Test {
 public:
@@ -40,6 +42,13 @@ TEST_F(UtilTest, optical) {
     ASSERT_TRUE(is_optical_disc(blu_root));
     ASSERT_TRUE(is_optical_disc(dvd_root));
     ASSERT_FALSE(is_optical_disc(nodisc_root));
+}
+
+TEST_F(UtilTest, scanblock) {
+    std::string noblock_root(SOURCE_DIR "/media");
+    std::string block_root(SOURCE_DIR "/noscan");
+    ASSERT_TRUE(has_scanblock(block_root));
+    ASSERT_FALSE(has_scanblock(noblock_root));
 }
 
 int main(int argc, char **argv) {

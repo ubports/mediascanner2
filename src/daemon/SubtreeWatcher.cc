@@ -22,7 +22,7 @@
 #include "InvalidationSender.hh"
 #include "MetadataExtractor.hh"
 #include "SubtreeWatcher.hh"
-#include "util.h"
+#include "../mediascanner/internal/utils.hh"
 
 #include<sys/select.h>
 #include<stdexcept>
@@ -99,6 +99,11 @@ void SubtreeWatcher::addDir(const string &root) {
     if(is_rootlike(root)) {
         fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
                 root.c_str(), __PRETTY_FUNCTION__);
+        return;
+    }
+    if(has_scanblock(root)) {
+        fprintf(stderr, "Directory %s has a scan block file, skipping it.\n",
+                root.c_str());
         return;
     }
     if(p->str2wd.find(root) != p->str2wd.end())

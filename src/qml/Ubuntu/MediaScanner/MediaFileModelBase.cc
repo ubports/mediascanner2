@@ -99,4 +99,5 @@ void MediaFileModelBase::updateResults(const std::vector<mediascanner::MediaFile
     beginResetModel();
     this->results = results;
     endResetModel();
+    Q_EMIT rowCountChanged();
 }
