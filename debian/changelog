@@ -1,4 +1,4 @@
-mediascanner2 (0.101-0ubuntu1) UNRELEASED; urgency=low
+mediascanner2 (0.101+14.10.20140530-0ubuntu1) utopic; urgency=low
 
   [ James Henstridge ]
   * Get rid of the direct constructor for MediaFile, forcing creation to 
@@ -29,7 +29,7 @@ mediascanner2 (0.101-0ubuntu1) UNRELEASED; urgency=low
     restoring.
 
 
- -- James Henstridge <james.henstridge@canonical.com>  Thu, 29 May 2014 12:23:07 +0200
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 30 May 2014 07:29:07 +0000
 
 mediascanner2 (0.100+14.10.20140508-0ubuntu1) utopic; urgency=low
 
