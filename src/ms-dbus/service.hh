@@ -46,7 +46,7 @@ namespace traits {
 template<>
 struct Service<mediascanner::dbus::MediaStoreService> {
     inline static const std::string& interface_name() {
-        static const std::string iface("com.canonical.MediaScaner2");
+        static const std::string iface("com.canonical.MediaScanner2");
         return iface;
     }
     inline static const std::string& object_path() {
