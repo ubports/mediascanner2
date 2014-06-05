@@ -17,9 +17,64 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include<libexif/exif-loader.h>
-#include<iostream>
-#include<time.h>
+#include <csetjmp>
+#include <cstdio>
+#include <ctime>
+#include <exception>
+#include <iostream>
+#include <stdexcept>
+
+#include <jpeglib.h>
+#include <jerror.h>
+#include <exif-loader.h>
+
+struct ErrorData {
+    struct jpeg_error_mgr jerr;
+    sigjmp_buf env;
+    std::exception_ptr exc;
+};
+
+static void error_exit_handler(j_common_ptr cinfo) noexcept {
+    ErrorData *mgr = reinterpret_cast<ErrorData*>(cinfo->err);
+
+    char buffer[JMSG_LENGTH_MAX];
+    cinfo->err->format_message(cinfo, buffer);
+    mgr->exc = std::make_exception_ptr(std::runtime_error(buffer));
+
+    siglongjmp(mgr->env, 1);
+}
+
+static void output_message_handler(j_common_ptr) noexcept {
+    /* do nothing */
+}
+
+static void print_jpeg(const char *infile) {
+    FILE *fp;
+    if ((fp = fopen(infile, "rb")) == NULL) {
+        fprintf(stderr, "Could not open %s\n", infile);
+        return;
+    }
+
+    struct jpeg_decompress_struct cinfo;
+    ErrorData mgr;
+    cinfo.err = jpeg_std_error(&mgr.jerr);
+    mgr.jerr.error_exit = error_exit_handler;
+    mgr.jerr.output_message = output_message_handler;
+
+    // No objects with destructors can should be created after this call.
+    if (sigsetjmp(mgr.env, 1)) {
+        jpeg_destroy_decompress(&cinfo);
+        std::rethrow_exception(mgr.exc);
+    }
+
+    jpeg_create_decompress(&cinfo);
+    jpeg_stdio_src(&cinfo, fp);
+    jpeg_read_header(&cinfo, true);
+
+    std::cout << "Image size (" << cinfo.image_width << ", " << cinfo.image_height << ")" << std::endl;
+
+    jpeg_destroy_decompress(&cinfo);
+}
 
 static void print_exif(const char *infile) {
     ExifLoader *l;
@@ -82,6 +137,12 @@ static void print_exif(const char *infile) {
 int main(int argc, char **argv) {
     if(argc != 2) {
         std::cout << argv[0] << "image_file" << std::endl;
+        return 1;
+    }
+    try {
+        print_jpeg(argv[1]);
+    } catch (const std::exception &e) {
+        fprintf(stderr, "Failed to read file: %s\n", e.what());
         return 1;
     }
     print_exif(argv[1]);
