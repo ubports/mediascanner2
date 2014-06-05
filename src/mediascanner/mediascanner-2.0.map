@@ -1,0 +1,18 @@
+{
+global:
+# We can do this because we only export classes that have public
+# methods. If they had private ones, we would need to enumerate
+# what to export.
+    extern "C++" {
+        mediascanner::MediaFile::*;
+        mediascanner::Album::*;
+        mediascanner::MediaFileBuilder::*;
+        mediascanner::MediaStore::*;
+        mediascanner::Filter::*;
+    };
+
+local:
+    extern "C++" {
+        *;
+    };
+};

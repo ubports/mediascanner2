@@ -1,0 +1,105 @@
+libmediascanner-2.0.so.0 libmediascanner-2.0 #MINVER#
+ (c++)"mediascanner::MediaStore::archiveItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::pruneDeleted()@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::restoreItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::MediaStore(mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::MediaStore(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::MediaStore(mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::MediaStore(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::~MediaStore()@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::~MediaStore()@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setDuration(int)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setDiscNumber(int)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setAlbumArtist(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setContentType(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setTrackNumber(int)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setDate(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setType(mediascanner::MediaType)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setAlbum(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setGenre(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setTitle(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::setAuthor(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(mediascanner::MediaFile const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(mediascanner::MediaFile const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::~MediaFileBuilder()@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::~MediaFileBuilder()@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album()@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album()@Base" 0replaceme
+ (c++)"mediascanner::Album::~Album()@Base" 0replaceme
+ (c++)"mediascanner::Album::~Album()@Base" 0replaceme
+ (c++)"mediascanner::Filter::unsetAlbum()@Base" 0replaceme
+ (c++)"mediascanner::Filter::unsetGenre()@Base" 0replaceme
+ (c++)"mediascanner::Filter::unsetArtist()@Base" 0replaceme
+ (c++)"mediascanner::Filter::setAlbumArtist(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::unsetAlbumArtist()@Base" 0replaceme
+ (c++)"mediascanner::Filter::clear()@Base" 0replaceme
+ (c++)"mediascanner::Filter::setAlbum(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::setGenre(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::setArtist(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::Filter(mediascanner::Filter const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::Filter()@Base" 0replaceme
+ (c++)"mediascanner::Filter::Filter(mediascanner::Filter const&)@Base" 0replaceme
+ (c++)"mediascanner::Filter::Filter()@Base" 0replaceme
+ (c++)"mediascanner::Filter::~Filter()@Base" 0replaceme
+ (c++)"mediascanner::Filter::~Filter()@Base" 0replaceme
+ (c++)"mediascanner::Filter::operator=(mediascanner::Filter const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFileBuilder&&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFileBuilder const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFile const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile()@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFileBuilder&&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFileBuilder const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile(mediascanner::MediaFile const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::MediaFile()@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::~MediaFile()@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::~MediaFile()@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::operator=(mediascanner::MediaFile const&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::listAlbums(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::listGenres(int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::listArtists(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::queryAlbums(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::listAlbumArtists(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::size() const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::MediaType, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::insert(mediascanner::MediaFile const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::lookup(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::remove(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::getETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::listSongs(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"mediascanner::MediaFileBuilder::build() const@Base" 0replaceme
+ (c++)"mediascanner::Album::getTitle() const@Base" 0replaceme
+ (c++)"mediascanner::Album::getArtist() const@Base" 0replaceme
+ (c++)"mediascanner::Album::operator==(mediascanner::Album const&) const@Base" 0replaceme
+ (c++)"mediascanner::Album::operator!=(mediascanner::Album const&) const@Base" 0replaceme
+ (c++)"mediascanner::Filter::getAlbumArtist() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::hasAlbumArtist() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::getAlbum() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::getGenre() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::hasAlbum() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::hasGenre() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::getArtist() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::hasArtist() const@Base" 0replaceme
+ (c++)"mediascanner::Filter::operator==(mediascanner::Filter const&) const@Base" 0replaceme
+ (c++)"mediascanner::Filter::operator!=(mediascanner::Filter const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getDuration() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getFileName() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getDiscNumber() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getAlbumArtist() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getContentType() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getTrackNumber() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getUri() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getDate() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getETag() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getType() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getAlbum() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getGenre() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getTitle() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getAuthor() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::operator==(mediascanner::MediaFile const&) const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::operator!=(mediascanner::MediaFile const&) const@Base" 0replaceme
