@@ -88,35 +88,52 @@ TEST_F(MediaStoreTest, equality) {
         .setETag("etag")
         .setDate("1900")
         .setTitle("b")
-        .setAuthor("c")
-        .setAlbum("d")
-        .setAlbumArtist("e")
-        .setGenre("f")
-        .setDiscNumber(0)
-        .setTrackNumber(1)
         .setDuration(5)
+        .setWidth(41)
+        .setHeight(42)
         .setType(VideoMedia);
     MediaFile video2 = MediaFileBuilder("aa")
         .setContentType("type")
         .setETag("etag")
         .setDate("1900")
         .setTitle("b")
-        .setAuthor("c")
-        .setAlbum("d")
-        .setAlbumArtist("e")
-        .setGenre("f")
-        .setDiscNumber(0)
-        .setTrackNumber(1)
         .setDuration(5)
+        .setWidth(43)
+        .setHeight(44)
         .setType(VideoMedia);
+
+    MediaFile image1 = MediaFileBuilder("a")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setWidth(640)
+        .setHeight(480)
+        .setLatitude(20.0)
+        .setLongitude(30.0)
+        .setType(ImageMedia);
+    MediaFile image2 = MediaFileBuilder("aa")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("1900")
+        .setTitle("b")
+        .setWidth(480)
+        .setHeight(640)
+        .setLatitude(-20.0)
+        .setLongitude(-30.0)
+        .setType(ImageMedia);
 
     EXPECT_EQ(audio1, audio1);
     EXPECT_EQ(video1, video1);
+    EXPECT_EQ(image1, image1);
 
     EXPECT_NE(audio1, audio2);
+    EXPECT_NE(video1, video2);
+    EXPECT_NE(image1, image2);
+
     EXPECT_NE(audio1, video1);
-    EXPECT_NE(audio2, video1);
-    EXPECT_NE(audio2, video2);
+    EXPECT_NE(audio1, image1);
+    EXPECT_NE(video1, image1);
 }
 
 TEST_F(MediaStoreTest, lookup) {
@@ -159,23 +176,36 @@ TEST_F(MediaStoreTest, roundtrip) {
         .setETag("etag")
         .setDate("2012-01-01")
         .setTitle("bbb bbb")
-        .setAuthor("ccc")
-        .setAlbum("ddd")
-        .setAlbumArtist("eee")
-        .setGenre("fff")
-        .setDiscNumber(0)
-        .setTrackNumber(0)
         .setDuration(5)
+        .setWidth(1280)
+        .setHeight(720)
         .setType(VideoMedia);
+    MediaFile image = MediaFileBuilder("aaa3")
+        .setContentType("type")
+        .setETag("etag")
+        .setDate("2012-01-01")
+        .setTitle("bbb bbb")
+        .setWidth(480)
+        .setHeight(640)
+        .setLatitude(20.0)
+        .setLongitude(-30.0)
+        .setType(ImageMedia);
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
     store.insert(video);
+    store.insert(image);
+
     vector<MediaFile> result = store.query("bbb", AudioMedia);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio);
+
     result = store.query("bbb", VideoMedia);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], video);
+
+    result = store.query("bbb", ImageMedia);
+    ASSERT_EQ(1, result.size());
+    EXPECT_EQ(image, result[0]);
 }
 
 TEST_F(MediaStoreTest, query_by_album) {
@@ -191,7 +221,7 @@ TEST_F(MediaStoreTest, query_by_album) {
     vector<MediaFile> result = store.query("album", AudioMedia);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio);
- }
+}
 
 TEST_F(MediaStoreTest, query_by_artist) {
     MediaFile audio = MediaFileBuilder("/path/foo.ogg")
