@@ -27,7 +27,7 @@ enum MediaType {
     AudioMedia,
     VideoMedia,
     ImageMedia,
-    AllMedia,
+    AllMedia = 255,
 };
 
 }
