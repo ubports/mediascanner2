@@ -10,7 +10,6 @@ endif()
 option(full_warnings "All possible compiler warnings." OFF)
 
 include(FindPkgConfig)
-include(FindJPEG)
 pkg_check_modules(MEDIASCANNER REQUIRED
   gio-2.0
   sqlite3
