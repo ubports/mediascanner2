@@ -22,15 +22,18 @@
 #include "../mediascanner/internal/utils.hh"
 #include "MetadataExtractor.hh"
 
+#include <exif-loader.h>
 #include <glib-object.h>
 #include <gio/gio.h>
 #include <gst/gst.h>
 #include <gst/pbutils/pbutils.h>
 
-#include<cstdio>
-#include<string>
-#include<stdexcept>
-#include<memory>
+#include <cstdio>
+#include <ctime>
+#include <memory>
+#include <string>
+#include <stdexcept>
+#include <vector>
 
 using namespace std;
 
@@ -39,6 +42,9 @@ namespace mediascanner {
 struct MetadataExtractorPrivate {
     std::unique_ptr<GstDiscoverer, decltype(&g_object_unref)> discoverer;
     MetadataExtractorPrivate() : discoverer(nullptr, g_object_unref) {};
+
+    void extract_gst(const DetectedFile &d, MediaFileBuilder &mfb);
+    void extract_exif(const DetectedFile &d, MediaFileBuilder &mfb);
 };
 
 MetadataExtractor::MetadataExtractor(int seconds) {
@@ -103,6 +109,8 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
         type = AudioMedia;
     } else if (content_type.find("video/") == 0) {
         type = VideoMedia;
+    } else if (content_type.find("image/") == 0) {
+        type = ImageMedia;
     } else {
         throw runtime_error(string("File ") + filename + " is not audio or video");
     }
@@ -149,17 +157,12 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     }
 }
 
-MediaFile MetadataExtractor::extract(const DetectedFile &d) {
-    printf("Extracting metadata from %s.\n", d.filename.c_str());
-    MediaFileBuilder mfb(d.filename);
-    mfb.setETag(d.etag);
-    mfb.setContentType(d.content_type);
-    mfb.setType(d.type);
+void MetadataExtractorPrivate::extract_gst(const DetectedFile &d, MediaFileBuilder &mfb) {
     string uri = getUri(d.filename);
 
     GError *error = nullptr;
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
-        gst_discoverer_discover_uri(p->discoverer.get(), uri.c_str(), &error),
+        gst_discoverer_discover_uri(discoverer.get(), uri.c_str(), &error),
         g_object_unref);
     if (info.get() == NULL) {
         string errortxt(error->message);
@@ -187,6 +190,201 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     }
     mfb.setDuration(static_cast<int>(
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
+
+    /* Check for video specific information */
+    const GList *streams = gst_discoverer_info_get_stream_list(info.get());
+    for (const GList *l = streams; l != nullptr; l = l->next) {
+        auto stream_info = static_cast<GstDiscovererStreamInfo*>(l->data);
+
+        if (GST_IS_DISCOVERER_VIDEO_INFO(stream_info)) {
+            mfb.setWidth(gst_discoverer_video_info_get_width(
+                             GST_DISCOVERER_VIDEO_INFO(stream_info)));
+            mfb.setHeight(gst_discoverer_video_info_get_height(
+                              GST_DISCOVERER_VIDEO_INFO(stream_info)));
+            break;
+        }
+    }
+}
+
+static void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilder &mfb) {
+    static const std::vector<ExifTag> date_tags{
+        EXIF_TAG_DATE_TIME,
+        EXIF_TAG_DATE_TIME_ORIGINAL,
+        EXIF_TAG_DATE_TIME_DIGITIZED
+    };
+    static const char exif_date_template[] = "%Y:%m:%d %H:%M:%S";
+    struct tm timeinfo;
+    bool have_date = false;
+
+    for (ExifTag tag : date_tags) {
+        ExifEntry *ent = exif_data_get_entry(data, tag);
+        if (ent == nullptr) {
+            continue;
+        }
+        struct tm timeinfo;
+        if (strptime((const char*)ent->data, exif_date_template, &timeinfo) != nullptr) {
+            have_date = true;
+            break;
+        }
+    }
+    if (!have_date) {
+        return;
+    }
+
+    char buf[100];
+    ExifEntry *ent = exif_data_get_entry(data, EXIF_TAG_TIME_ZONE_OFFSET);
+    if (ent) {
+        timeinfo.tm_gmtoff = (int)exif_get_sshort(ent->data, order) * 3600;
+
+        if (strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", &timeinfo) != 0) {
+            mfb.setDate(buf);
+        }
+    } else {
+        /* No time zone info */
+        if (strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", &timeinfo) != 0) {
+            mfb.setDate(buf);
+        }
+    }
+}
+
+static int get_exif_int(ExifEntry *ent, ExifByteOrder order) {
+    switch (ent->format) {
+    case EXIF_FORMAT_BYTE:
+        return (unsigned char)ent->data[0];
+    case EXIF_FORMAT_SHORT:
+        return exif_get_short(ent->data, order);
+    case EXIF_FORMAT_LONG:
+        return exif_get_long(ent->data, order);
+    case EXIF_FORMAT_SBYTE:
+        return (signed char)ent->data[0];
+    case EXIF_FORMAT_SSHORT:
+        return exif_get_sshort(ent->data, order);
+    case EXIF_FORMAT_SLONG:
+        return exif_get_slong(ent->data, order);
+    default:
+        break;
+    }
+    return 0;
+}
+
+static void parse_exif_dimensions(ExifData *data, ExifByteOrder order, MediaFileBuilder &mfb) {
+    ExifEntry *w_ent = exif_data_get_entry(data, EXIF_TAG_PIXEL_X_DIMENSION);
+    ExifEntry *h_ent = exif_data_get_entry(data, EXIF_TAG_PIXEL_Y_DIMENSION);
+    ExifEntry *o_ent = exif_data_get_entry(data, EXIF_TAG_ORIENTATION);
+
+    if (!w_ent || !h_ent) {
+        return;
+    }
+    int width = get_exif_int(w_ent, order);
+    int height = get_exif_int(h_ent, order);
+
+    // Optionally swap height and width depending on orientation
+    if (o_ent) {
+        int tmp;
+
+        // exif_data_fix() has ensured this is a short.
+        switch (exif_get_short(o_ent->data, order)) {
+        case 5: // Mirror horizontal and rotate 270 CW
+        case 6: // Rotate 90 CW
+        case 7: // Mirror horizontal and rotate 90 CW
+        case 8: // Rotate 270 CW
+            tmp = width;
+            width = height;
+            height = tmp;
+            break;
+        default:
+            break;
+        }
+    }
+    mfb.setWidth(width);
+    mfb.setHeight(height);
+}
+
+static bool rational_to_degrees(ExifEntry *ent, ExifByteOrder order, double *out) {
+    if (ent->format != EXIF_FORMAT_RATIONAL) {
+        return false;
+    }
+
+    ExifRational r = exif_get_rational(ent->data, order);
+    *out = ((double) r.numerator) / r.denominator;
+
+    // Minutes
+    if (ent->components >= 2) {
+        r = exif_get_rational(ent->data + exif_format_get_size(EXIF_FORMAT_RATIONAL), order);
+        *out += ((double) r.numerator) / r.denominator / 60;
+    }
+    // Seconds
+    if (ent->components >= 3) {
+        r = exif_get_rational(ent->data + 2 * exif_format_get_size(EXIF_FORMAT_RATIONAL), order);
+        *out += ((double) r.numerator) / r.denominator / 3600;
+    }
+    return true;
+}
+
+static void parse_exif_location(ExifData *data, ExifByteOrder order, MediaFileBuilder &mfb) {
+    ExifContent *ifd = data->ifd[EXIF_IFD_GPS];
+    ExifEntry *lat_ent = exif_content_get_entry(ifd, (ExifTag)EXIF_TAG_GPS_LATITUDE);
+    ExifEntry *latref_ent = exif_content_get_entry(ifd, (ExifTag)EXIF_TAG_GPS_LATITUDE_REF);
+    ExifEntry *long_ent = exif_content_get_entry(ifd, (ExifTag)EXIF_TAG_GPS_LONGITUDE);
+    ExifEntry *longref_ent = exif_content_get_entry(ifd, (ExifTag)EXIF_TAG_GPS_LONGITUDE_REF);
+
+    if (!lat_ent || !long_ent) {
+        return;
+    }
+
+    double latitude, longitude;
+    if (!rational_to_degrees(lat_ent, order, &latitude)) {
+        return;
+    }
+    if (!rational_to_degrees(long_ent, order, &longitude)) {
+        return;
+    }
+    if (latref_ent && latref_ent->data[0] == 'S') {
+        latitude = -latitude;
+    }
+    if (longref_ent && longref_ent->data[0] == 'W') {
+        longitude = -longitude;
+    }
+    mfb.setLatitude(latitude);
+    mfb.setLongitude(longitude);
+}
+
+void MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuilder &mfb) {
+    std::unique_ptr<ExifLoader, void(*)(ExifLoader*)> loader(
+        exif_loader_new(), exif_loader_unref);
+    exif_loader_write_file(loader.get(), d.filename.c_str());
+
+    std::unique_ptr<ExifData, void(*)(ExifData*)> data(
+        exif_loader_get_data(loader.get()), exif_data_unref);
+    loader.reset();
+
+    if (!data) {
+        throw runtime_error("Unable to load EXIF data from " + d.filename);
+    }
+    exif_data_fix(data.get());
+    ExifByteOrder order = exif_data_get_byte_order(data.get());
+
+    parse_exif_date(data.get(), order, mfb);
+    parse_exif_dimensions(data.get(), order, mfb);
+    parse_exif_location(data.get(), order, mfb);
+}
+
+MediaFile MetadataExtractor::extract(const DetectedFile &d) {
+    printf("Extracting metadata from %s.\n", d.filename.c_str());
+    MediaFileBuilder mfb(d.filename);
+    mfb.setETag(d.etag);
+    mfb.setContentType(d.content_type);
+    mfb.setType(d.type);
+
+    switch (d.type) {
+    case ImageMedia:
+        p->extract_exif(d, mfb);
+        break;
+    default:
+        p->extract_gst(d, mfb);
+        break;
+    }
+
     return mfb;
 }
 

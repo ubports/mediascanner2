@@ -94,14 +94,20 @@ TEST_F(MetadataExtractorTest, extract_video) {
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_480p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
+    EXPECT_EQ(file.getWidth(), 854);
+    EXPECT_EQ(file.getHeight(), 480);
 
     file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_720p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
+    EXPECT_EQ(file.getWidth(), 1280);
+    EXPECT_EQ(file.getHeight(), 720);
 
     file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_1080p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
+    EXPECT_EQ(file.getWidth(), 1920);
+    EXPECT_EQ(file.getHeight(), 1080);
 }
 
 int main(int argc, char **argv) {
