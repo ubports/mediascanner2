@@ -53,6 +53,10 @@ TEST_F(MFBTest, basic) {
     int disc_number = 2;
     int track_number = 13;
     int duration = 99;
+    int width = 640;
+    int height = 480;
+    int latitude = 67.2;
+    int longitude = -7.5;
 
     MediaFileBuilder b(fname);
 
@@ -68,26 +72,34 @@ TEST_F(MFBTest, basic) {
     b.setDuration(duration);
     b.setETag(etag);
     b.setContentType(content_type);
+    b.setWidth(width);
+    b.setHeight(height);
+    b.setLatitude(latitude);
+    b.setLongitude(longitude);
 
     // Now see if data survives a round trip.
     MediaFile mf = b.build();
-    ASSERT_EQ(mf.getType(), type);
-    ASSERT_EQ(mf.getFileName(), fname);
-    ASSERT_EQ(mf.getTitle(), title);
-    ASSERT_EQ(mf.getDate(), date);
-    ASSERT_EQ(mf.getAuthor(), author);
-    ASSERT_EQ(mf.getAlbum(), album);
-    ASSERT_EQ(mf.getAlbumArtist(), album_artist);
-    ASSERT_EQ(mf.getGenre(), genre);
-    ASSERT_EQ(mf.getDiscNumber(), disc_number);
-    ASSERT_EQ(mf.getTrackNumber(), track_number);
-    ASSERT_EQ(mf.getDuration(), duration);
-    ASSERT_EQ(mf.getETag(), etag);
-    ASSERT_EQ(mf.getContentType(), content_type);
+    EXPECT_EQ(mf.getType(), type);
+    EXPECT_EQ(mf.getFileName(), fname);
+    EXPECT_EQ(mf.getTitle(), title);
+    EXPECT_EQ(mf.getDate(), date);
+    EXPECT_EQ(mf.getAuthor(), author);
+    EXPECT_EQ(mf.getAlbum(), album);
+    EXPECT_EQ(mf.getAlbumArtist(), album_artist);
+    EXPECT_EQ(mf.getGenre(), genre);
+    EXPECT_EQ(mf.getDiscNumber(), disc_number);
+    EXPECT_EQ(mf.getTrackNumber(), track_number);
+    EXPECT_EQ(mf.getDuration(), duration);
+    EXPECT_EQ(mf.getETag(), etag);
+    EXPECT_EQ(mf.getContentType(), content_type);
+    EXPECT_EQ(mf.getWidth(), width);
+    EXPECT_EQ(mf.getHeight(), height);
+    EXPECT_EQ(mf.getLatitude(), latitude);
+    EXPECT_EQ(mf.getLongitude(), longitude);
 
     MediaFileBuilder mfb2(mf);
     MediaFile mf2 = mfb2.build();
-    ASSERT_EQ(mf, mf2);
+    EXPECT_EQ(mf, mf2);
 }
 
 TEST_F(MFBTest, chaining) {
@@ -104,6 +116,10 @@ TEST_F(MFBTest, chaining) {
     int disc_number = 2;
     int track_number = 13;
     int duration = 99;
+    int width = 640;
+    int height = 480;
+    int latitude = 67.2;
+    int longitude = -7.5;
 
     MediaFile mf = MediaFileBuilder(fname)
         .setType(type)
@@ -116,23 +132,31 @@ TEST_F(MFBTest, chaining) {
         .setDiscNumber(disc_number)
         .setTrackNumber(track_number)
         .setDuration(duration)
+        .setWidth(width)
+        .setHeight(height)
+        .setLatitude(latitude)
+        .setLongitude(longitude)
         .setETag(etag)
         .setContentType(content_type);
 
     // Now see if data survives a round trip.
-    ASSERT_EQ(mf.getType(), type);
-    ASSERT_EQ(mf.getFileName(), fname);
-    ASSERT_EQ(mf.getTitle(), title);
-    ASSERT_EQ(mf.getDate(), date);
-    ASSERT_EQ(mf.getAuthor(), author);
-    ASSERT_EQ(mf.getAlbum(), album);
-    ASSERT_EQ(mf.getAlbumArtist(), album_artist);
-    ASSERT_EQ(mf.getGenre(), genre);
-    ASSERT_EQ(mf.getDiscNumber(), disc_number);
-    ASSERT_EQ(mf.getTrackNumber(), track_number);
-    ASSERT_EQ(mf.getDuration(), duration);
-    ASSERT_EQ(mf.getETag(), etag);
-    ASSERT_EQ(mf.getContentType(), content_type);
+    EXPECT_EQ(mf.getType(), type);
+    EXPECT_EQ(mf.getFileName(), fname);
+    EXPECT_EQ(mf.getTitle(), title);
+    EXPECT_EQ(mf.getDate(), date);
+    EXPECT_EQ(mf.getAuthor(), author);
+    EXPECT_EQ(mf.getAlbum(), album);
+    EXPECT_EQ(mf.getAlbumArtist(), album_artist);
+    EXPECT_EQ(mf.getGenre(), genre);
+    EXPECT_EQ(mf.getDiscNumber(), disc_number);
+    EXPECT_EQ(mf.getTrackNumber(), track_number);
+    EXPECT_EQ(mf.getDuration(), duration);
+    EXPECT_EQ(mf.getETag(), etag);
+    EXPECT_EQ(mf.getContentType(), content_type);
+    EXPECT_EQ(mf.getWidth(), width);
+    EXPECT_EQ(mf.getHeight(), height);
+    EXPECT_EQ(mf.getLatitude(), latitude);
+    EXPECT_EQ(mf.getLongitude(), longitude);
 }
 
 TEST_F(MFBTest, fallback_title) {

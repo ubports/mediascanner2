@@ -25,12 +25,14 @@
 namespace mediascanner {
 
 MediaFilePrivate::MediaFilePrivate() :
-    disc_number(0), track_number(0), duration(0), type(UnknownMedia) {
+    disc_number(0), track_number(0), duration(0), width(0), height(0),
+    latitude(0.0), longitude(0.0), type(UnknownMedia) {
 }
 
 MediaFilePrivate::MediaFilePrivate(const std::string &filename) :
     filename(filename),
-    disc_number(0), track_number(0), duration(0), type(UnknownMedia) {
+    disc_number(0), track_number(0), duration(0), width(0), height(0),
+    latitude(0.0), longitude(0.0), type(UnknownMedia) {
 }
 
 MediaFilePrivate::MediaFilePrivate(const MediaFilePrivate &other) {
@@ -51,6 +53,10 @@ bool MediaFilePrivate::operator==(const MediaFilePrivate &other) const {
         disc_number == other.disc_number &&
         track_number == other.track_number &&
         duration == other.duration &&
+        width == other.width &&
+        height == other.height &&
+        latitude == other.latitude &&
+        longitude == other.longitude &&
         type == other.type;
 }
 

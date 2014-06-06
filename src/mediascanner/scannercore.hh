@@ -26,6 +26,7 @@ enum MediaType {
     UnknownMedia,
     AudioMedia,
     VideoMedia,
+    ImageMedia,
     AllMedia,
 };
 

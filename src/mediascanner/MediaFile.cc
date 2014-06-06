@@ -108,6 +108,22 @@ int MediaFile::getDuration() const noexcept {
     return p->duration;
 }
 
+int MediaFile::getWidth() const noexcept {
+    return p->width;
+}
+
+int MediaFile::getHeight() const noexcept {
+    return p->height;
+}
+
+double MediaFile::getLatitude() const noexcept {
+    return p->latitude;
+}
+
+double MediaFile::getLongitude() const noexcept {
+    return p->longitude;
+}
+
 MediaType MediaFile::getType() const noexcept {
     return p->type;
 }
