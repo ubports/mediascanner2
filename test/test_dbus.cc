@@ -36,10 +36,14 @@ TEST_F(MediaStoreDBusTests, mediafile_codec) {
         .setDiscNumber(0)
         .setTrackNumber(1)
         .setDuration(5)
+        .setWidth(640)
+        .setHeight(480)
+        .setLatitude(20.42)
+        .setLongitude(-30.67)
         .setType(mediascanner::AudioMedia);
     message->writer() << media;
 
-    EXPECT_EQ("(sssssssssiiii)", message->signature());
+    EXPECT_EQ("(sssssssssiiiiiddi)", message->signature());
     EXPECT_EQ(core::dbus::helper::TypeMapper<mediascanner::MediaFile>::signature(), message->signature());
 
     mediascanner::MediaFile media2;
