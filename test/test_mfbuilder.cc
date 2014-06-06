@@ -94,8 +94,8 @@ TEST_F(MFBTest, basic) {
     EXPECT_EQ(mf.getContentType(), content_type);
     EXPECT_EQ(mf.getWidth(), width);
     EXPECT_EQ(mf.getHeight(), height);
-    EXPECT_EQ(mf.getLatitude(), latitude);
-    EXPECT_EQ(mf.getLongitude(), longitude);
+    EXPECT_DOUBLE_EQ(mf.getLatitude(), latitude);
+    EXPECT_DOUBLE_EQ(mf.getLongitude(), longitude);
 
     MediaFileBuilder mfb2(mf);
     MediaFile mf2 = mfb2.build();
@@ -155,8 +155,8 @@ TEST_F(MFBTest, chaining) {
     EXPECT_EQ(mf.getContentType(), content_type);
     EXPECT_EQ(mf.getWidth(), width);
     EXPECT_EQ(mf.getHeight(), height);
-    EXPECT_EQ(mf.getLatitude(), latitude);
-    EXPECT_EQ(mf.getLongitude(), longitude);
+    EXPECT_DOUBLE_EQ(mf.getLatitude(), latitude);
+    EXPECT_DOUBLE_EQ(mf.getLongitude(), longitude);
 }
 
 TEST_F(MFBTest, fallback_title) {

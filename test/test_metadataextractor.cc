@@ -110,6 +110,28 @@ TEST_F(MetadataExtractorTest, extract_video) {
     EXPECT_EQ(file.getHeight(), 1080);
 }
 
+TEST_F(MetadataExtractorTest, extract_photo) {
+    MetadataExtractor e;
+
+    // An landscape image that should be rotated to portrait
+    MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image1.jpg"));
+    EXPECT_EQ(ImageMedia, file.getType());
+    EXPECT_EQ(2848, file.getWidth());
+    EXPECT_EQ(4272, file.getHeight());
+    EXPECT_EQ("2013-01-04T08:25:46", file.getDate());
+    EXPECT_DOUBLE_EQ(-28.249409333333336, file.getLatitude());
+    EXPECT_DOUBLE_EQ(153.150774, file.getLongitude());
+
+    // A landscape image without rotation.
+    file = e.extract(e.detect(SOURCE_DIR "/media/image2.jpg"));
+    EXPECT_EQ(ImageMedia, file.getType());
+    EXPECT_EQ(4272, file.getWidth());
+    EXPECT_EQ(2848, file.getHeight());
+    EXPECT_EQ("2013-01-04T09:52:27", file.getDate());
+    EXPECT_DOUBLE_EQ(-28.259611, file.getLatitude());
+    EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
