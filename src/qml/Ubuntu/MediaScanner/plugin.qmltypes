@@ -142,7 +142,8 @@ Module {
             values: {
                 "AudioMedia": 1,
                 "VideoMedia": 2,
-                "AllMedia": 3
+                "ImageMedia": 3,
+                "AllMedia": 255
             }
         }
         Method {
