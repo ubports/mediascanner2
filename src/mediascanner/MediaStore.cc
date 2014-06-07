@@ -218,7 +218,10 @@ CREATE TABLE media (
     type INTEGER   -- 0=Audio, 1=Video
 );
 
-CREATE INDEX media_album_album_artist_idx ON media(album, album_artist);
+CREATE INDEX media_type_idx ON media(type);
+CREATE INDEX media_song_info_idx ON media(type, album_artist, album, disc_number, track_number, title) WHERE type = 0;
+CREATE INDEX media_artist_idx ON media(type, artist) WHERE type = 0;
+CREATE INDEX media_genre_idx ON media(type, genre) WHERE type = 0;
 
 CREATE TABLE media_attic (
     filename TEXT PRIMARY KEY NOT NULL,
