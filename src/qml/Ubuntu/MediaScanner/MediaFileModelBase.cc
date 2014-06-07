@@ -39,6 +39,10 @@ MediaFileModelBase::MediaFileModelBase(QObject *parent)
     roles[Roles::RoleDiscNumber] = "discNumber";
     roles[Roles::RoleTrackNumber] = "trackNumber";
     roles[Roles::RoleDuration] = "duration";
+    roles[Roles::RoleWidth] = "width";
+    roles[Roles::RoleHeight] = "height";
+    roles[Roles::RoleLatitude] = "latitude";
+    roles[Roles::RoleLongitude] = "longitude";
     roles[Roles::RoleArt] = "art";
 }
 
@@ -80,6 +84,14 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
         return media.getTrackNumber();
     case RoleDuration:
         return media.getDuration();
+    case RoleWidth:
+        return media.getWidth();
+    case RoleHeight:
+        return media.getHeight();
+    case RoleLatitude:
+        return media.getLatitude();
+    case RoleLongitude:
+        return media.getLongitude();
     case RoleArt:
         return make_album_art_uri(media.getAuthor(), media.getAlbum());
     default:

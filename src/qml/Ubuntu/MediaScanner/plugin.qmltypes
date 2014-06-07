@@ -101,7 +101,11 @@ Module {
                 "RoleDiscNumber": 11,
                 "RoleTrackNumber": 12,
                 "RoleDuration": 13,
-                "RoleArt": 14
+                "RoleWidth": 14,
+                "RoleHeight": 15,
+                "RoleLatitude": 16,
+                "RoleLongitude": 17,
+                "RoleArt": 18
             }
         }
         Property { name: "rowCount"; type: "int"; isReadonly: true }
@@ -130,6 +134,10 @@ Module {
         Property { name: "discNumber"; type: "int"; isReadonly: true }
         Property { name: "trackNumber"; type: "int"; isReadonly: true }
         Property { name: "duration"; type: "int"; isReadonly: true }
+        Property { name: "width"; type: "int"; isReadonly: true }
+        Property { name: "height"; type: "int"; isReadonly: true }
+        Property { name: "latitude"; type: "double"; isReadonly: true }
+        Property { name: "longitude"; type: "double"; isReadonly: true }
         Property { name: "art"; type: "string"; isReadonly: true }
     }
     Component {

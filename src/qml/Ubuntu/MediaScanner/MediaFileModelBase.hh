@@ -48,6 +48,10 @@ public:
         RoleDiscNumber,
         RoleTrackNumber,
         RoleDuration,
+        RoleWidth,
+        RoleHeight,
+        RoleLatitude,
+        RoleLongitude,
         RoleArt,
     };
 
