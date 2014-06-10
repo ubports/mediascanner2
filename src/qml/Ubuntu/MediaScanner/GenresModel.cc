@@ -18,6 +18,8 @@
  */
 
 #include "GenresModel.hh"
+#include <exception>
+#include <QDebug>
 
 using namespace mediascanner::qml;
 
@@ -79,7 +81,12 @@ void GenresModel::update() {
     if (store == nullptr) {
         this->results.clear();
     } else {
-        this->results = store->store.listGenres(limit);
+        try {
+            this->results = store->store.listGenres(limit);
+        } catch (const std::exception &e) {
+            qWarning() << "Failed to retrieve genre list:" << e.what();
+            this->results.clear();
+        }
     }
     endResetModel();
     Q_EMIT rowCountChanged();

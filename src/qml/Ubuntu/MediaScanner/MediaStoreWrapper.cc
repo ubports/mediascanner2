@@ -18,6 +18,8 @@
  */
 
 #include "MediaStoreWrapper.hh"
+#include <exception>
+#include <QDebug>
 #include <QQmlEngine>
 
 #include <core/dbus/asio/executor.h>
@@ -42,10 +44,14 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
     QList<QObject*> result;
-    for (const auto &media : store.query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
-        auto wrapper = new MediaFileWrapper(media);
-        QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
-        result.append(wrapper);
+    try {
+        for (const auto &media : store.query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
+            auto wrapper = new MediaFileWrapper(media);
+            QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
+            result.append(wrapper);
+        }
+    } catch (const std::exception &e) {
+        qWarning() << "Failed to retrieve query results:" << e.what();
     }
     return result;
 }
@@ -54,7 +60,7 @@ MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
     MediaFileWrapper *wrapper;
     try {
         wrapper = new MediaFileWrapper(store.lookup(filename.toStdString()));
-    } catch (std::runtime_error &e) {
+    } catch (std::exception &e) {
         return nullptr;
     }
     QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
