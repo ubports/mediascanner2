@@ -10,6 +10,11 @@ add_library(mediascanner SHARED
   mozilla/Normalize.c
 )
 
+set(symbol_map "${CMAKE_CURRENT_SOURCE_DIR}/mediascanner-2.0.map")
+set_target_properties(mediascanner PROPERTIES
+    LINK_FLAGS "${ldflags} -Wl,--version-script,${symbol_map}")
+set_target_properties(mediascanner PROPERTIES LINK_DEPENDS ${symbol_map})
+
 add_definitions(${MEDIASCANNER_CFLAGS})
 target_link_libraries(mediascanner ${MEDIASCANNER_LIBRARIES})
 

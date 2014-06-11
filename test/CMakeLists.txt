@@ -27,7 +27,7 @@ add_executable(basic basic.cc)
 target_link_libraries(basic mediascanner scannerstuff gtest)
 add_test(basic basic)
 
-add_executable(test_mediastore test_mediastore.cc)
+add_executable(test_mediastore test_mediastore.cc ../src/mediascanner/utils.cc)
 target_link_libraries(test_mediastore mediascanner gtest)
 add_test(test_mediastore test_mediastore)
 
