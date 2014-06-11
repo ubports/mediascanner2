@@ -215,6 +215,8 @@ static void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilde
         EXIF_TAG_DATE_TIME_DIGITIZED
     };
     static const char exif_date_template[] = "%Y:%m:%d %H:%M:%S";
+    static const char iso8601_date_format[] = "%Y-%m-%dT%H:%M:%S";
+    static const char iso8601_date_with_zone_format[] = "%Y-%m-%dT%H:%M:%S%z";
     struct tm timeinfo;
     bool have_date = false;
 
@@ -223,7 +225,6 @@ static void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilde
         if (ent == nullptr) {
             continue;
         }
-        struct tm timeinfo;
         if (strptime((const char*)ent->data, exif_date_template, &timeinfo) != nullptr) {
             have_date = true;
             break;
@@ -238,12 +239,12 @@ static void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilde
     if (ent) {
         timeinfo.tm_gmtoff = (int)exif_get_sshort(ent->data, order) * 3600;
 
-        if (strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", &timeinfo) != 0) {
+        if (strftime(buf, sizeof(buf), iso8601_date_with_zone_format, &timeinfo) != 0) {
             mfb.setDate(buf);
         }
     } else {
         /* No time zone info */
-        if (strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", &timeinfo) != 0) {
+        if (strftime(buf, sizeof(buf), iso8601_date_format, &timeinfo) != 0) {
             mfb.setDate(buf);
         }
     }
