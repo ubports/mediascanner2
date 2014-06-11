@@ -192,8 +192,10 @@ void MetadataExtractorPrivate::extract_gst(const DetectedFile &d, MediaFileBuild
         gst_discoverer_info_get_duration(info.get())/GST_SECOND));
 
     /* Check for video specific information */
-    const GList *streams = gst_discoverer_info_get_stream_list(info.get());
-    for (const GList *l = streams; l != nullptr; l = l->next) {
+    unique_ptr<GList, void(*)(GList*)> streams(
+        gst_discoverer_info_get_stream_list(info.get()),
+        gst_discoverer_stream_info_list_free);
+    for (const GList *l = streams.get(); l != nullptr; l = l->next) {
         auto stream_info = static_cast<GstDiscovererStreamInfo*>(l->data);
 
         if (GST_IS_DISCOVERER_VIDEO_INFO(stream_info)) {
