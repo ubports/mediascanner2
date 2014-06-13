@@ -99,4 +99,24 @@ MediaFileBuilder &MediaFileBuilder::setDuration(int n) {
     return *this;
 }
 
+MediaFileBuilder &MediaFileBuilder::setWidth(int w) {
+    p->width = w;
+    return *this;
+}
+
+MediaFileBuilder &MediaFileBuilder::setHeight(int h) {
+    p->height = h;
+    return *this;
+}
+
+MediaFileBuilder &MediaFileBuilder::setLatitude(double l) {
+    p->latitude = l;
+    return *this;
+}
+
+MediaFileBuilder &MediaFileBuilder::setLongitude(double l) {
+    p->longitude = l;
+    return *this;
+}
+
 }

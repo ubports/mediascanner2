@@ -59,6 +59,10 @@ public:
     MediaFileBuilder &setDiscNumber(int n);
     MediaFileBuilder &setTrackNumber(int n);
     MediaFileBuilder &setDuration(int d);
+    MediaFileBuilder &setWidth(int w);
+    MediaFileBuilder &setHeight(int h);
+    MediaFileBuilder &setLatitude(double l);
+    MediaFileBuilder &setLongitude(double l);
 
 private:
     MediaFilePrivate *p;

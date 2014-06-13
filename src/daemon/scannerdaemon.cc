@@ -104,6 +104,11 @@ ScannerDaemon::ScannerDaemon() :
     const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
     if (videodir)
         addDir(videodir);
+
+    const char *picturesdir = g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
+    if (picturesdir)
+        addDir(picturesdir);
+
     // In case someone opened the db file before we could populate it.
     invalidator.invalidate();
     // This is at the end because the initial scan may take a while

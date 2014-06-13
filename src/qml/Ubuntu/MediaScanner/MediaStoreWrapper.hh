@@ -38,6 +38,7 @@ public:
     enum MediaType {
         AudioMedia = mediascanner::AudioMedia,
         VideoMedia = mediascanner::VideoMedia,
+        ImageMedia = mediascanner::ImageMedia,
         AllMedia = mediascanner::AllMedia,
     };
     MediaStoreWrapper(QObject *parent=0);

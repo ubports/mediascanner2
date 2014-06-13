@@ -78,6 +78,22 @@ int MediaFileWrapper::duration() const {
     return media.getDuration();
 }
 
+int MediaFileWrapper::width() const {
+    return media.getWidth();
+}
+
+int MediaFileWrapper::height() const {
+    return media.getHeight();
+}
+
+double MediaFileWrapper::latitude() const {
+    return media.getLatitude();
+}
+
+double MediaFileWrapper::longitude() const {
+    return media.getLongitude();
+}
+
 QString MediaFileWrapper::art() const {
     return make_album_art_uri(media.getAuthor(), media.getAlbum());
 }

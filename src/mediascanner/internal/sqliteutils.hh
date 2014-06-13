@@ -51,6 +51,12 @@ public:
             throw std::runtime_error(sqlite3_errstr(rc));
     }
 
+    void bind(int pos, double value) {
+        rc = sqlite3_bind_double(statement, pos, value);
+        if (rc != SQLITE_OK)
+            throw std::runtime_error(sqlite3_errstr(rc));
+    }
+
     void bind(int pos, const std::string &value) {
         rc = sqlite3_bind_text(statement, pos, value.c_str(), value.size(),
                                SQLITE_TRANSIENT);
@@ -86,6 +92,12 @@ public:
         if (rc != SQLITE_ROW)
             throw std::runtime_error("Statement hasn't been executed, or no more results");
         return sqlite3_column_int(statement, column);
+    }
+
+    double getDouble(int column) {
+        if (rc != SQLITE_ROW)
+            throw std::runtime_error("Statement hasn't been executed, or no more results");
+        return sqlite3_column_double(statement, column);
     }
 
     void finalize() {

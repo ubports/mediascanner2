@@ -43,6 +43,10 @@ class MediaFileWrapper : public QObject {
     Q_PROPERTY(int discNumber READ discNumber CONSTANT)
     Q_PROPERTY(int trackNumber READ trackNumber CONSTANT)
     Q_PROPERTY(int duration READ duration CONSTANT)
+    Q_PROPERTY(int width READ width CONSTANT)
+    Q_PROPERTY(int height READ height CONSTANT)
+    Q_PROPERTY(double latitude READ latitude CONSTANT)
+    Q_PROPERTY(double longitude READ longitude CONSTANT)
     Q_PROPERTY(QString art READ art CONSTANT)
 public:
     MediaFileWrapper(const mediascanner::MediaFile &media, QObject *parent=0);
@@ -59,6 +63,10 @@ public:
     int discNumber() const;
     int trackNumber() const;
     int duration() const;
+    int width() const;
+    int height() const;
+    double latitude() const;
+    double longitude() const;
     QString art() const;
 private:
     const mediascanner::MediaFile media;

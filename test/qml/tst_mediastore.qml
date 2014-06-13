@@ -35,6 +35,10 @@ Item {
             checkAttr("discNumber", 1);
             checkAttr("trackNumber", 1);
             checkAttr("duration", 235);
+            checkAttr("width", 0);
+            checkAttr("height", 0);
+            checkAttr("latitude", 0.0);
+            checkAttr("longitude", 0.0);
             checkAttr("art", "image://albumart/artist=Spiderbait&album=Spiderbait");
         }
 

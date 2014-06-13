@@ -52,6 +52,11 @@ public:
     int getDiscNumber() const noexcept;
     int getTrackNumber() const noexcept;
     int getDuration() const noexcept;
+    int getWidth() const noexcept;
+    int getHeight() const noexcept;
+    double getLatitude() const noexcept;
+    double getLongitude() const noexcept;
+
     MediaType getType() const noexcept;
     bool operator==(const MediaFile &other) const;
     bool operator!=(const MediaFile &other) const;

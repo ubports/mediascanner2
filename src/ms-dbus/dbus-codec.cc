@@ -50,6 +50,10 @@ void Codec<MediaFile>::encode_argument(Message::Writer &out, const MediaFile &fi
     core::dbus::encode_argument(w, (int32_t)file.getDiscNumber());
     core::dbus::encode_argument(w, (int32_t)file.getTrackNumber());
     core::dbus::encode_argument(w, (int32_t)file.getDuration());
+    core::dbus::encode_argument(w, (int32_t)file.getWidth());
+    core::dbus::encode_argument(w, (int32_t)file.getHeight());
+    core::dbus::encode_argument(w, file.getLatitude());
+    core::dbus::encode_argument(w, file.getLongitude());
     core::dbus::encode_argument(w, (int32_t)file.getType());
     out.close_structure(std::move(w));
 }
@@ -58,10 +62,12 @@ void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
     auto r = in.pop_structure();
     string filename, content_type, etag, title, author;
     string album, album_artist, date, genre;
-    int32_t disc_number, track_number, duration, type;
+    int32_t disc_number, track_number, duration, width, height, type;
+    double latitude, longitude;
     r >> filename >> content_type >> etag >> title >> author
       >> album >> album_artist >> date >> genre
-      >> disc_number >> track_number >> duration >> type;
+      >> disc_number >> track_number >> duration
+      >> width >> height >> latitude >> longitude >> type;
     file = MediaFileBuilder(filename)
         .setContentType(content_type)
         .setETag(etag)
@@ -74,6 +80,10 @@ void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
         .setDiscNumber(disc_number)
         .setTrackNumber(track_number)
         .setDuration(duration)
+        .setWidth(width)
+        .setHeight(height)
+        .setLatitude(latitude)
+        .setLongitude(longitude)
         .setType((MediaType)type);
 }
 

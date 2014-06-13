@@ -37,6 +37,12 @@ struct MediaFilePrivate {
     int disc_number;
     int track_number;
     int duration; // In seconds.
+
+    int width;
+    int height;
+    double latitude;  // In degrees, negative for South
+    double longitude; // In degrees, negative for West
+
     MediaType type;
 
     MediaFilePrivate();
