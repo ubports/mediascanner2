@@ -34,6 +34,10 @@ struct MediaStoreInterface {
         return s;
     }
 
+    inline static const std::chrono::milliseconds default_timeout() {
+        return std::chrono::seconds{10};
+    }
+
     struct Errors {
         struct Error {
             inline static const std::string& name() {
@@ -59,7 +63,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -72,7 +76,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -98,7 +102,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -111,7 +115,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -124,7 +128,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -137,7 +141,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -150,7 +154,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -163,7 +167,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 
@@ -176,7 +180,7 @@ struct MediaStoreInterface {
         }
 
         inline static const std::chrono::milliseconds default_timeout() {
-            return std::chrono::seconds{1};
+            return Interface::default_timeout();
         }
     };
 };
