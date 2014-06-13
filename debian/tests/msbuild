@@ -11,9 +11,11 @@ trap "rm -rf $WORKDIR" 0 INT QUIT ABRT PIPE TERM
 cd $WORKDIR
 cat <<EOF > mstest.cpp
 #include<mediascanner/MediaFileBuilder.hh>
+#include<mediascanner/MediaFile.hh>
 
 int main(int argc, char **argv) {
     mediascanner::MediaFileBuilder mfb("dummy");
+    mediascanner::MediaFile mf(mfb);
     return 0;
 }
 EOF
