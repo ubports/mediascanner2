@@ -1,9 +1,11 @@
 build
 .project
 .cproject
+.pydevproject
 .settings
 buildopt
 buildcoverage
+buildclang
 ./obj-*
 debian/files
 debian/libmediascanner-2.0-0
