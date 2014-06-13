@@ -1,3 +1,9 @@
+mediascanner2 (0.101+14.10.20140530-0ubuntu2) UNRELEASED; urgency=low
+
+  * debian/*symbols: auto-update new symbols to released version
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 13 Jun 2014 06:22:29 +0000
+
 mediascanner2 (0.101+14.10.20140530-0ubuntu1) utopic; urgency=low
 
   [ James Henstridge ]
