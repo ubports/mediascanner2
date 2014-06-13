@@ -18,6 +18,8 @@
  */
 
 #include "ArtistsModel.hh"
+#include <exception>
+#include <QDebug>
 
 using namespace mediascanner::qml;
 
@@ -112,10 +114,15 @@ void ArtistsModel::update() {
     if (store == nullptr) {
         this->results.clear();
     } else {
-        if (album_artists) {
-            this->results = store->store.listAlbumArtists(filter, limit);
-        } else {
-            this->results = store->store.listArtists(filter, limit);
+        try {
+            if (album_artists) {
+                this->results = store->store.listAlbumArtists(filter, limit);
+            } else {
+                this->results = store->store.listArtists(filter, limit);
+            }
+        } catch (const std::exception &e) {
+            qWarning() << "Failed to retrieve artist list:" << e.what();
+            this->results.clear();
         }
     }
     endResetModel();

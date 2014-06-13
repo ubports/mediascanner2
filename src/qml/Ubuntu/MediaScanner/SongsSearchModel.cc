@@ -18,6 +18,8 @@
  */
 
 #include "SongsSearchModel.hh"
+#include <exception>
+#include <QDebug>
 
 using namespace mediascanner::qml;
 
@@ -51,6 +53,11 @@ void SongsSearchModel::update() {
     if (store == nullptr) {
         updateResults(std::vector<mediascanner::MediaFile>());
     } else {
-        updateResults(store->store.query(query.toStdString(), mediascanner::AudioMedia));
+        try {
+            updateResults(store->store.query(query.toStdString(), mediascanner::AudioMedia));
+        } catch (const std::exception &e) {
+            qWarning() << "Failed to retrieve song search results:" << e.what();
+            updateResults(std::vector<mediascanner::MediaFile>());
+        }
     }
 }
