@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Build a program against scope libs to ensure it is installed properly
+# Build a test program using libmediascanner.
 # (C) 2014 Canonical Ltd.
 # Authors: Jussi Pakkanen <jussi.pakkanen@canonical.com>
 
