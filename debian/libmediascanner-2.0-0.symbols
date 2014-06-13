@@ -1,4 +1,4 @@
-libmediascanner-2.0.so.0 libmediascanner-2.0 #MINVER#
+libmediascanner-2.0.so.0 libmediascanner-2.0-0 #MINVER#
  (c++)"mediascanner::MediaStore::archiveItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"mediascanner::MediaStore::pruneDeleted()@Base" 0replaceme
  (c++)"mediascanner::MediaStore::restoreItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
