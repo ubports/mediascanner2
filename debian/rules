@@ -14,3 +14,7 @@ export CCACHE_SLOPPINESS=time_macros
 
 override_dh_auto_test:
 	dh_auto_test --max-parallel=1 -- ARGS="--verbose"
+
+override_dh_installdeb:
+	dh_apparmor --profile-name=usr.bin.mediascanner-service-2.0 -pmediascanner2.0
+	dh_installdeb

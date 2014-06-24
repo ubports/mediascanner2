@@ -1,0 +1,69 @@
+#include <tunables/global>
+
+/usr/bin/mediascanner-service-2.0 {
+  #include <abstractions/base>
+  #include <abstractions/audio>
+  #include <abstractions/bash>
+  #include <abstractions/dbus-session>
+  #include <abstractions/dbus-strict>
+  #include <abstractions/nameservice>
+  #include <abstractions/private-files-strict>
+  #include <abstractions/user-tmp>
+  #include "/usr/share/apparmor/hardware/audio.d"
+  #include "/usr/share/apparmor/hardware/graphics.d"
+  #include "/usr/share/apparmor/hardware/video.d"
+
+  @{PROC}/interrupts r,
+  owner @{PROC}/cmdline r,
+  owner @{PROC}/[0-9]*/auxv r,
+  owner @{PROC}/[0-9]*/fd/ r,
+  owner @{PROC}/[0-9]*/status r,
+  owner @{PROC}/[0-9]*/task/ r,
+  owner @{PROC}/[0-9]*/task/[0-9]*/ r,
+  owner @{PROC}/[0-9]*/cmdline r,
+
+  /dev/pts/               r,
+  owner /dev/pts/[0-9]*   rw,
+
+  /bin/dash ixr,
+  /usr/bin/dbus-send ixr,
+  /usr/bin/mediascanner-service-2.0 r,
+
+  # GStreamer binary registry - hybris pulls this in for everything now, not
+  # just audio
+  owner @{HOME}/.gstreamer*/registry.*.bin*       rw,
+  owner @{HOME}/.gstreamer*/                      rw,
+  owner @{HOME}/.cache/gstreamer*/registry.*.bin* rw,
+  /usr/lib/@{multiarch}/gstreamer*/gstreamer*/gst-plugin-scanner ix,
+
+  # Explicitly deny loading any libraries owned by us
+  audit deny owner /** m,
+
+  # Allow read on all directories
+  /**/ r,
+
+  # Allow read on click install directories, removable media and files in
+  # /usr/local/share.
+  /usr/share/** r,
+  /usr/local/share/** r,
+  /{media,mnt,opt,srv}/** r,
+
+  # Allow reading any files in non-hidden directories
+  owner @{HOME}/[^.]*    rk,
+  owner @{HOME}/[^.]*/   rk,
+  owner @{HOME}/[^.]*/** rk,
+
+  # Allow reading files in XDG directories (ie, where apps are allowed to
+  # write)
+  owner @{HOME}/.config/user-dirs.dirs r,
+  owner @{HOME}/.cache/**       rk,
+  owner @{HOME}/.local/share/** rk,
+  owner /{,var/}run/user/[0-9]*/** rk,
+
+  # Write out the database files
+  owner @{HOME}/.cache/mediascanner-2.0/   rw,
+  owner @{HOME}/.cache/mediascanner-2.0/** rwkl,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.bin.mediascanner-service-2.0>
+}
