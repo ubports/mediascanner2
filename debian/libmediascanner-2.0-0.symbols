@@ -7,6 +7,8 @@ libmediascanner-2.0.so.0 libmediascanner-2.0-0 #MINVER#
  (c++)"mediascanner::MediaStore::MediaStore(mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::MediaStore(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::OpenType, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::~MediaStore()@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaStoreBase::MediaStoreBase()@Base" 0replaceme
+ (c++)"mediascanner::MediaStoreBase::~MediaStoreBase()@Base" 0replaceme
  (c++)"mediascanner::MediaFileBuilder::setDuration(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setLatitude(double)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setLongitude(double)@Base" 0.101+14.10.20140613
@@ -106,3 +108,21 @@ libmediascanner-2.0.so.0 libmediascanner-2.0-0 #MINVER#
  (c++)"mediascanner::MediaFile::getHeight() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::operator==(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::operator!=(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
+ (c++)"typeinfo for mediascanner::MediaStore@Base" 0replaceme
+ (c++)"typeinfo for mediascanner::MediaStoreBase@Base" 0replaceme
+ (c++)"typeinfo name for mediascanner::MediaStore@Base" 0replaceme
+ (c++)"typeinfo name for mediascanner::MediaStoreBase@Base" 0replaceme
+ (c++)"VTT for mediascanner::MediaStore@Base" 0replaceme
+ (c++)"vtable for mediascanner::MediaStore@Base" 0replaceme
+ (c++)"vtable for mediascanner::MediaStoreBase@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::listGenres(int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::~MediaStore()@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::lookup(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::MediaType, int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::queryAlbums(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::getETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::listSongs(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::listAlbums(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::listArtists(mediascanner::Filter const&, int) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::listAlbumArtists(mediascanner::Filter const&, int) const@Base" 0replaceme
