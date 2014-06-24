@@ -33,10 +33,11 @@ class Filter;
 
 class MediaStoreBase {
 public:
+    MediaStoreBase();
     virtual ~MediaStoreBase();
 
-    //MediaStoreBase(const MediaStoreBase &other) = delete;
-    //MediaStoreBase operator=(const MediaStoreBase &other) = delete;
+    MediaStoreBase(const MediaStoreBase &other) = delete;
+    MediaStoreBase& operator=(const MediaStoreBase &other) = delete;
 
     virtual MediaFile lookup(const std::string &filename) const = 0;
     virtual std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const = 0;
@@ -48,9 +49,6 @@ public:
     virtual std::vector<std::string> listArtists(const Filter &filter, int limit=-1) const = 0;
     virtual std::vector<std::string>listAlbumArtists(const Filter &filter, int limit=-1) const = 0;
     virtual std::vector<std::string>listGenres(int limit=-1) const = 0;
-
-protected:
-    MediaStoreBase();
 };
 
 }

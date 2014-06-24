@@ -19,6 +19,7 @@
 
 #include "MediaStoreWrapper.hh"
 #include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <QDebug>
 #include <QQmlEngine>
@@ -43,7 +44,7 @@ static core::dbus::Bus::Ptr the_session_bus() {
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     : QObject(parent) {
     const char *use_dbus = getenv("MEDIASCANNER_USE_DBUS");
-    if (use_dbus != nullptr && std::string(use_dbus) == "1") {
+    if (use_dbus != nullptr && !strcmp(use_dbus, "1")) {
         store.reset(new mediascanner::dbus::ServiceStub(the_session_bus()));
     } else {
         store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
