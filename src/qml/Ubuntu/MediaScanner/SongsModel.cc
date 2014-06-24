@@ -140,7 +140,7 @@ void SongsModel::update() {
         updateResults(std::vector<mediascanner::MediaFile>());
     } else {
         try {
-            updateResults(store->store.listSongs(filter, limit));
+            updateResults(store->store->listSongs(filter, limit));
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve songs list:" << e.what();
             updateResults(std::vector<mediascanner::MediaFile>());

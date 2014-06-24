@@ -116,9 +116,9 @@ void ArtistsModel::update() {
     } else {
         try {
             if (album_artists) {
-                this->results = store->store.listAlbumArtists(filter, limit);
+                this->results = store->store->listAlbumArtists(filter, limit);
             } else {
-                this->results = store->store.listArtists(filter, limit);
+                this->results = store->store->listArtists(filter, limit);
             }
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve artist list:" << e.what();

@@ -18,11 +18,13 @@
  */
 
 #include "MediaStoreWrapper.hh"
+#include <cstdlib>
 #include <exception>
 #include <QDebug>
 #include <QQmlEngine>
 
 #include <core/dbus/asio/executor.h>
+#include <mediascanner/MediaStore.hh>
 #include <ms-dbus/service-stub.hh>
 
 using namespace mediascanner::qml;
@@ -39,13 +41,19 @@ static core::dbus::Bus::Ptr the_session_bus() {
 }
 
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
-    : QObject(parent), store(the_session_bus()) {
+    : QObject(parent) {
+    const char *use_dbus = getenv("MEDIASCANNER_QML_USE_DBUS");
+    if (use_dbus != nullptr && std::string(use_dbus) == "1") {
+        store.reset(new mediascanner::dbus::ServiceStub(the_session_bus()));
+    } else {
+        store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
+    }
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
     QList<QObject*> result;
     try {
-        for (const auto &media : store.query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
+        for (const auto &media : store->query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
             auto wrapper = new MediaFileWrapper(media);
             QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
             result.append(wrapper);
@@ -59,7 +67,7 @@ QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
 MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
     MediaFileWrapper *wrapper;
     try {
-        wrapper = new MediaFileWrapper(store.lookup(filename.toStdString()));
+        wrapper = new MediaFileWrapper(store->lookup(filename.toStdString()));
     } catch (std::exception &e) {
         return nullptr;
     }

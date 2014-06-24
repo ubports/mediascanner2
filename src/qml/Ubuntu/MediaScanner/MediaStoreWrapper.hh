@@ -20,11 +20,13 @@
 #ifndef MEDIASCANNER_QML_MEDIASTOREWRAPPER_H
 #define MEDIASCANNER_QML_MEDIASTOREWRAPPER_H
 
+#include <memory>
+
 #include <QList>
 #include <QObject>
 #include <QString>
 
-#include <ms-dbus/service-stub.hh>
+#include <mediascanner/MediaStoreBase.hh>
 #include "MediaFileWrapper.hh"
 
 namespace mediascanner {
@@ -46,7 +48,7 @@ public:
     Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
     Q_INVOKABLE mediascanner::qml::MediaFileWrapper *lookup(const QString &filename);
 
-    mediascanner::dbus::ServiceStub store;
+    std::unique_ptr<mediascanner::MediaStoreBase> store;
 };
 
 }

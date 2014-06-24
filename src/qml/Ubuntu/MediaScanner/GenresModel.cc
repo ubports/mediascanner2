@@ -82,7 +82,7 @@ void GenresModel::update() {
         this->results.clear();
     } else {
         try {
-            this->results = store->store.listGenres(limit);
+            this->results = store->store->listGenres(limit);
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve genre list:" << e.what();
             this->results.clear();
