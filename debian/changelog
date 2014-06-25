@@ -1,8 +1,31 @@
-mediascanner2 (0.101+14.10.20140613-0ubuntu2) UNRELEASED; urgency=low
+mediascanner2 (0.101+14.10.20140625-0ubuntu1) utopic; urgency=low
 
+  [ Ubuntu daily release ]
   * debian/*symbols: auto-update new symbols to released version
 
- -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 25 Jun 2014 16:28:49 +0000
+  [ James Henstridge ]
+  * Enable the QML plugin to pick between two MediaStore backends: the
+    direct disk backend and the D-Bus interface. The choice is made via
+    the MEDIASCANNER_USE_DBUS environment variable, and defaults to
+    direct access.
+
+  [ Jamie Strandboge ]
+  * * add AppArmor profile (LP: #1319065) - add
+    debian/usr.bin.mediascanner-service-2.0 - debian/control: Build-
+    Depends on dh-apparmor - debian/rules: update override_dh_installdeb
+    to use dh_apparmor - debian/mediascanner2.0.dirs: add etc/apparmor.d
+    - debian/mediascanner2.0.install: install profile in to place (LP:
+    #1319065)
+
+  [ CI bot ]
+  * * add AppArmor profile (LP: #1319065) - add
+    debian/usr.bin.mediascanner-service-2.0 - debian/control: Build-
+    Depends on dh-apparmor - debian/rules: update override_dh_installdeb
+    to use dh_apparmor - debian/mediascanner2.0.dirs: add etc/apparmor.d
+    - debian/mediascanner2.0.install: install profile in to place (LP:
+    #1319065)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 25 Jun 2014 16:28:53 +0000
 
 mediascanner2 (0.101+14.10.20140613-0ubuntu1) utopic; urgency=low
 
