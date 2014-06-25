@@ -54,7 +54,7 @@ void SongsSearchModel::update() {
         updateResults(std::vector<mediascanner::MediaFile>());
     } else {
         try {
-            updateResults(store->store.query(query.toStdString(), mediascanner::AudioMedia));
+            updateResults(store->store->query(query.toStdString(), mediascanner::AudioMedia));
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve song search results:" << e.what();
             updateResults(std::vector<mediascanner::MediaFile>());

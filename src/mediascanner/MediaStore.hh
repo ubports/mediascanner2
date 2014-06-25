@@ -20,23 +20,18 @@
 #ifndef MEDIASTORE_HH_
 #define MEDIASTORE_HH_
 
-#include"scannercore.hh"
+#include "MediaStoreBase.hh"
 #include<vector>
 #include<string>
 
 namespace mediascanner {
-
-struct MediaStorePrivate;
-class MediaFile;
-class Album;
-class Filter;
 
 enum OpenType {
     MS_READ_ONLY,
     MS_READ_WRITE
 };
 
-class MediaStore final {
+class MediaStore final : public virtual MediaStoreBase {
 private:
     MediaStorePrivate *p;
 
@@ -44,21 +39,21 @@ public:
     MediaStore(OpenType access, const std::string &retireprefix="");
     MediaStore(const std::string &filename, OpenType access, const std::string &retireprefix="");
     MediaStore(const MediaStore &other) = delete;
-    MediaStore operator=(const MediaStore &other) = delete;
-    ~MediaStore();
+    MediaStore& operator=(const MediaStore &other) = delete;
+    virtual ~MediaStore();
 
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
-    MediaFile lookup(const std::string &filename) const;
-    std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
-    std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
-    std::vector<MediaFile> getAlbumSongs(const Album& album) const;
-    std::string getETag(const std::string &filename) const;
-    std::vector<MediaFile> listSongs(const Filter &filter, int limit=-1) const;
-    std::vector<Album> listAlbums(const Filter &filter, int limit=-1) const;
-    std::vector<std::string> listArtists(const Filter &filter, int limit=-1) const;
-    std::vector<std::string>listAlbumArtists(const Filter &filter, int limit=-1) const;
-    std::vector<std::string>listGenres(int limit=-1) const;
+    virtual MediaFile lookup(const std::string &filename) const override;
+    virtual std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const override;
+    virtual std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const override;
+    virtual std::vector<MediaFile> getAlbumSongs(const Album& album) const override;
+    virtual std::string getETag(const std::string &filename) const override;
+    virtual std::vector<MediaFile> listSongs(const Filter &filter, int limit=-1) const override;
+    virtual std::vector<Album> listAlbums(const Filter &filter, int limit=-1) const override;
+    virtual std::vector<std::string> listArtists(const Filter &filter, int limit=-1) const override;
+    virtual std::vector<std::string>listAlbumArtists(const Filter &filter, int limit=-1) const override;
+    virtual std::vector<std::string>listGenres(int limit=-1) const override;
 
     size_t size() const;
     void pruneDeleted();

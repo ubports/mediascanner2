@@ -8,11 +8,16 @@ global:
         mediascanner::Album::*;
         mediascanner::MediaFileBuilder::*;
         mediascanner::MediaStore::*;
+        mediascanner::MediaStoreBase::*;
         mediascanner::Filter::*;
+
+        typeinfo?for?mediascanner::*;
+        typeinfo?name?for?mediascanner::*;
+        VTT?for?mediascanner::*;
+        virtual?thunk?to?mediascanner::*;
+        vtable?for?mediascanner::*;
     };
 
 local:
-    extern "C++" {
-        *;
-    };
+    *;
 };

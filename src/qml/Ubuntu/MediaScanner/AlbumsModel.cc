@@ -119,7 +119,7 @@ void AlbumsModel::update() {
         updateResults(std::vector<mediascanner::Album>());
     } else {
         try {
-            updateResults(store->store.listAlbums(filter, limit));
+            updateResults(store->store->listAlbums(filter, limit));
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve album list:" << e.what();
             updateResults(std::vector<mediascanner::Album>());
