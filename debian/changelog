@@ -1,3 +1,10 @@
+mediascanner2 (0.101+14.10.20140625-0ubuntu2) utopic; urgency=medium
+
+  * debian/usr.bin.mediascanner-service-2.0: updates for libhybris based on
+    work by Ricardo Salveti. (LP: #1334940)
+
+ -- Jamie Strandboge <jamie@ubuntu.com>  Fri, 27 Jun 2014 08:00:22 -0500
+
 mediascanner2 (0.101+14.10.20140625-0ubuntu1) utopic; urgency=low
 
   [ Ubuntu daily release ]

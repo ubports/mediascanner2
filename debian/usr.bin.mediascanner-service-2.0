@@ -13,6 +13,9 @@
   #include "/usr/share/apparmor/hardware/graphics.d"
   #include "/usr/share/apparmor/hardware/video.d"
 
+  deny /dev/cpuctl/apps/tasks w,
+  deny /dev/cpuctl/apps/bg_non_interactive/tasks w,
+
   @{PROC}/interrupts r,
   owner @{PROC}/cmdline r,
   owner @{PROC}/[0-9]*/auxv r,
@@ -21,6 +24,38 @@
   owner @{PROC}/[0-9]*/task/ r,
   owner @{PROC}/[0-9]*/task/[0-9]*/ r,
   owner @{PROC}/[0-9]*/cmdline r,
+
+  /sys/kernel/debug/tracing/trace_marker w,
+  /dev/ashmem rw,
+
+  ptrace (read) peer=@{profile_name},
+
+  # libhybris
+  /{,var/}run/shm/hybris_shm_data rw,
+  /usr/lib/@{multiarch}/libhybris/*.so mr,
+  /{,android/}system/build.prop r,
+  # These libraries can be in any of:
+  #  /vendor/lib
+  #  /system/lib
+  #  /system/vendor/lib
+  #  /android/vendor/lib
+  #  /android/system/lib
+  #  /android/system/vendor/lib
+  /{,android/}vendor/lib/**           r,
+  /{,android/}vendor/lib/**.so        m,
+  /{,android/}system/lib/**           r,
+  /{,android/}system/lib/**.so        m,
+  /{,android/}system/vendor/lib/**    r,
+  /{,android/}system/vendor/lib/**.so m,
+
+  # attach_disconnected path
+  /dev/socket/property_service rw,
+
+  # Android logging triggered by platform. Can safely deny
+  deny /dev/log_main w,
+  deny /dev/log_radio w,
+  deny /dev/log_events w,
+  deny /dev/log_system w,
 
   /dev/pts/               r,
   owner /dev/pts/[0-9]*   rw,
@@ -33,8 +68,12 @@
   # just audio
   owner @{HOME}/.gstreamer*/registry.*.bin*       rw,
   owner @{HOME}/.gstreamer*/                      rw,
+  owner @{HOME}/.cache/gstreamer*/                rw,
   owner @{HOME}/.cache/gstreamer*/registry.*.bin* rw,
   /usr/lib/@{multiarch}/gstreamer*/gstreamer*/gst-plugin-scanner ix,
+
+  /{,android/}system/etc/media_codecs.xml r,
+  /etc/wildmidi/wildmidi.cfg r,
 
   # Explicitly deny loading any libraries owned by us
   audit deny owner /** m,
