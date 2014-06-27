@@ -1,3 +1,10 @@
+mediascanner2 (0.101+14.10.20140625-0ubuntu3) utopic; urgency=medium
+
+  * Disable short query test to work around a behavioral change in
+    SQLite.
+
+ -- Jussi Pakkanen <jussi.pakkanen@ubuntu.com>  Fri, 27 Jun 2014 18:07:53 +0300
+
 mediascanner2 (0.101+14.10.20140625-0ubuntu2) utopic; urgency=medium
 
   * debian/usr.bin.mediascanner-service-2.0: updates for libhybris based on
