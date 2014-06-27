@@ -1,9 +1,10 @@
 #include <tunables/global>
 
-/usr/bin/mediascanner-service-2.0 {
+/usr/bin/mediascanner-service-2.0 (attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/audio>
   #include <abstractions/bash>
+  #include <abstractions/consoles>
   #include <abstractions/dbus-session>
   #include <abstractions/dbus-strict>
   #include <abstractions/nameservice>
@@ -17,7 +18,7 @@
   deny /dev/cpuctl/apps/bg_non_interactive/tasks w,
 
   @{PROC}/interrupts r,
-  owner @{PROC}/cmdline r,
+  @{PROC}/cmdline r,
   owner @{PROC}/[0-9]*/auxv r,
   owner @{PROC}/[0-9]*/fd/ r,
   owner @{PROC}/[0-9]*/status r,
@@ -57,9 +58,6 @@
   deny /dev/log_events w,
   deny /dev/log_system w,
 
-  /dev/pts/               r,
-  owner /dev/pts/[0-9]*   rw,
-
   /bin/dash ixr,
   /usr/bin/dbus-send ixr,
   /usr/bin/mediascanner-service-2.0 r,
@@ -71,6 +69,11 @@
   owner @{HOME}/.cache/gstreamer*/                rw,
   owner @{HOME}/.cache/gstreamer*/registry.*.bin* rw,
   /usr/lib/@{multiarch}/gstreamer*/gstreamer*/gst-plugin-scanner ix,
+  owner /tmp/orcexec* m,
+  # gstreamer writes JIT compiled code in the form of orcexec.* files. Various
+  # locations are tried so silence the ones we won't permit anyway
+  deny /{,var/}run/user/*/orcexec* w,
+  deny @{HOME}/orcexec* w,
 
   /{,android/}system/etc/media_codecs.xml r,
   /etc/wildmidi/wildmidi.cfg r,
