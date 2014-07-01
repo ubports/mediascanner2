@@ -26,6 +26,9 @@
   owner @{PROC}/[0-9]*/task/[0-9]*/ r,
   owner @{PROC}/[0-9]*/cmdline r,
 
+  # specific to the mediatek soc
+  @{PROC}/xlog/setfil r,
+
   /sys/kernel/debug/tracing/trace_marker w,
   /dev/ashmem rw,
 

@@ -1,3 +1,9 @@
+mediascanner2 (0.101+14.10.20140627-0ubuntu3) UNRELEASED; urgency=medium
+
+  * apparmor: add missing proc file used by the mediatek soc
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 01 Jul 2014 11:29:31 +0800
+
 mediascanner2 (0.101+14.10.20140627-0ubuntu2) utopic; urgency=medium
 
   * debian/usr.bin.mediascanner-service-2.0: couple more minor updates for
