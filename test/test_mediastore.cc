@@ -316,13 +316,6 @@ TEST_F(MediaStoreTest, query_limit) {
     EXPECT_EQ(result[1], audio2); // title has highest weighting
 }
 
-/* When SQLite updated from 3.8.2 to 3.8.5, the behavior for
- * short searches seems to have changed and the test queries
- * here return empty. This test is currently disabled to make
- * the test suite pass so a new version of Mediascanner
- * can enter the archive. Do try to re-enable this as
- * soon as possible.
-
 TEST_F(MediaStoreTest, query_short) {
     MediaFile audio1 = MediaFileBuilder("/path/foo5.ogg")
         .setType(AudioMedia)
@@ -346,7 +339,7 @@ TEST_F(MediaStoreTest, query_short) {
     result = store.query("xy", AudioMedia);
     EXPECT_EQ(result.size(), 1);
 }
-*/
+
 TEST_F(MediaStoreTest, query_empty) {
     MediaFile audio1 = MediaFileBuilder("/path/foo5.ogg")
         .setType(AudioMedia)
