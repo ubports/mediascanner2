@@ -1080,10 +1080,9 @@ static int porterNext(
     /* We emit a token if:
      *  - there are two ideograms together,
      *  - there are three chars or more,
-     *  - we think this is a query and wildcard magic is desired.
-     * We think is a wildcard query when we have at least one
-     *  character, our current offset is one shy of nInput and the
-     *  character at iOffset is '*'.
+     *  - we are at the end of the input and have at least one char.
+     * This final case is to cover wildcard prefix searches with short
+     * prefixes.
      */
     // It is possible we have no token to emit here if iPrevBigramOffset was not
     //  0 on entry and there was no second CJK character.  iPrevBigramOffset
@@ -1092,10 +1091,9 @@ static int porterNext(
         (numChars == 2 && state == BIGRAM_USE) ||
         // otherwise, drop two-letter words (considered stop-words)
         (numChars >=3) ||
-        // wildcard case:
+        // final word wildcard case:
         (numChars >= 1 &&
-         (c->iOffset == c->nInput - 1) &&
-         (z[c->iOffset] == '*'))) {
+         c->iOffset == c->nInput)) {
       /* figure out the number of bytes to copy/stem */
       int n = c->iOffset - iStartOffset;
       /* make sure there is enough buffer space */
