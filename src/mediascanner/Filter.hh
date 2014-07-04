@@ -56,6 +56,11 @@ public:
     bool hasGenre() const;
     const std::string &getGenre() const;
 
+    void setOffset(int offset);
+    int getOffset() const;
+    void setLimit(int limit);
+    int getLimit() const;
+
 private:
     struct Private;
     Private *p;
