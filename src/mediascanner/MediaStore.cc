@@ -495,7 +495,7 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
-std::vector<MediaFile> MediaStore::listSongs(const Filter &filter, int limit) const {
+std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
     std::string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
@@ -515,7 +515,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
     }
     qs += R"(
 ORDER BY album_artist, album, disc_number, track_number, title
-LIMIT ?
+LIMIT ? OFFSET ?
 )";
     Statement query(p->db, qs.c_str());
     int param = 1;
@@ -532,12 +532,13 @@ LIMIT ?
     if (filter.hasGenre()) {
         query.bind(param++, filter.getGenre());
     }
-    query.bind(param++, limit);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
 
     return collect_media(query);
 }
 
-std::vector<Album> MediaStore::listAlbums(const Filter &filter, int limit) const {
+std::vector<Album> MediaStore::listAlbums(const Filter &filter) const {
     std::string qs(R"(
 SELECT album, album_artist FROM media
   WHERE type = ?
@@ -554,7 +555,7 @@ SELECT album, album_artist FROM media
     qs += R"(
 GROUP BY album, album_artist
 ORDER BY album_artist, album
-LIMIT ?
+LIMIT ? OFFSET ?
 )";
     Statement query(p->db, qs.c_str());
     int param = 1;
@@ -568,12 +569,13 @@ LIMIT ?
     if (filter.hasGenre()) {
         query.bind(param++, filter.getGenre());
     }
-    query.bind(param++, limit);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
 
     return collect_albums(query);
 }
 
-vector<std::string> MediaStore::listArtists(const Filter &filter, int limit) const {
+vector<std::string> MediaStore::listArtists(const Filter &filter) const {
     string qs(R"(
 SELECT artist FROM media
   WHERE type = ?
@@ -584,7 +586,7 @@ SELECT artist FROM media
     qs += R"(
   GROUP BY artist
   ORDER BY artist
-  LIMIT ?
+  LIMIT ? OFFSET ?
 )";
     Statement query(p->db, qs.c_str());
     int param = 1;
@@ -592,7 +594,8 @@ SELECT artist FROM media
     if (filter.hasGenre()) {
         query.bind(param++, filter.getGenre());
     }
-    query.bind(param++, limit);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
 
     vector<string> artists;
     while (query.step()) {
@@ -601,7 +604,7 @@ SELECT artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listAlbumArtists(const Filter &filter, int limit) const {
+vector<std::string> MediaStore::listAlbumArtists(const Filter &filter) const {
     string qs(R"(
 SELECT album_artist FROM media
   WHERE type = ?
@@ -612,7 +615,7 @@ SELECT album_artist FROM media
     qs += R"(
   GROUP BY album_artist
   ORDER BY album_artist
-  LIMIT ?
+  LIMIT ? OFFSET ?
 )";
     Statement query(p->db, qs.c_str());
     int param = 1;
@@ -620,7 +623,8 @@ SELECT album_artist FROM media
     if (filter.hasGenre()) {
         query.bind(param++, filter.getGenre());
     }
-    query.bind(param++, limit);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
 
     vector<string> artists;
     while (query.step()) {
@@ -629,16 +633,17 @@ SELECT album_artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listGenres(int limit) const {
+vector<std::string> MediaStore::listGenres(const Filter &filter) const {
     Statement query(p->db, R"(
 SELECT genre FROM media
   WHERE type = ?
   GROUP BY genre
   ORDER BY genre
-  LIMIT ?
+  LIMIT ? OFFSET ?
 )");
     query.bind(1, (int)AudioMedia);
-    query.bind(2, limit);
+    query.bind(2, filter.getLimit());
+    query.bind(3, filter.getOffset());
 
     vector<string> genres;
     while (query.step()) {

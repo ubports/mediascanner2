@@ -62,7 +62,7 @@ private:
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
     MediaStoreWrapper *store;
-    int limit;
+    mediascanner::Filter filter;
 };
 
 }

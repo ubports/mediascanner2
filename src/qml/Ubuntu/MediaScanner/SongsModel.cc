@@ -25,8 +25,7 @@ using namespace mediascanner::qml;
 
 SongsModel::SongsModel(QObject *parent)
     : MediaFileModelBase(parent),
-      store(nullptr),
-      limit(-1) {
+      store(nullptr) {
 }
 
 MediaStoreWrapper *SongsModel::getStore() {
@@ -125,12 +124,12 @@ void SongsModel::setGenre(const QVariant genre) {
 }
 
 int SongsModel::getLimit() {
-    return limit;
+    return filter.getLimit();
 }
 
 void SongsModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
+    if (filter.getLimit() != limit) {
+        filter.setLimit(limit);
         update();
     }
 }
@@ -140,7 +139,7 @@ void SongsModel::update() {
         updateResults(std::vector<mediascanner::MediaFile>());
     } else {
         try {
-            updateResults(store->store->listSongs(filter, limit));
+            updateResults(store->store->listSongs(filter));
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve songs list:" << e.what();
             updateResults(std::vector<mediascanner::MediaFile>());

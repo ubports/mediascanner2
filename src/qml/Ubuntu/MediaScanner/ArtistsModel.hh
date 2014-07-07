@@ -70,7 +70,6 @@ private:
     MediaStoreWrapper *store;
     Filter filter;
     bool album_artists;
-    int limit;
 };
 
 }

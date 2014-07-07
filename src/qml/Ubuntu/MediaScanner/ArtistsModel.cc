@@ -26,8 +26,7 @@ using namespace mediascanner::qml;
 ArtistsModel::ArtistsModel(QObject *parent)
     : QAbstractListModel(parent),
       store(nullptr),
-      album_artists(false),
-      limit(-1) {
+      album_artists(false) {
     roles[Roles::RoleArtist] = "artist";
 }
 
@@ -99,12 +98,12 @@ void ArtistsModel::setGenre(const QVariant genre) {
 }
 
 int ArtistsModel::getLimit() {
-    return limit;
+    return filter.getLimit();
 }
 
 void ArtistsModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
+    if (filter.getLimit() != limit) {
+        filter.setLimit(limit);
         update();
     }
 }
@@ -116,9 +115,9 @@ void ArtistsModel::update() {
     } else {
         try {
             if (album_artists) {
-                this->results = store->store->listAlbumArtists(filter, limit);
+                this->results = store->store->listAlbumArtists(filter);
             } else {
-                this->results = store->store->listArtists(filter, limit);
+                this->results = store->store->listArtists(filter);
             }
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve artist list:" << e.what();

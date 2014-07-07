@@ -58,7 +58,6 @@ private:
 
     MediaStoreWrapper *store;
     Filter filter;
-    int limit;
 };
 
 }

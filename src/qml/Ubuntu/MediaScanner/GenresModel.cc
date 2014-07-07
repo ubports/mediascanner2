@@ -25,8 +25,7 @@ using namespace mediascanner::qml;
 
 GenresModel::GenresModel(QObject *parent)
     : QAbstractListModel(parent),
-      store(nullptr),
-      limit(-1) {
+      store(nullptr) {
     roles[Roles::RoleGenre] = "genre";
 }
 
@@ -66,12 +65,12 @@ void GenresModel::setStore(MediaStoreWrapper *store) {
 }
 
 int GenresModel::getLimit() {
-    return limit;
+    return filter.getLimit();
 }
 
 void GenresModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
+    if (filter.getLimit() != limit) {
+        filter.setLimit(limit);
         update();
     }
 }
@@ -82,7 +81,7 @@ void GenresModel::update() {
         this->results.clear();
     } else {
         try {
-            this->results = store->store->listGenres(limit);
+            this->results = store->store->listGenres(filter);
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve genre list:" << e.what();
             this->results.clear();

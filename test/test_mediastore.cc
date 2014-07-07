@@ -654,8 +654,10 @@ TEST_F(MediaStoreTest, listSongs) {
     EXPECT_EQ("TitleOne", tracks[0].getTitle());
 
     // Apply a limit
-    tracks = store.listSongs(filter, 4);
+    filter.setLimit(4);
+    tracks = store.listSongs(filter);
     EXPECT_EQ(4, tracks.size());
+    filter.setLimit(-1);
 
     // List songs by artist
     filter.setArtist("ArtistOne");
@@ -746,8 +748,10 @@ TEST_F(MediaStoreTest, listAlbums) {
     EXPECT_EQ("AlbumOne", albums[0].getTitle());
 
     // test limit
-    albums = store.listAlbums(filter, 2);
+    filter.setLimit(2);
+    albums = store.listAlbums(filter);
     EXPECT_EQ(2, albums.size());
+    filter.setLimit(-1);
 
     // Songs by artist
     filter.setArtist("ArtistOne");
@@ -814,8 +818,10 @@ TEST_F(MediaStoreTest, listArtists) {
     EXPECT_EQ("ArtistTwo", artists[1]);
 
     // Test limit clause
-    artists = store.listArtists(filter, 1);
+    filter.setLimit(1);
+    artists = store.listArtists(filter);
     EXPECT_EQ(1, artists.size());
+    filter.setLimit(-1);
 
     // List "album artists"
     artists = store.listAlbumArtists(filter);
