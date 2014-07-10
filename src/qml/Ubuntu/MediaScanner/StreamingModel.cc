@@ -28,7 +28,7 @@ using namespace mediascanner::qml;
 
 namespace {
 
-const int BATCH_SIZE = 10;
+const int BATCH_SIZE = 200;
 
 class AdditionEvent : public QEvent {
 private:
@@ -87,12 +87,13 @@ StreamingModel::~StreamingModel() {
 }
 
 void StreamingModel::updateModel() {
-    setWorkerStop(false);
-    std::shared_ptr<mediascanner::MediaStoreBase> mediastore;
-    if (!store.isNull()) {
-        mediastore = store->store;
+    if (store.isNull()) {
+        query_future = QFuture<void>();
+        Q_EMIT filled();
+        return;
     }
-    query_future = QtConcurrent::run(runQuery, ++generation, this, mediastore);
+    setWorkerStop(false);
+    query_future = QtConcurrent::run(runQuery, ++generation, this, store->store);
 }
 
 QVariant StreamingModel::get(int row, int role) const {
