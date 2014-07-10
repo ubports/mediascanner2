@@ -9,7 +9,7 @@ import QtQuick.tooling 1.1
 Module {
     Component {
         name: "mediascanner::qml::AlbumModelBase"
-        prototype: "QAbstractListModel"
+        prototype: "mediascanner::qml::StreamingModel"
         Enum {
             name: "Roles"
             values: {
@@ -18,20 +18,12 @@ Module {
                 "RoleArt": 2
             }
         }
-        Property { name: "rowCount"; type: "int"; isReadonly: true }
-        Method {
-            name: "get"
-            type: "QVariant"
-            Parameter { name: "row"; type: "int" }
-            Parameter { name: "role"; type: "Roles" }
-        }
     }
     Component {
         name: "mediascanner::qml::AlbumsModel"
         prototype: "mediascanner::qml::AlbumModelBase"
         exports: ["Ubuntu.MediaScanner/AlbumsModel 0.1"]
         exportMetaObjectRevisions: [0]
-        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "artist"; type: "QVariant" }
         Property { name: "albumArtist"; type: "QVariant" }
         Property { name: "genre"; type: "QVariant" }
@@ -39,7 +31,7 @@ Module {
     }
     Component {
         name: "mediascanner::qml::ArtistsModel"
-        prototype: "QAbstractListModel"
+        prototype: "mediascanner::qml::StreamingModel"
         exports: ["Ubuntu.MediaScanner/ArtistsModel 0.1"]
         exportMetaObjectRevisions: [0]
         Enum {
@@ -48,21 +40,13 @@ Module {
                 "RoleArtist": 0
             }
         }
-        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "albumArtists"; type: "bool" }
         Property { name: "genre"; type: "QVariant" }
         Property { name: "limit"; type: "int" }
-        Property { name: "rowCount"; type: "int"; isReadonly: true }
-        Method {
-            name: "get"
-            type: "QVariant"
-            Parameter { name: "row"; type: "int" }
-            Parameter { name: "role"; type: "Roles" }
-        }
     }
     Component {
         name: "mediascanner::qml::GenresModel"
-        prototype: "QAbstractListModel"
+        prototype: "mediascanner::qml::StreamingModel"
         exports: ["Ubuntu.MediaScanner/GenresModel 0.1"]
         exportMetaObjectRevisions: [0]
         Enum {
@@ -71,19 +55,11 @@ Module {
                 "RoleGenre": 0
             }
         }
-        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "limit"; type: "int" }
-        Property { name: "rowCount"; type: "int"; isReadonly: true }
-        Method {
-            name: "get"
-            type: "QVariant"
-            Parameter { name: "row"; type: "int" }
-            Parameter { name: "role"; type: "Roles" }
-        }
     }
     Component {
         name: "mediascanner::qml::MediaFileModelBase"
-        prototype: "QAbstractListModel"
+        prototype: "mediascanner::qml::StreamingModel"
         Enum {
             name: "Roles"
             values: {
@@ -108,18 +84,12 @@ Module {
                 "RoleArt": 18
             }
         }
-        Property { name: "rowCount"; type: "int"; isReadonly: true }
-        Method {
-            name: "get"
-            type: "QVariant"
-            Parameter { name: "row"; type: "int" }
-            Parameter { name: "role"; type: "Roles" }
-        }
     }
     Component {
         name: "mediascanner::qml::MediaFileWrapper"
         prototype: "QObject"
         exports: ["Ubuntu.MediaScanner/MediaFile 0.1"]
+        isCreatable: false
         exportMetaObjectRevisions: [0]
         Property { name: "filename"; type: "string"; isReadonly: true }
         Property { name: "uri"; type: "string"; isReadonly: true }
@@ -171,7 +141,6 @@ Module {
         prototype: "mediascanner::qml::MediaFileModelBase"
         exports: ["Ubuntu.MediaScanner/SongsModel 0.1"]
         exportMetaObjectRevisions: [0]
-        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "artist"; type: "QVariant" }
         Property { name: "album"; type: "QVariant" }
         Property { name: "albumArtist"; type: "QVariant" }
@@ -183,7 +152,20 @@ Module {
         prototype: "mediascanner::qml::MediaFileModelBase"
         exports: ["Ubuntu.MediaScanner/SongsSearchModel 0.1"]
         exportMetaObjectRevisions: [0]
-        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
         Property { name: "query"; type: "string" }
+    }
+    Component {
+        name: "mediascanner::qml::StreamingModel"
+        prototype: "QAbstractListModel"
+        Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Signal { name: "filled" }
+        Method { name: "invalidate" }
+        Method {
+            name: "get"
+            type: "QVariant"
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "role"; type: "int" }
+        }
     }
 }
