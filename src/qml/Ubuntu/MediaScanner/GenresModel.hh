@@ -45,7 +45,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
     std::unique_ptr<RowData> retrieveRows(std::shared_ptr<mediascanner::MediaStoreBase> store, int limit, int offset) const override;
-    void appendRows(std::unique_ptr<RowData> row_data) override;
+    void appendRows(std::unique_ptr<RowData> &&row_data) override;
     void clearBacking() override;
 
 protected:

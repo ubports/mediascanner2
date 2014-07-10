@@ -24,7 +24,6 @@ Item {
         name: "GenresModelTests"
 
         function cleanup() {
-            model.limit = -1;
         }
 
         function test_initial_state() {

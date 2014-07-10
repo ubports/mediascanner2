@@ -92,7 +92,7 @@ void StreamingModel::updateModel() {
     if (!store.isNull()) {
         mediastore = store->store;
     }
-    query_future = QtConcurrent::run(runQuery, generation, this, mediastore);
+    query_future = QtConcurrent::run(runQuery, ++generation, this, mediastore);
 }
 
 QVariant StreamingModel::get(int row, int role) const {

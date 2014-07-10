@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STREAMINGMODEL_H
-#define STREAMINGMODEL_H
+#ifndef MEDIASCANNER_QML_STREAMINGMODEL_H
+#define MEDIASCANNER_QML_STREAMINGMODEL_H
 
 #include <atomic>
 #include <memory>
@@ -52,7 +52,7 @@ public:
         virtual size_t size() const = 0;
     };
     virtual std::unique_ptr<RowData> retrieveRows(std::shared_ptr<mediascanner::MediaStoreBase> store, int limit, int offset) const = 0;
-    virtual void appendRows(std::unique_ptr<RowData> row_data) = 0;
+    virtual void appendRows(std::unique_ptr<RowData> &&row_data) = 0;
     virtual void clearBacking() = 0;
 
 protected:

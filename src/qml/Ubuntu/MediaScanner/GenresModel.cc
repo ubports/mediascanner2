@@ -52,7 +52,7 @@ int GenresModel::getLimit() {
     return -1;
 }
 
-void GenresModel::setLimit(int limit) {
+void GenresModel::setLimit(int) {
     qWarning() << "Setting limit on GenresModel is deprecated";
 }
 
@@ -70,12 +70,19 @@ std::unique_ptr<StreamingModel::RowData> GenresModel::retrieveRows(std::shared_p
     auto limit_filter = filter;
     limit_filter.setLimit(limit);
     limit_filter.setOffset(offset);
+    std::vector<std::string> genres;
+    try {
+        genres = store->listGenres(limit_filter);
+    } catch (const std::exception &e) {
+        qWarning() << "Failed to retrieve genre list:" << e.what();
+    }
     return std::unique_ptr<StreamingModel::RowData>(
-        new GenreRowData(store->listGenres(limit_filter)));
+        new GenreRowData(std::move(genres)));
 }
-void GenresModel::appendRows(std::unique_ptr<StreamingModel::RowData> row_data) {
+
+void GenresModel::appendRows(std::unique_ptr<StreamingModel::RowData> &&row_data) {
     GenreRowData *data = static_cast<GenreRowData*>(row_data.get());
-    std::copy(data->rows.begin(), data->rows.end(), std::back_inserter(results));
+    std::move(data->rows.begin(), data->rows.end(), std::back_inserter(results));
 }
 
 void GenresModel::clearBacking() {
