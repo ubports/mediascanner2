@@ -14,6 +14,12 @@ Item {
         store: store
     }
 
+    SignalSpy {
+        id: modelFilled
+        target: model
+        signalName: "filled"
+    }
+
     TestCase {
         name: "GenresModelTests"
 
@@ -22,22 +28,18 @@ Item {
         }
 
         function test_initial_state() {
-            compare(model.limit, -1);
-
+            modelFilled.wait();
             compare(model.rowCount, 2);
             compare(model.get(0, ArtistsModel.RoleGenre), "rock");
             compare(model.get(1, ArtistsModel.RoleGenre), "roots");
         }
 
         function test_limit() {
+            // The limit property is deprecated now, but we need to
+            // keep it until music-app stops using it.
+            compare(model.limit, -1);
             model.limit = 1;
-            compare(model.rowCount, 1);
-
-            model.limit = 42;
-            compare(model.rowCount, 2);
-
-            model.limit = -1;
-            compare(model.rowCount, 2);
+            compare(model.limit, -1);
         }
 
     }

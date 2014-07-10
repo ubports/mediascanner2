@@ -22,20 +22,19 @@
 
 #include <string>
 #include <QAbstractListModel>
+#include <QPointer>
 #include <QString>
 
 #include <mediascanner/Filter.hh>
-#include "MediaStoreWrapper.hh"
+#include "StreamingModel.hh"
 
 namespace mediascanner {
 namespace qml {
 
-class GenresModel : public QAbstractListModel {
+class GenresModel : public StreamingModel {
     Q_OBJECT
-    Q_ENUMS(Roles)
-    Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
-    Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
+    Q_ENUMS(Roles)
 public:
     enum Roles {
         RoleGenre,
@@ -45,23 +44,19 @@ public:
     int rowCount(const QModelIndex &parent=QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
-    Q_INVOKABLE QVariant get(int row, Roles role) const;
-Q_SIGNALS:
-    void rowCountChanged();
+    std::unique_ptr<RowData> retrieveRows(std::shared_ptr<mediascanner::MediaStoreBase> store, int limit, int offset) const override;
+    void appendRows(std::unique_ptr<RowData> row_data) override;
+    void clearBacking() override;
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
-    MediaStoreWrapper *getStore();
-    void setStore(MediaStoreWrapper *store);
     int getLimit();
     void setLimit(int limit);
 
 private:
-    void update();
-
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
-    MediaStoreWrapper *store;
     mediascanner::Filter filter;
 };
 
