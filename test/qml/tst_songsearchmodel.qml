@@ -10,9 +10,8 @@ Item {
     }
 
     SongsSearchModel {
-        id: songs_model
+        id: model
         store: store
-        query: ""
     }
 
     SignalSpy {
@@ -24,15 +23,14 @@ Item {
     TestCase {
         name: "SongsSearchModelTests"
         function test_search() {
-            songs_model.query = "revolution";
-            modelFilled.wait();
-            compare(songs_model.rowCount, 1, "songs_model.rowCount == 1");
-            compare(songs_model.get(0, SongsSearchModel.RoleTitle), "Revolution");
-
             // By default, the model lists all songs.
-            songs_model.query = "";
             modelFilled.wait();
-            compare(songs_model.rowCount, 7, "songs_model.rowCount == 7");
+            compare(model.rowCount, 7, "songs_model.rowCount == 7");
+
+            model.query = "revolution";
+            modelFilled.wait();
+            compare(model.rowCount, 1, "songs_model.rowCount == 1");
+            compare(model.get(0, SongsSearchModel.RoleTitle), "Revolution");
         }
     }
 }
