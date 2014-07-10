@@ -14,14 +14,28 @@ Item {
         store: store
     }
 
+    SignalSpy {
+        id: modelFilled
+        target: model
+        signalName: "filled"
+    }
+
     TestCase {
         name: "AlbumsModelTests"
 
         function cleanup() {
-            model.artist = undefined;
-            model.albumArtist = undefined;
-            model.genre = undefined;
-            model.limit = -1;
+            if (model.artist != undefined) {
+                model.artist = undefined;
+                modelFilled.wait();
+            }
+            if (model.albumArtist != undefined) {
+                model.albumArtist = undefined;
+                modelFilled.wait();
+            }
+            if (model.genre != undefined) {
+                model.genre = undefined;
+                modelFilled.wait();
+            }
         }
 
         function test_initial_state() {
@@ -45,45 +59,48 @@ Item {
         }
 
         function test_limit() {
-            model.limit = 2;
-            compare(model.rowCount, 2);
-
-            model.limit = 42;
-            compare(model.rowCount, 4);
-
-            model.limit = -1;
-            compare(model.rowCount, 4);
+            // The limit property is deprecated now, but we need to
+            // keep it until music-app stops using it.
+            compare(model.limit, -1);
+            model.limit = 1;
+            compare(model.limit, -1);
         }
 
         function test_artist() {
             model.artist = "The John Butler Trio";
+            modelFilled.wait();
             compare(model.rowCount, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.artist = "unknown";
+            modelFilled.wait();
             compare(model.rowCount, 0);
         }
 
         function test_album_artist() {
             model.albumArtist = "The John Butler Trio";
+            modelFilled.wait();
             compare(model.rowCount, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.albumArtist = "unknown";
+            modelFilled.wait();
             compare(model.rowCount, 0);
         }
 
         function test_genre() {
             model.genre = "rock";
+            modelFilled.wait();
             compare(model.rowCount, 2);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(1, AlbumsModel.RoleTitle), "Spiderbait");
 
             model.genre = "unknown";
+            modelFilled.wait();
             compare(model.rowCount, 0);
         }
 
