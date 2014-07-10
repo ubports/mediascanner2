@@ -24,18 +24,7 @@
 using namespace mediascanner::qml;
 
 SongsSearchModel::SongsSearchModel(QObject *parent)
-    : MediaFileModelBase(parent), store(nullptr), query("") {
-}
-
-MediaStoreWrapper *SongsSearchModel::getStore() {
-    return store;
-}
-
-void SongsSearchModel::setStore(MediaStoreWrapper *store) {
-    if (this->store != store) {
-        this->store = store;
-        update();
-    }
+    : MediaFileModelBase(parent), query("") {
 }
 
 QString SongsSearchModel::getQuery() {
@@ -45,19 +34,20 @@ QString SongsSearchModel::getQuery() {
 void SongsSearchModel::setQuery(const QString query) {
     if (this->query != query) {
         this->query = query;
-        update();
+        invalidate();
     }
 }
 
-void SongsSearchModel::update() {
-    if (store == nullptr) {
-        updateResults(std::vector<mediascanner::MediaFile>());
-    } else {
+std::unique_ptr<StreamingModel::RowData> SongsSearchModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int /*limit*/, int offset) const {
+    std::vector<mediascanner::MediaFile> songs;
+    // No batching support, so only send results for the zero offset.
+    if (offset == 0) {
         try {
-            updateResults(store->store->query(query.toStdString(), mediascanner::AudioMedia));
+            songs = store->query(query.toStdString(), mediascanner::AudioMedia);
         } catch (const std::exception &e) {
             qWarning() << "Failed to retrieve song search results:" << e.what();
-            updateResults(std::vector<mediascanner::MediaFile>());
         }
     }
+    return std::unique_ptr<StreamingModel::RowData>(
+        new MediaFileRowData(std::move(songs)));
 }

@@ -106,7 +106,7 @@ std::unique_ptr<StreamingModel::RowData> AlbumsModel::retrieveRows(std::shared_p
     try {
         albums = store->listAlbums(limit_filter);
     } catch (const std::exception &e) {
-        qWarning() << "Failed to retrieve genre list:" << e.what();
+        qWarning() << "Failed to retrieve album list:" << e.what();
     }
     return std::unique_ptr<StreamingModel::RowData>(
         new AlbumRowData(std::move(albums)));

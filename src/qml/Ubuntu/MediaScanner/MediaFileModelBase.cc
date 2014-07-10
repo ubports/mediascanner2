@@ -24,7 +24,7 @@
 using namespace mediascanner::qml;
 
 MediaFileModelBase::MediaFileModelBase(QObject *parent)
-    : QAbstractListModel(parent) {
+    : StreamingModel(parent) {
     roles[Roles::RoleModelData] = "modelData";
     roles[Roles::RoleFilename] = "filename";
     roles[Roles::RoleUri] = "uri";
@@ -99,17 +99,16 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
     }
 }
 
-QVariant MediaFileModelBase::get(int row, MediaFileModelBase::Roles role) const {
-    return data(index(row, 0), role);
-}
-
 QHash<int, QByteArray> MediaFileModelBase::roleNames() const {
     return roles;
 }
 
-void MediaFileModelBase::updateResults(const std::vector<mediascanner::MediaFile> &results) {
-    beginResetModel();
-    this->results = results;
-    endResetModel();
-    Q_EMIT rowCountChanged();
+
+void MediaFileModelBase::appendRows(std::unique_ptr<RowData> &&row_data) {
+    MediaFileRowData *data = static_cast<MediaFileRowData*>(row_data.get());
+    std::move(data->rows.begin(), data->rows.end(), std::back_inserter(results));
+}
+
+void MediaFileModelBase::clearBacking() {
+    results.clear();
 }

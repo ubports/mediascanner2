@@ -42,7 +42,6 @@ Item {
             compare(model.artist, undefined);
             compare(model.albumArtist, undefined);
             compare(model.genre, undefined);
-            compare(model.limit, -1);
 
             compare(model.rowCount, 4);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
