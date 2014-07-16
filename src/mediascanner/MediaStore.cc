@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "MediaStore.hh"
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
@@ -31,7 +33,6 @@
 #include <sqlite3.h>
 
 #include "mozilla/fts3_tokenizer.h"
-#include "MediaStore.hh"
 #include "MediaFile.hh"
 #include "MediaFileBuilder.hh"
 #include "Album.hh"

@@ -1,3 +1,5 @@
+#include "service-skeleton.hh"
+
 #include <stdexcept>
 
 #include <core/dbus/message.h>
@@ -12,7 +14,6 @@
 
 #include "dbus-interface.hh"
 #include "dbus-codec.hh"
-#include "service-skeleton.hh"
 
 using core::dbus::Message;
 

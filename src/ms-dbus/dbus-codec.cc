@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "dbus-codec.hh"
 #include <cstdint>
 #include <string>
 
@@ -25,7 +27,6 @@
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/Album.hh>
 #include <mediascanner/Filter.hh>
-#include "dbus-codec.hh"
 
 using core::dbus::Message;
 using core::dbus::Codec;

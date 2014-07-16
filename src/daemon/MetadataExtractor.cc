@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "MetadataExtractor.hh"
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
 #include "../mediascanner/internal/utils.hh"
-#include "MetadataExtractor.hh"
 
 #include <exif-loader.h>
 #include <glib-object.h>
