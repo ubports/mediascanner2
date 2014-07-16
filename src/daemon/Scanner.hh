@@ -31,7 +31,7 @@ namespace mediascanner {
 struct DetectedFile;
 class MetadataExtractor;
 
-class StopIteration : std::exception {
+class StopIteration : public std::exception {
 };
 
 
