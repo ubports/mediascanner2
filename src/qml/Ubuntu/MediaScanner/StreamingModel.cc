@@ -19,9 +19,11 @@
 
 #include "StreamingModel.hh"
 
-#include <QEvent>
 #include <cassert>
+
+#include <QEvent>
 #include <QCoreApplication>
+#include <QScopedPointer>
 #include <QtConcurrent>
 
 using namespace mediascanner::qml;
@@ -60,13 +62,13 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
         if(model->shouldWorkerStop()) {
             return;
         }
-        AdditionEvent *e = new AdditionEvent(model->retrieveRows(store, BATCH_SIZE, offset), generation);
+        QScopedPointer<AdditionEvent> e(
+            new AdditionEvent(model->retrieveRows(store, BATCH_SIZE, offset), generation));
         cursize = e->getRows()->size();
         if (model->shouldWorkerStop()) {
-            delete e;
             break;
         }
-        QCoreApplication::instance()->postEvent(model, e);
+        QCoreApplication::instance()->postEvent(model, e.take());
         offset += cursize;
     } while(cursize >= BATCH_SIZE);
 }
@@ -74,7 +76,6 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
 }
 
 StreamingModel::StreamingModel(QObject *parent) : QAbstractListModel(parent), generation(0) {
-    updateModel();
 }
 
 StreamingModel::~StreamingModel() {

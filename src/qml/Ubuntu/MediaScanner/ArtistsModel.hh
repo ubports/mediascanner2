@@ -63,7 +63,6 @@ protected:
 private:
     QHash<int, QByteArray> roles;
     std::vector<std::string> results;
-    MediaStoreWrapper *store;
     Filter filter;
     bool album_artists;
 };
