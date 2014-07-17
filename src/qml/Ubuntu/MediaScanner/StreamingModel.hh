@@ -43,7 +43,7 @@ public:
     Q_INVOKABLE QVariant get(int row, int role) const;
 
     bool event(QEvent *e) override;
-    bool shouldWorkerStop() const { return stopflag.load(std::memory_order_consume); }
+    bool shouldWorkerStop() const noexcept { return stopflag.load(std::memory_order_consume); }
 
     // Subclasses should implement the following, along with rowCount and data
     class RowData {
@@ -61,7 +61,7 @@ protected:
 
 private:
     void updateModel();
-    void setWorkerStop(bool new_stop_status) { stopflag.store(new_stop_status, std::memory_order_release); }
+    void setWorkerStop(bool new_stop_status) noexcept { stopflag.store(new_stop_status, std::memory_order_release); }
 
     QPointer<MediaStoreWrapper> store;
     QFuture<void> query_future;

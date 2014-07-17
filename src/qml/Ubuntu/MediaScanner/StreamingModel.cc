@@ -66,7 +66,7 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
             new AdditionEvent(model->retrieveRows(store, BATCH_SIZE, offset), generation));
         cursize = e->getRows()->size();
         if (model->shouldWorkerStop()) {
-            break;
+            return;
         }
         QCoreApplication::instance()->postEvent(model, e.take());
         offset += cursize;
