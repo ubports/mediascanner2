@@ -4,11 +4,13 @@ Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Standards-Version: 3.9.5
 Build-Depends: cmake,
+# To avoid GCC 4.8/4.9 ABI break issues.
+               g++-4.9,
                dbus,
                debhelper (>= 9),
                libapparmor-dev,
                libdbus-1-dev,
-               libdbus-cpp-dev (>= 3.0.0),
+               libdbus-cpp-dev (>= 4.0.0),
                libexif-dev,
                libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
