@@ -1,3 +1,10 @@
+mediascanner2 (0.101+14.10.20140721-0ubuntu1) utopic; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Specify GCC 4.9 explicitly to prevent ABI breakage.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 21 Jul 2014 14:16:51 +0000
+
 mediascanner2 (0.101+14.10.20140715-0ubuntu1) utopic; urgency=low
 
   * New rebuild forced
