@@ -71,9 +71,11 @@ TEST_F(MediaStoreDBusTests, filter_codec) {
     filter.setAlbum("Album1");
     filter.setAlbumArtist("AlbumArtist1");
     filter.setGenre("Genre");
+    filter.setOffset(42);
+    filter.setLimit(100);
     message->writer() << filter;
 
-    EXPECT_EQ("a{ss}", message->signature());
+    EXPECT_EQ("a{sv}", message->signature());
     EXPECT_EQ(core::dbus::helper::TypeMapper<mediascanner::Filter>::signature(), message->signature());
 
     mediascanner::Filter other;
@@ -85,7 +87,7 @@ TEST_F(MediaStoreDBusTests, filter_codec_empty) {
     mediascanner::Filter empty;
     message->writer() << empty;
 
-    EXPECT_EQ("a{ss}", message->signature());
+    EXPECT_EQ("a{sv}", message->signature());
 
     mediascanner::Filter other;
     message->reader() >> other;

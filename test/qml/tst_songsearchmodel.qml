@@ -10,19 +10,27 @@ Item {
     }
 
     SongsSearchModel {
-        id: songs_model
+        id: model
         store: store
-        query: ""
+    }
+
+    SignalSpy {
+        id: modelFilled
+        target: model
+        signalName: "filled"
     }
 
     TestCase {
         name: "SongsSearchModelTests"
         function test_search() {
             // By default, the model lists all songs.
-            compare(songs_model.rowCount, 7, "songs_model.rowCount == 7");
-            songs_model.query = "revolution";
-            compare(songs_model.rowCount, 1, "songs_model.rowCount == 1");
-            compare(songs_model.get(0, SongsSearchModel.RoleTitle), "Revolution");
+            modelFilled.wait();
+            compare(model.rowCount, 7, "songs_model.rowCount == 7");
+
+            model.query = "revolution";
+            modelFilled.wait();
+            compare(model.rowCount, 1, "songs_model.rowCount == 1");
+            compare(model.get(0, SongsSearchModel.RoleTitle), "Revolution");
         }
     }
 }

@@ -24,14 +24,14 @@
 #include <QString>
 
 #include <mediascanner/Album.hh>
+#include "StreamingModel.hh"
 
 namespace mediascanner {
 namespace qml {
 
-class AlbumModelBase : public QAbstractListModel {
+class AlbumModelBase : public StreamingModel {
     Q_OBJECT
     Q_ENUMS(Roles)
-    Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
 public:
     enum Roles {
         RoleTitle,
@@ -43,12 +43,19 @@ public:
     int rowCount(const QModelIndex &parent=QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
-    Q_INVOKABLE QVariant get(int row, Roles role) const;
-Q_SIGNALS:
-    void rowCountChanged();
+    void appendRows(std::unique_ptr<RowData> &&row_data) override;
+    void clearBacking() override;
+
+    class AlbumRowData : public RowData {
+    public:
+        AlbumRowData(std::vector<mediascanner::Album> &&rows) : rows(std::move(rows)) {}
+        ~AlbumRowData() {}
+        size_t size() const override { return rows.size(); }
+        std::vector<mediascanner::Album> rows;
+    };
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
-    void updateResults(const std::vector<mediascanner::Album> &results);
 private:
     QHash<int, QByteArray> roles;
     std::vector<mediascanner::Album> results;

@@ -24,9 +24,7 @@
 using namespace mediascanner::qml;
 
 GenresModel::GenresModel(QObject *parent)
-    : QAbstractListModel(parent),
-      store(nullptr),
-      limit(-1) {
+    : StreamingModel(parent) {
     roles[Roles::RoleGenre] = "genre";
 }
 
@@ -46,48 +44,47 @@ QVariant GenresModel::data(const QModelIndex &index, int role) const {
     }
 }
 
-QVariant GenresModel::get(int row, GenresModel::Roles role) const {
-    return data(index(row, 0), role);
-}
-
 QHash<int, QByteArray> GenresModel::roleNames() const {
     return roles;
 }
 
-MediaStoreWrapper *GenresModel::getStore() {
-    return store;
-}
-
-void GenresModel::setStore(MediaStoreWrapper *store) {
-    if (this->store != store) {
-        this->store = store;
-        update();
-    }
-}
-
 int GenresModel::getLimit() {
-    return limit;
+    return -1;
 }
 
-void GenresModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
-        update();
-    }
+void GenresModel::setLimit(int) {
+    qWarning() << "Setting limit on GenresModel is deprecated";
 }
 
-void GenresModel::update() {
-    beginResetModel();
-    if (store == nullptr) {
-        this->results.clear();
-    } else {
-        try {
-            this->results = store->store->listGenres(limit);
-        } catch (const std::exception &e) {
-            qWarning() << "Failed to retrieve genre list:" << e.what();
-            this->results.clear();
-        }
+namespace {
+class GenreRowData : public StreamingModel::RowData {
+public:
+    GenreRowData(std::vector<std::string> &&rows) : rows(std::move(rows)) {}
+    ~GenreRowData() {}
+    size_t size() const override { return rows.size(); }
+    std::vector<std::string> rows;
+};
+}
+
+std::unique_ptr<StreamingModel::RowData> GenresModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int limit, int offset) const {
+    auto limit_filter = filter;
+    limit_filter.setLimit(limit);
+    limit_filter.setOffset(offset);
+    std::vector<std::string> genres;
+    try {
+        genres = store->listGenres(limit_filter);
+    } catch (const std::exception &e) {
+        qWarning() << "Failed to retrieve genre list:" << e.what();
     }
-    endResetModel();
-    Q_EMIT rowCountChanged();
+    return std::unique_ptr<StreamingModel::RowData>(
+        new GenreRowData(std::move(genres)));
+}
+
+void GenresModel::appendRows(std::unique_ptr<StreamingModel::RowData> &&row_data) {
+    GenreRowData *data = static_cast<GenreRowData*>(row_data.get());
+    std::move(data->rows.begin(), data->rows.end(), std::back_inserter(results));
+}
+
+void GenresModel::clearBacking() {
+    results.clear();
 }

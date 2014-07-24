@@ -24,20 +24,7 @@
 using namespace mediascanner::qml;
 
 AlbumsModel::AlbumsModel(QObject *parent)
-    : AlbumModelBase(parent),
-      store(nullptr),
-      limit(-1) {
-}
-
-MediaStoreWrapper *AlbumsModel::getStore() {
-    return store;
-}
-
-void AlbumsModel::setStore(MediaStoreWrapper *store) {
-    if (this->store != store) {
-        this->store = store;
-        update();
-    }
+    : AlbumModelBase(parent) {
 }
 
 QVariant AlbumsModel::getArtist() {
@@ -50,13 +37,13 @@ void AlbumsModel::setArtist(const QVariant artist) {
     if (artist.isNull()) {
         if (filter.hasArtist()) {
             filter.unsetArtist();
-            update();
+            invalidate();
         }
     } else {
         const std::string std_artist = artist.value<QString>().toStdString();
         if (!filter.hasArtist() || filter.getArtist() != std_artist) {
             filter.setArtist(std_artist);
-            update();
+            invalidate();
         }
     }
 }
@@ -71,13 +58,13 @@ void AlbumsModel::setAlbumArtist(const QVariant album_artist) {
     if (album_artist.isNull()) {
         if (filter.hasAlbumArtist()) {
             filter.unsetAlbumArtist();
-            update();
+            invalidate();
         }
     } else {
         const std::string std_album_artist = album_artist.value<QString>().toStdString();
         if (!filter.hasAlbumArtist() || filter.getAlbumArtist() != std_album_artist) {
             filter.setAlbumArtist(std_album_artist);
-            update();
+            invalidate();
         }
     }
 }
@@ -92,37 +79,35 @@ void AlbumsModel::setGenre(const QVariant genre) {
     if (genre.isNull()) {
         if (filter.hasGenre()) {
             filter.unsetGenre();
-            update();
+            invalidate();
         }
     } else {
         const std::string std_genre = genre.value<QString>().toStdString();
         if (!filter.hasGenre() || filter.getGenre() != std_genre) {
             filter.setGenre(std_genre);
-            update();
+            invalidate();
         }
     }
 }
 
 int AlbumsModel::getLimit() {
-    return limit;
+    return -1;
 }
 
-void AlbumsModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
-        update();
-    }
+void AlbumsModel::setLimit(int) {
+    qWarning() << "Setting limit on AlbumsModel is deprecated";
 }
 
-void AlbumsModel::update() {
-    if (store == nullptr) {
-        updateResults(std::vector<mediascanner::Album>());
-    } else {
-        try {
-            updateResults(store->store->listAlbums(filter, limit));
-        } catch (const std::exception &e) {
-            qWarning() << "Failed to retrieve album list:" << e.what();
-            updateResults(std::vector<mediascanner::Album>());
-        }
+std::unique_ptr<StreamingModel::RowData> AlbumsModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int limit, int offset) const {
+    auto limit_filter = filter;
+    limit_filter.setLimit(limit);
+    limit_filter.setOffset(offset);
+    std::vector<mediascanner::Album> albums;
+    try {
+        albums = store->listAlbums(limit_filter);
+    } catch (const std::exception &e) {
+        qWarning() << "Failed to retrieve album list:" << e.what();
     }
+    return std::unique_ptr<StreamingModel::RowData>(
+        new AlbumRowData(std::move(albums)));
 }

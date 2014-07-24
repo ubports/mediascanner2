@@ -47,11 +47,11 @@ public:
     virtual std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const override;
     virtual std::vector<MediaFile> getAlbumSongs(const Album& album) const override;
     virtual std::string getETag(const std::string &filename) const override;
-    virtual std::vector<MediaFile> listSongs(const Filter &filter, int limit=-1) const override;
-    virtual std::vector<Album> listAlbums(const Filter &filter, int limit=-1) const override;
-    virtual std::vector<std::string> listArtists(const Filter &filter, int limit=-1) const override;
-    virtual std::vector<std::string> listAlbumArtists(const Filter &filter, int limit=-1) const override;
-    virtual std::vector<std::string> listGenres(int limit=-1) const override;
+    virtual std::vector<MediaFile> listSongs(const Filter &filter) const override;
+    virtual std::vector<Album> listAlbums(const Filter &filter) const override;
+    virtual std::vector<std::string> listArtists(const Filter &filter) const override;
+    virtual std::vector<std::string> listAlbumArtists(const Filter &filter) const override;
+    virtual std::vector<std::string> listGenres(const Filter &filter) const override;
 
 private:
     struct Private;
