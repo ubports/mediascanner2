@@ -1,3 +1,9 @@
+mediascanner2 (0.101+14.10.20140724-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Adjust apparmor configuration for MTK device 
+
+ -- Alfonso Sanchez-Beato (email Canonical) <alfonso.sanchez-beato@canonical.com>  Thu, 24 Jul 2014 12:15:23 +0200
+
 mediascanner2 (0.101+14.10.20140721-0ubuntu1) utopic; urgency=low
 
   [ Jussi Pakkanen ]
