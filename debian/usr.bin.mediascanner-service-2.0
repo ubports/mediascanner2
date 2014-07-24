@@ -28,6 +28,12 @@
 
   # specific to the mediatek soc
   @{PROC}/xlog/setfil r,
+  @{PROC}/M4U_device r,
+  /dev/Vcodec rw,
+  /sys/bus/platform/drivers/** rw,
+  /{,android/}system/etc/mtk_omx_core.cfg r,
+  /dev/devmap r,
+  @{PROC}/mtk_mdp_cmdq r,
 
   /sys/kernel/debug/tracing/trace_marker w,
   /dev/ashmem rw,
