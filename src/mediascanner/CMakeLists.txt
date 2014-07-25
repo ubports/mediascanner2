@@ -32,6 +32,7 @@ install(
 
 install(FILES
   Album.hh
+  Filter.hh
   MediaFile.hh
   MediaFileBuilder.hh
   MediaStore.hh
