@@ -1,7 +1,7 @@
 project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
-set(MEDIASCANNER_VERSION "0.99")
+set(MEDIASCANNER_VERSION "0.102")
 
 if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
   message(FATAL_ERROR "In-tree build attempt detected, aborting. Set your build dir outside your source dir, delete CMakeCache.txt from source root and try again.")
