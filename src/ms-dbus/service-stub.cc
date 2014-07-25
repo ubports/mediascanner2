@@ -17,12 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "service-stub.hh"
+
 #include <stdexcept>
 
 #include <mediascanner/Album.hh>
 #include <mediascanner/Filter.hh>
 #include <mediascanner/MediaFile.hh>
-#include "service-stub.hh"
 #include "dbus-interface.hh"
 #include "dbus-codec.hh"
 

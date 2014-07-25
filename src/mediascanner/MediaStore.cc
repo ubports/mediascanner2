@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "MediaStore.hh"
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
@@ -31,7 +33,6 @@
 #include <sqlite3.h>
 
 #include "mozilla/fts3_tokenizer.h"
-#include "MediaStore.hh"
 #include "MediaFile.hh"
 #include "MediaFileBuilder.hh"
 #include "Album.hh"
@@ -74,7 +75,7 @@ static void register_tokenizer(sqlite3 *db) {
     Statement query(db, "SELECT fts3_tokenizer(?, ?)");
 
     query.bind(1, "mozporter");
-    const sqlite3_tokenizer_module *p = NULL;
+    const sqlite3_tokenizer_module *p = nullptr;
     sqlite3Fts3PorterTokenizerModule(&p);
     query.bind(2, &p, sizeof(p));
 
@@ -159,8 +160,8 @@ static bool has_block_in_path(std::map<std::string, bool> &cache, const std::str
 }
 
 static void register_functions(sqlite3 *db) {
-    if (sqlite3_create_function(db, "rank", -1, SQLITE_ANY, NULL,
-                                rankfunc, NULL, NULL) != SQLITE_OK) {
+    if (sqlite3_create_function(db, "rank", -1, SQLITE_ANY, nullptr,
+                                rankfunc, nullptr, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(db));
     }
 }

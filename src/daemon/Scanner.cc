@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MetadataExtractor.hh"
 #include "Scanner.hh"
+#include "MetadataExtractor.hh"
 #include "../mediascanner/internal/utils.hh"
 #include <dirent.h>
 #include <sys/stat.h>

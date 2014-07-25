@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "MetadataExtractor.hh"
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
 #include "../mediascanner/internal/utils.hh"
-#include "MetadataExtractor.hh"
 
 #include <exif-loader.h>
 #include <glib-object.h>
@@ -84,7 +84,7 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
             file.get(),
             G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
             G_FILE_ATTRIBUTE_ETAG_VALUE,
-            G_FILE_QUERY_INFO_NONE, /* cancellable */ NULL, &error),
+            G_FILE_QUERY_INFO_NONE, /* cancellable */ nullptr, &error),
         g_object_unref);
     if (!info) {
         string errortxt(error->message);
@@ -164,7 +164,7 @@ void MetadataExtractorPrivate::extract_gst(const DetectedFile &d, MediaFileBuild
     unique_ptr<GstDiscovererInfo, void(*)(void *)> info(
         gst_discoverer_discover_uri(discoverer.get(), uri.c_str(), &error),
         g_object_unref);
-    if (info.get() == NULL) {
+    if (info.get() == nullptr) {
         string errortxt(error->message);
         g_error_free(error);
 
@@ -185,7 +185,7 @@ void MetadataExtractorPrivate::extract_gst(const DetectedFile &d, MediaFileBuild
     }
 
     const GstTagList *tags = gst_discoverer_info_get_tags(info.get());
-    if (tags != NULL) {
+    if (tags != nullptr) {
         gst_tag_list_foreach(tags, extract_tag_info, &mfb);
     }
     mfb.setDuration(static_cast<int>(

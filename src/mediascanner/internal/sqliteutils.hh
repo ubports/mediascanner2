@@ -29,7 +29,7 @@ namespace mediascanner {
 class Statement {
 public:
     Statement(sqlite3 *db, const char *sql) {
-        rc = sqlite3_prepare_v2(db, sql, -1, &statement, NULL);
+        rc = sqlite3_prepare_v2(db, sql, -1, &statement, nullptr);
         if (rc != SQLITE_OK) {
             throw std::runtime_error(sqlite3_errmsg(db));
         }
@@ -101,14 +101,14 @@ public:
     }
 
     void finalize() {
-        if (statement != NULL) {
+        if (statement != nullptr) {
             rc = sqlite3_finalize(statement);
             if (rc != SQLITE_OK) {
                 std::string msg("Could not finalize statement: ");
                 msg += sqlite3_errstr(rc);
                 throw std::runtime_error(msg);
             }
-            statement = NULL;
+            statement = nullptr;
         }
     }
 
