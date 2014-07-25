@@ -30,6 +30,7 @@ Build-Depends: cmake,
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
 Homepage: https://launchpad.net/mediascanner2
+XS-Testsuite: autopkgtest
 # if you don't have have commit access to this branch but would like to upload
 # directly to Ubuntu, don't worry: your changes will be merged back into the
 # upstream branch
