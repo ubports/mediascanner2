@@ -31,7 +31,6 @@ namespace qml {
 
 class AlbumsModel : public AlbumModelBase {
     Q_OBJECT
-    Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(QVariant artist READ getArtist WRITE setArtist)
     Q_PROPERTY(QVariant albumArtist READ getAlbumArtist WRITE setAlbumArtist)
     Q_PROPERTY(QVariant genre READ getGenre WRITE setGenre)
@@ -39,9 +38,9 @@ class AlbumsModel : public AlbumModelBase {
 public:
     explicit AlbumsModel(QObject *parent=0);
 
-    MediaStoreWrapper *getStore();
-    void setStore(MediaStoreWrapper *store);
+    std::unique_ptr<RowData> retrieveRows(std::shared_ptr<mediascanner::MediaStoreBase> store, int limit, int offset) const override;
 
+protected:
     QVariant getArtist();
     void setArtist(const QVariant artist);
     QVariant getAlbumArtist();
@@ -50,12 +49,9 @@ public:
     void setGenre(const QVariant genre);
     int getLimit();
     void setLimit(int limit);
-private:
-    void update();
 
-    MediaStoreWrapper *store;
+private:
     Filter filter;
-    int limit;
 };
 
 }

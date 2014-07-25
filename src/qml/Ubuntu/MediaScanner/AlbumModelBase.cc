@@ -23,7 +23,7 @@
 using namespace mediascanner::qml;
 
 AlbumModelBase::AlbumModelBase(QObject *parent)
-    : QAbstractListModel(parent) {
+    : StreamingModel(parent) {
     roles[Roles::RoleTitle] = "title";
     roles[Roles::RoleArtist] = "artist";
     roles[Roles::RoleArt] = "art";
@@ -50,17 +50,15 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
     }
 }
 
-QVariant AlbumModelBase::get(int row, AlbumModelBase::Roles role) const {
-    return data(index(row, 0), role);
-}
-
 QHash<int, QByteArray> AlbumModelBase::roleNames() const {
     return roles;
 }
 
-void AlbumModelBase::updateResults(const std::vector<mediascanner::Album> &results) {
-    beginResetModel();
-    this->results = results;
-    endResetModel();
-    Q_EMIT rowCountChanged();
+void AlbumModelBase::appendRows(std::unique_ptr<RowData> &&row_data) {
+    AlbumRowData *data = static_cast<AlbumRowData*>(row_data.get());
+    std::move(data->rows.begin(), data->rows.end(), std::back_inserter(results));
+}
+
+void AlbumModelBase::clearBacking() {
+    results.clear();
 }

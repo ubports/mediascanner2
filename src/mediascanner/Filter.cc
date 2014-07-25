@@ -29,12 +29,16 @@ struct Filter::Private {
     string album_artist;
     string genre;
 
+    int offset;
+    int limit;
+
     bool have_artist;
     bool have_album;
     bool have_album_artist;
     bool have_genre;
 
     Private() :
+        offset(0), limit(-1),
         have_artist(false), have_album(false), have_album_artist(false),
         have_genre(false) {
     }
@@ -60,7 +64,9 @@ bool Filter::operator==(const Filter &other) const {
         p->artist == other.p->artist &&
         p->album == other.p->album &&
         p->album_artist == other.p->album_artist &&
-        p->genre == other.p->genre;
+        p->genre == other.p->genre &&
+        p->offset == other.p->offset &&
+        p->limit == other.p->limit;
 }
 
 bool Filter::operator!=(const Filter &other) const {
@@ -77,6 +83,8 @@ void Filter::clear() {
     unsetAlbum();
     unsetAlbumArtist();
     unsetGenre();
+    p->offset = 0;
+    p->limit = -1;
 }
 
 void Filter::setArtist(const std::string &artist) {
@@ -149,6 +157,22 @@ bool Filter::hasGenre() const {
 
 const std::string &Filter::getGenre() const {
     return p->genre;
+}
+
+void Filter::setOffset(int offset) {
+    p->offset = offset;
+}
+
+int Filter::getOffset() const {
+    return p->offset;
+}
+
+void Filter::setLimit(int limit) {
+    p->limit = limit;
+}
+
+int Filter::getLimit() const {
+    return p->limit;
 }
 
 }

@@ -24,10 +24,8 @@
 using namespace mediascanner::qml;
 
 ArtistsModel::ArtistsModel(QObject *parent)
-    : QAbstractListModel(parent),
-      store(nullptr),
-      album_artists(false),
-      limit(-1) {
+    : StreamingModel(parent),
+      album_artists(false) {
     roles[Roles::RoleArtist] = "artist";
 }
 
@@ -47,23 +45,8 @@ QVariant ArtistsModel::data(const QModelIndex &index, int role) const {
     }
 }
 
-QVariant ArtistsModel::get(int row, ArtistsModel::Roles role) const {
-    return data(index(row, 0), role);
-}
-
 QHash<int, QByteArray> ArtistsModel::roleNames() const {
     return roles;
-}
-
-MediaStoreWrapper *ArtistsModel::getStore() {
-    return store;
-}
-
-void ArtistsModel::setStore(MediaStoreWrapper *store) {
-    if (this->store != store) {
-        this->store = store;
-        update();
-    }
 }
 
 bool ArtistsModel::getAlbumArtists() {
@@ -73,7 +56,7 @@ bool ArtistsModel::getAlbumArtists() {
 void ArtistsModel::setAlbumArtists(bool album_artists) {
     if (this->album_artists != album_artists) {
         this->album_artists = album_artists;
-        update();
+        invalidate();
     }
 }
 
@@ -87,44 +70,58 @@ void ArtistsModel::setGenre(const QVariant genre) {
     if (genre.isNull()) {
         if (filter.hasGenre()) {
             filter.unsetGenre();
-            update();
+            invalidate();
         }
     } else {
         const std::string std_genre = genre.value<QString>().toStdString();
         if (!filter.hasGenre() || filter.getGenre() != std_genre) {
             filter.setGenre(std_genre);
-            update();
+            invalidate();
         }
     }
 }
 
 int ArtistsModel::getLimit() {
-    return limit;
+    return -1;
 }
 
-void ArtistsModel::setLimit(int limit) {
-    if (this->limit != limit) {
-        this->limit = limit;
-        update();
-    }
+void ArtistsModel::setLimit(int) {
+    qWarning() << "Setting limit on ArtistsModel is deprecated";
 }
 
-void ArtistsModel::update() {
-    beginResetModel();
-    if (store == nullptr) {
-        this->results.clear();
-    } else {
-        try {
-            if (album_artists) {
-                this->results = store->store->listAlbumArtists(filter, limit);
-            } else {
-                this->results = store->store->listArtists(filter, limit);
-            }
-        } catch (const std::exception &e) {
-            qWarning() << "Failed to retrieve artist list:" << e.what();
-            this->results.clear();
+namespace {
+class ArtistRowData : public StreamingModel::RowData {
+public:
+    ArtistRowData(std::vector<std::string> &&rows) : rows(std::move(rows)) {}
+    ~ArtistRowData() {}
+    size_t size() const override { return rows.size(); }
+    std::vector<std::string> rows;
+};
+}
+
+std::unique_ptr<StreamingModel::RowData> ArtistsModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int limit, int offset) const {
+    auto limit_filter = filter;
+    limit_filter.setLimit(limit);
+    limit_filter.setOffset(offset);
+    std::vector<std::string> artists;
+    try {
+        if (album_artists) {
+            artists = store->listAlbumArtists(limit_filter);
+        } else {
+            artists = store->listArtists(limit_filter);
         }
+    } catch (const std::exception &e) {
+        qWarning() << "Failed to retrieve artist list:" << e.what();
     }
-    endResetModel();
-    Q_EMIT rowCountChanged();
+    return std::unique_ptr<StreamingModel::RowData>(
+        new ArtistRowData(std::move(artists)));
+}
+
+void ArtistsModel::appendRows(std::unique_ptr<StreamingModel::RowData> &&row_data) {
+    ArtistRowData *data = static_cast<ArtistRowData*>(row_data.get());
+    std::move(data->rows.begin(), data->rows.end(), std::back_inserter(results));
+}
+
+void ArtistsModel::clearBacking() {
+    results.clear();
 }

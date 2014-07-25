@@ -30,20 +30,17 @@ namespace qml {
 
 class SongsSearchModel : public MediaFileModelBase {
     Q_OBJECT
-    Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(QString query READ getQuery WRITE setQuery)
 public:
     explicit SongsSearchModel(QObject *parent=0);
 
-    MediaStoreWrapper *getStore();
-    void setStore(MediaStoreWrapper *store);
+    std::unique_ptr<RowData> retrieveRows(std::shared_ptr<mediascanner::MediaStoreBase> store, int limit, int offset) const override;
 
+protected:
     QString getQuery();
     void setQuery(const QString query);
-private:
-    void update();
 
-    MediaStoreWrapper *store;
+private:
     QString query;
 };
 

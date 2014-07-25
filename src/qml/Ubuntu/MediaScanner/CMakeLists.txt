@@ -8,6 +8,7 @@ add_library(mediascanner-qml MODULE
   utils.cc
   MediaFileWrapper.cc
   MediaStoreWrapper.cc
+  StreamingModel.cc
   MediaFileModelBase.cc
   AlbumModelBase.cc
   AlbumsModel.cc
@@ -18,7 +19,7 @@ add_library(mediascanner-qml MODULE
 )
 
 set_target_properties(mediascanner-qml PROPERTIES AUTOMOC TRUE)
-qt5_use_modules(mediascanner-qml Qml)
+qt5_use_modules(mediascanner-qml Qml Concurrent)
 target_link_libraries(mediascanner-qml mediascanner ms-dbus)
 
 install(
