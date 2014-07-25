@@ -1,3 +1,20 @@
+mediascanner2 (0.102-0ubuntu1) UNRELEASED; urgency=medium
+
+  [ Jussi Pakkanen ]
+  * Added an autopkgtest.
+  * Fixes for various issues found by flint++.
+  * Install Filter.hh.
+
+  [ James Henstridge ]
+  * Stream data to the QML models in chunks through a background
+    thread using QtConcurrent.
+    The limit option on the various models has been removed, since we
+    the individual queries are smaller.
+  * Add MediaStore::queryArtists() method, needed for the new scope
+    design.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Fri, 25 Jul 2014 17:07:19 +0800
+
 mediascanner2 (0.101+14.10.20140724.1-0ubuntu1) utopic; urgency=medium
 
   [ Alfonso Sanchez-Beato (email Canonical) ]
