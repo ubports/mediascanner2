@@ -4,6 +4,7 @@ mediascanner2 (0.102-0ubuntu1) UNRELEASED; urgency=medium
   * Added an autopkgtest.
   * Fixes for various issues found by flint++.
   * Install Filter.hh.
+  * Archive items on unmount.
 
   [ James Henstridge ]
   * Stream data to the QML models in chunks through a background
