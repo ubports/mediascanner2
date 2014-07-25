@@ -170,6 +170,7 @@ void ScannerDaemon::addDir(const string &dir) {
 void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
     assert(subtrees.find(dir) != subtrees.end());
+    store->archiveItems(dir);
     subtrees.erase(dir);
 }
 
