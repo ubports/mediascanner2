@@ -58,6 +58,7 @@ struct MediaStorePrivate {
     MediaFile lookup(const std::string &filename) const;
     std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
     std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
+    std::vector<string> queryArtists(const std::string &q, int limit=-1) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
 
@@ -471,6 +472,40 @@ LIMIT ?
     }
 }
 
+vector<string> MediaStorePrivate::queryArtists(const string &q, int limit) const {
+    if (q.empty()) {
+        Statement query(db, R"(
+SELECT artist FROM media
+WHERE type = ? AND artist <> ''
+GROUP BY artist
+LIMIT ?
+)");
+        query.bind(1, (int)AudioMedia);
+        query.bind(2, limit);
+        vector<string> result;
+        while (query.step()) {
+            result.push_back(query.getText(0));
+        }
+        return result;
+    } else {
+        Statement query(db, R"(
+SELECT artist FROM media
+WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
+AND type == ? AND artist <> ''
+GROUP BY artist
+LIMIT ?
+)");
+        query.bind(1, q + "*");
+        query.bind(2, (int)AudioMedia);
+        query.bind(3, limit);
+        vector<string> result;
+        while (query.step()) {
+            result.push_back(query.getText(0));
+        }
+        return result;
+    }
+}
+
 vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
     Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type FROM media
@@ -729,6 +764,11 @@ std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, i
 std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     return p->queryAlbums(core_term, limit);
+}
+
+std::vector<string> MediaStore::queryArtists(const std::string &q, int limit) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->queryArtists(q, limit);
 }
 
 std::vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {

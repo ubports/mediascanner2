@@ -42,6 +42,7 @@ public:
     virtual MediaFile lookup(const std::string &filename) const = 0;
     virtual std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const = 0;
     virtual std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const = 0;
+    virtual std::vector<std::string> queryArtists(const std::string &q, int limit=-1) const = 0;
     virtual std::vector<MediaFile> getAlbumSongs(const Album& album) const = 0;
     virtual std::string getETag(const std::string &filename) const = 0;
     virtual std::vector<MediaFile> listSongs(const Filter &filter) const = 0;
