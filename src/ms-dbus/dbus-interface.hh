@@ -93,6 +93,19 @@ struct MediaStoreInterface {
         }
     };
 
+    struct QueryArtists {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "QueryArtists";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return std::chrono::seconds{1};
+        }
+    };
+
     struct GetAlbumSongs {
         typedef MediaStoreInterface Interface;
 

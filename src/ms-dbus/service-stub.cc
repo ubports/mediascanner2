@@ -66,6 +66,13 @@ std::vector<Album> ServiceStub::queryAlbums(const string &core_term, int limit) 
     return result.value();
 }
 
+std::vector<string> ServiceStub::queryArtists(const string &q, int limit) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryArtists, std::vector<string>>(q, (int32_t)limit);
+    if (result.is_error())
+        throw std::runtime_error(result.error().print());
+    return result.value();
+}
+
 std::vector<MediaFile> ServiceStub::getAlbumSongs(const Album& album) const {
     auto result = p->object->invoke_method_synchronously<MediaStoreInterface::GetAlbumSongs, std::vector<MediaFile>>(album);
     if (result.is_error())

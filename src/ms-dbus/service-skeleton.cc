@@ -64,6 +64,11 @@ struct ServiceSkeleton::Private {
                 &Private::handle_query_albums,
                 this,
                 std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::QueryArtists>(
+            std::bind(
+                &Private::handle_query_artists,
+                this,
+                std::placeholders::_1));
         object->install_method_handler<MediaStoreInterface::GetAlbumSongs>(
             std::bind(
                 &Private::handle_get_album_songs,
@@ -213,6 +218,26 @@ struct ServiceSkeleton::Private {
             auto albums = store->queryAlbums(query, limit);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_query_artists(const Message::Ptr &message) {
+        if (!check_access(message, AudioMedia))
+            return;
+
+        std::string query;
+        int32_t limit;
+        message->reader() >> query >> limit;
+        Message::Ptr reply;
+        try {
+            auto artists = store->queryArtists(query, limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << artists;
         } catch (const std::exception &e) {
             reply = Message::make_error(
                 message, MediaStoreInterface::Errors::Error::name(),
