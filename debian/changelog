@@ -1,4 +1,4 @@
-mediascanner2 (0.102-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.102+14.10.20140730.1-0ubuntu1) utopic; urgency=medium
 
   [ Jussi Pakkanen ]
   * Added an autopkgtest.
@@ -18,7 +18,7 @@ mediascanner2 (0.102-0ubuntu1) UNRELEASED; urgency=medium
   * debian/libmediascanner-2.0-1.symbols: auto-update to released
     version
 
- -- James Henstridge <james.henstridge@canonical.com>  Fri, 25 Jul 2014 17:07:19 +0800
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 30 Jul 2014 10:49:39 +0000
 
 mediascanner2 (0.101+14.10.20140724.1-0ubuntu1) utopic; urgency=medium
 
