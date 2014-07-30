@@ -45,8 +45,8 @@ private:
 public:
     SubtreeWatcher(MediaStore &store, MetadataExtractor &extractor, InvalidationSender &invalidator);
     ~SubtreeWatcher();
-    SubtreeWatcher(SubtreeWatcher &o) = delete;
-    SubtreeWatcher& operator=(SubtreeWatcher &o) = delete;
+    SubtreeWatcher(const SubtreeWatcher &o) = delete;
+    SubtreeWatcher& operator=(const SubtreeWatcher &o) = delete;
 
     void addDir(const std::string &path);
     void processEvents();

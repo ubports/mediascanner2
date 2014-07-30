@@ -1,3 +1,5 @@
+#include "service-skeleton.hh"
+
 #include <stdexcept>
 
 #include <core/dbus/message.h>
@@ -12,7 +14,6 @@
 
 #include "dbus-interface.hh"
 #include "dbus-codec.hh"
-#include "service-skeleton.hh"
 
 using core::dbus::Message;
 
@@ -62,6 +63,11 @@ struct ServiceSkeleton::Private {
         object->install_method_handler<MediaStoreInterface::QueryAlbums>(
             std::bind(
                 &Private::handle_query_albums,
+                this,
+                std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::QueryArtists>(
+            std::bind(
+                &Private::handle_query_artists,
                 this,
                 std::placeholders::_1));
         object->install_method_handler<MediaStoreInterface::GetAlbumSongs>(
@@ -221,6 +227,26 @@ struct ServiceSkeleton::Private {
         impl->access_bus()->send(reply);
     }
 
+    void handle_query_artists(const Message::Ptr &message) {
+        if (!check_access(message, AudioMedia))
+            return;
+
+        std::string query;
+        int32_t limit;
+        message->reader() >> query >> limit;
+        Message::Ptr reply;
+        try {
+            auto artists = store->queryArtists(query, limit);
+            reply = Message::make_method_return(message);
+            reply->writer() << artists;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
     void handle_get_album_songs(const Message::Ptr &message) {
         if (!check_access(message, AudioMedia))
             return;
@@ -265,11 +291,10 @@ struct ServiceSkeleton::Private {
             return;
 
         Filter filter;
-        int32_t limit;
-        message->reader() >> filter >> limit;
+        message->reader() >> filter;
         Message::Ptr reply;
         try {
-            auto results = store->listSongs(filter, limit);
+            auto results = store->listSongs(filter);
             reply = Message::make_method_return(message);
             reply->writer() << results;
         } catch (const std::exception &e) {
@@ -285,11 +310,10 @@ struct ServiceSkeleton::Private {
             return;
 
         Filter filter;
-        int32_t limit;
-        message->reader() >> filter >> limit;
+        message->reader() >> filter;
         Message::Ptr reply;
         try {
-            auto albums = store->listAlbums(filter, limit);
+            auto albums = store->listAlbums(filter);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
         } catch (const std::exception &e) {
@@ -305,11 +329,10 @@ struct ServiceSkeleton::Private {
             return;
 
         Filter filter;
-        int32_t limit;
-        message->reader() >> filter >> limit;
+        message->reader() >> filter;
         Message::Ptr reply;
         try {
-            auto artists = store->listArtists(filter, limit);
+            auto artists = store->listArtists(filter);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
         } catch (const std::exception &e) {
@@ -325,11 +348,10 @@ struct ServiceSkeleton::Private {
             return;
 
         Filter filter;
-        int32_t limit;
-        message->reader() >> filter >> limit;
+        message->reader() >> filter;
         Message::Ptr reply;
         try {
-            auto artists = store->listAlbumArtists(filter, limit);
+            auto artists = store->listAlbumArtists(filter);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
         } catch (const std::exception &e) {
@@ -344,11 +366,11 @@ struct ServiceSkeleton::Private {
         if (!check_access(message, AudioMedia))
             return;
 
-        int32_t limit;
-        message->reader() >> limit;
+        Filter filter;
+        message->reader() >> filter;
         Message::Ptr reply;
         try {
-            auto genres = store->listGenres(limit);
+            auto genres = store->listGenres(filter);
             reply = Message::make_method_return(message);
             reply->writer() << genres;
         } catch (const std::exception &e) {

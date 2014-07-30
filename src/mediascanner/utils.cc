@@ -75,7 +75,7 @@ std::string filenameToTitle(const std::string &filename) {
 }
 
 std::string getUri(const std::string &filename) {
-    GError *error = NULL;
+    GError *error = nullptr;
     char *uristr = g_filename_to_uri(filename.c_str(), "", &error);
     if (error) {
         std::string msg("Could not build URI: ");

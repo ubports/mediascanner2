@@ -1,0 +1,2 @@
+Tests: msbuild
+Depends: g++, pkg-config, libmediascanner-2.0-dev

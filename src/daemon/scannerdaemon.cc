@@ -79,7 +79,7 @@ private:
 static std::string getCurrentUser() {
     int uid = geteuid();
     struct passwd *pwd = getpwuid(uid);
-    if (pwd == NULL) {
+    if (pwd == nullptr) {
             string msg("Could not look up user name: ");
             msg += strerror(errno);
             throw runtime_error(msg);
@@ -170,6 +170,7 @@ void ScannerDaemon::addDir(const string &dir) {
 void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
     assert(subtrees.find(dir) != subtrees.end());
+    store->archiveItems(dir);
     subtrees.erase(dir);
 }
 

@@ -39,7 +39,7 @@ struct MediaFilePrivate;
 class MediaFileBuilder final {
     friend class MediaFile;
 public:
-    MediaFileBuilder(const std::string &filename);
+    explicit MediaFileBuilder(const std::string &filename);
     MediaFileBuilder(const MediaFile &mf);
     MediaFileBuilder(const MediaFileBuilder &) = delete;
     MediaFileBuilder& operator=(MediaFileBuilder &) = delete;

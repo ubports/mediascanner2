@@ -99,7 +99,7 @@ struct TypeMapper<mediascanner::Filter> {
         return true;
     }
     static const std::string &signature() {
-        static const std::string s = "a{ss}";
+        static const std::string s = "a{sv}";
         return s;
     }
 };

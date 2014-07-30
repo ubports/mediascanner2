@@ -21,8 +21,8 @@ target_link_libraries(mediascanner ${MEDIASCANNER_LIBRARIES})
 
 set_target_properties(mediascanner PROPERTIES
   OUTPUT_NAME "mediascanner-2.0"
-  VERSION 0.0.0
-  SOVERSION 0
+  VERSION 1.0.0
+  SOVERSION 1
 )
 
 install(
@@ -32,6 +32,7 @@ install(
 
 install(FILES
   Album.hh
+  Filter.hh
   MediaFile.hh
   MediaFileBuilder.hh
   MediaStore.hh

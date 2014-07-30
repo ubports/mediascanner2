@@ -17,12 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "service-stub.hh"
+
 #include <stdexcept>
 
 #include <mediascanner/Album.hh>
 #include <mediascanner/Filter.hh>
 #include <mediascanner/MediaFile.hh>
-#include "service-stub.hh"
 #include "dbus-interface.hh"
 #include "dbus-codec.hh"
 
@@ -66,6 +67,13 @@ std::vector<Album> ServiceStub::queryAlbums(const string &core_term, int limit) 
     return result.value();
 }
 
+std::vector<string> ServiceStub::queryArtists(const string &q, int limit) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryArtists, std::vector<string>>(q, (int32_t)limit);
+    if (result.is_error())
+        throw std::runtime_error(result.error().print());
+    return result.value();
+}
+
 std::vector<MediaFile> ServiceStub::getAlbumSongs(const Album& album) const {
     auto result = p->object->invoke_method_synchronously<MediaStoreInterface::GetAlbumSongs, std::vector<MediaFile>>(album);
     if (result.is_error())
@@ -80,35 +88,35 @@ string ServiceStub::getETag(const string &filename) const {
     return result.value();
 }
 
-std::vector<MediaFile> ServiceStub::listSongs(const Filter &filter, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListSongs, std::vector<MediaFile>>(filter, (int32_t)limit);
+std::vector<MediaFile> ServiceStub::listSongs(const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListSongs, std::vector<MediaFile>>(filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();
 }
 
-std::vector<Album> ServiceStub::listAlbums(const Filter &filter, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListAlbums, std::vector<Album>>(filter, (int32_t)limit);
+std::vector<Album> ServiceStub::listAlbums(const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListAlbums, std::vector<Album>>(filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();
 }
-std::vector<string> ServiceStub::listArtists(const Filter &filter, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListArtists, std::vector<string>>(filter, (int32_t)limit);
-    if (result.is_error())
-        throw std::runtime_error(result.error().print());
-    return result.value();
-}
-
-std::vector<string> ServiceStub::listAlbumArtists(const Filter &filter, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListAlbumArtists, std::vector<string>>(filter, (int32_t)limit);
+std::vector<string> ServiceStub::listArtists(const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListArtists, std::vector<string>>(filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();
 }
 
-std::vector<string> ServiceStub::listGenres(int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListGenres, std::vector<string>>((int32_t)limit);
+std::vector<string> ServiceStub::listAlbumArtists(const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListAlbumArtists, std::vector<string>>(filter);
+    if (result.is_error())
+        throw std::runtime_error(result.error().print());
+    return result.value();
+}
+
+std::vector<string> ServiceStub::listGenres(const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::ListGenres, std::vector<string>>(filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();

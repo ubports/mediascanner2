@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "dbus-codec.hh"
 #include <cstdint>
 #include <string>
 
@@ -25,10 +27,10 @@
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/Album.hh>
 #include <mediascanner/Filter.hh>
-#include "dbus-codec.hh"
 
 using core::dbus::Message;
 using core::dbus::Codec;
+using core::dbus::types::Variant;
 using mediascanner::MediaFile;
 using mediascanner::MediaFileBuilder;
 using mediascanner::MediaType;
@@ -102,24 +104,29 @@ void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
 }
 
 void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) {
-    auto w = out.open_array(core::dbus::types::Signature("{ss}"));
+    auto w = out.open_array(core::dbus::types::Signature("{sv}"));
 
     if (filter.hasArtist()) {
         w.close_dict_entry(
-            w.open_dict_entry() << string("artist") << filter.getArtist());
+            w.open_dict_entry() << string("artist") << Variant::encode(filter.getArtist()));
     }
     if (filter.hasAlbum()) {
         w.close_dict_entry(
-            w.open_dict_entry() << string("album") << filter.getAlbum());
+            w.open_dict_entry() << string("album") << Variant::encode(filter.getAlbum()));
     }
     if (filter.hasAlbumArtist()) {
         w.close_dict_entry(
-            w.open_dict_entry() << string("album_artist") << filter.getAlbumArtist());
+            w.open_dict_entry() << string("album_artist") << Variant::encode(filter.getAlbumArtist()));
     }
     if (filter.hasGenre()) {
         w.close_dict_entry(
-            w.open_dict_entry() << string("genre") << filter.getGenre());
+            w.open_dict_entry() << string("genre") << Variant::encode(filter.getGenre()));
     }
+
+    w.close_dict_entry(
+        w.open_dict_entry() << string("offset") << Variant::encode((int32_t)filter.getOffset()));
+    w.close_dict_entry(
+        w.open_dict_entry() << string("limit") << Variant::encode((int32_t)filter.getLimit()));
 
     out.close_array(std::move(w));
 }
@@ -129,17 +136,22 @@ void Codec<Filter>::decode_argument(Message::Reader &in, Filter &filter) {
 
     filter.clear();
     while (r.type() != ArgumentType::invalid) {
-        string key, value;
+        string key;
+        Variant value;
         r.pop_dict_entry() >> key >> value;
 
         if (key == "artist") {
-            filter.setArtist(value);
+            filter.setArtist(value.as<string>());
         } else if (key == "album") {
-            filter.setAlbum(value);
+            filter.setAlbum(value.as<string>());
         } else if (key == "album_artist") {
-            filter.setAlbumArtist(value);
+            filter.setAlbumArtist(value.as<string>());
         } else if (key == "genre") {
-            filter.setGenre(value);
+            filter.setGenre(value.as<string>());
+        } else if (key == "offset") {
+            filter.setOffset(value.as<int32_t>());
+        } else if (key == "limit") {
+            filter.setLimit(value.as<int32_t>());
         }
     }
 }

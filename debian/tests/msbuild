@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Build a test program using libmediascanner.
+# (C) 2014 Canonical Ltd.
+# Authors: Jussi Pakkanen <jussi.pakkanen@canonical.com>
+
+set -e
+
+WORKDIR=$(mktemp -d)
+trap "rm -rf $WORKDIR" 0 INT QUIT ABRT PIPE TERM
+cd $WORKDIR
+cat <<EOF > mstest.cpp
+#include<mediascanner/MediaFileBuilder.hh>
+#include<mediascanner/MediaFile.hh>
+
+int main(int argc, char **argv) {
+    mediascanner::MediaFileBuilder mfb("dummy");
+    mediascanner::MediaFile mf(mfb);
+    return 0;
+}
+EOF
+
+g++ -std=c++11 -o msbin mstest.cpp `pkg-config --cflags --libs mediascanner-2.0`
+echo "Mediascanner build: OK"
+[ -x msbin ]
+./msbin
+echo "Mediascanner run: OK"

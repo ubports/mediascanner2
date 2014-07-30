@@ -552,6 +552,117 @@ TEST_F(MediaStoreTest, queryAlbums_empty) {
     EXPECT_EQ(1, albums.size());
 }
 
+TEST_F(MediaStoreTest, queryArtists) {
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+    MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleThree")
+        .setAuthor("ArtistThree")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(2)
+        .setTrackNumber(1);
+    MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleFour")
+        .setAuthor("ArtistFour")
+        .setAlbum("AlbumTwo")
+        .setAlbumArtist("ArtistFour")
+        .setTrackNumber(1);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+    store.insert(audio4);
+
+    // Query a track title
+    vector<string> artists = store.queryArtists("TitleOne");
+    ASSERT_EQ(artists.size(), 1);
+    EXPECT_EQ(artists[0], "ArtistOne");
+
+    // Query an album name
+    artists = store.queryArtists("AlbumTwo");
+    ASSERT_EQ(artists.size(), 1);
+    EXPECT_EQ(artists[0], "ArtistFour");
+
+    // Query an artist name
+    artists = store.queryArtists("ArtistTwo");
+    ASSERT_EQ(artists.size(), 1);
+    EXPECT_EQ(artists[0], "ArtistTwo");
+}
+
+TEST_F(MediaStoreTest, queryArtists_limit) {
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+
+    vector<string> artists = store.queryArtists("Artist");
+    EXPECT_EQ(2, artists.size());
+    artists = store.queryArtists("Artist", 1);
+    EXPECT_EQ(1, artists.size());
+}
+
+TEST_F(MediaStoreTest, queryArtists_empty) {
+    MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleOne")
+        .setAuthor("ArtistOne")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(1);
+    MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
+        .setType(AudioMedia)
+        .setTitle("TitleTwo")
+        .setAuthor("ArtistTwo")
+        .setAlbum("AlbumOne")
+        .setAlbumArtist("Various Artists")
+        .setDiscNumber(1)
+        .setTrackNumber(2);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+
+    vector<string> artists = store.queryArtists("");
+    EXPECT_EQ(2, artists.size());
+    artists = store.queryArtists("", 1);
+    EXPECT_EQ(1, artists.size());
+}
+
 TEST_F(MediaStoreTest, getAlbumSongs) {
     MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
         .setType(AudioMedia)
@@ -654,8 +765,10 @@ TEST_F(MediaStoreTest, listSongs) {
     EXPECT_EQ("TitleOne", tracks[0].getTitle());
 
     // Apply a limit
-    tracks = store.listSongs(filter, 4);
+    filter.setLimit(4);
+    tracks = store.listSongs(filter);
     EXPECT_EQ(4, tracks.size());
+    filter.setLimit(-1);
 
     // List songs by artist
     filter.setArtist("ArtistOne");
@@ -746,8 +859,10 @@ TEST_F(MediaStoreTest, listAlbums) {
     EXPECT_EQ("AlbumOne", albums[0].getTitle());
 
     // test limit
-    albums = store.listAlbums(filter, 2);
+    filter.setLimit(2);
+    albums = store.listAlbums(filter);
     EXPECT_EQ(2, albums.size());
+    filter.setLimit(-1);
 
     // Songs by artist
     filter.setArtist("ArtistOne");
@@ -814,8 +929,10 @@ TEST_F(MediaStoreTest, listArtists) {
     EXPECT_EQ("ArtistTwo", artists[1]);
 
     // Test limit clause
-    artists = store.listArtists(filter, 1);
+    filter.setLimit(1);
+    artists = store.listArtists(filter);
     EXPECT_EQ(1, artists.size());
+    filter.setLimit(-1);
 
     // List "album artists"
     artists = store.listAlbumArtists(filter);
