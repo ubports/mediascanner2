@@ -32,6 +32,7 @@
 
 #include<glib.h>
 #include<glib-unix.h>
+#include<gio/gio.h>
 #include<gst/gst.h>
 
 #include "../mediascanner/MediaFile.hh"
@@ -46,6 +47,8 @@ using namespace std;
 
 using namespace mediascanner;
 
+static const char BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
+
 class ScannerDaemon final {
 public:
     ScannerDaemon();
@@ -54,6 +57,7 @@ public:
 
 private:
 
+    void setupBus();
     void setupSignals();
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
@@ -61,12 +65,13 @@ private:
     void removeDir(const string &dir);
     static gboolean sourceCallback(int, GIOCondition, gpointer data);
     static gboolean signalCallback(gpointer data);
+    static void busNameLostCallback(GDBusConnection *connection, const char *name, gpointer data);
     void processEvents();
     void addMountedVolumes();
 
     int mountfd;
     unique_ptr<GSource,void(*)(GSource*)> mount_source;
-    int sigint_id, sigterm_id;
+    unsigned int sigint_id = 0, sigterm_id = 0;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
@@ -74,6 +79,8 @@ private:
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
     unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
+    unique_ptr<GDBusConnection,void(*)(void*)> session_bus;
+    unsigned int bus_name_id = 0;
 };
 
 static std::string getCurrentUser() {
@@ -88,8 +95,10 @@ static std::string getCurrentUser() {
 }
 
 ScannerDaemon::ScannerDaemon() :
-    mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
-    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
+    mount_source(nullptr, g_source_unref),
+    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref),
+    session_bus(nullptr, g_object_unref) {
+    setupBus();
     mountDir = string("/media/") + getCurrentUser();
     unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
     store = move(tmp);
@@ -127,13 +136,43 @@ ScannerDaemon::~ScannerDaemon() {
     if (mount_source) {
         g_source_destroy(mount_source.get());
     }
+    if (bus_name_id != 0) {
+        g_bus_unown_name(bus_name_id);
+    }
     close(mountfd);
+}
+
+void ScannerDaemon::busNameLostCallback(GDBusConnection *, const char *name,
+                                        gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    fprintf(stderr, "Exiting due to loss of control of bus name %s\n", name);
+    daemon->bus_name_id = 0;
+    g_main_loop_quit(daemon->main_loop.get());
+}
+
+void ScannerDaemon::setupBus() {
+    GError *error = nullptr;
+    session_bus.reset(g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error));
+    if (!session_bus) {
+        string errortxt(error->message);
+        g_error_free(error);
+        string msg = "Failed to connect to session bus: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
+    invalidator.setBus(session_bus.get());
+
+    bus_name_id = g_bus_own_name_on_connection(
+        session_bus.get(), BUS_NAME, static_cast<GBusNameOwnerFlags>(
+            G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
+            G_BUS_NAME_OWNER_FLAGS_REPLACE),
+        nullptr, &ScannerDaemon::busNameLostCallback, this, nullptr);
 }
 
 gboolean ScannerDaemon::signalCallback(gpointer data) {
     ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
     g_main_loop_quit(daemon->main_loop.get());
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 
 void ScannerDaemon::setupSignals() {
@@ -201,7 +240,7 @@ int ScannerDaemon::run() {
 gboolean ScannerDaemon::sourceCallback(int, GIOCondition, gpointer data) {
     ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
     daemon->processEvents();
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 
 void ScannerDaemon::setupMountWatcher() {
