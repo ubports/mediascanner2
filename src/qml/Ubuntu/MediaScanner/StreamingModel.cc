@@ -36,7 +36,7 @@ const int BATCH_SIZE = 200;
 class AdditionEvent : public QEvent {
 private:
     std::unique_ptr<StreamingModel::RowData> rows;
-    std::exception_ptr error;
+    bool error;
     int generation;
 
 public:
@@ -47,11 +47,11 @@ public:
     void setRows(std::unique_ptr<StreamingModel::RowData> &&r) {
         rows = std::move(r);
     }
-    void setError(const std::exception_ptr &e) {
+    void setError(bool e) {
         error = e;
     }
     std::unique_ptr<StreamingModel::RowData>& getRows() { return rows; }
-    const std::exception_ptr& getError() const { return error; }
+    bool getError() const { return error; }
     int getGeneration() const { return generation; }
 
     static QEvent::Type additionEventType()
@@ -76,7 +76,7 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
             e->setRows(model->retrieveRows(store, BATCH_SIZE, offset));
         } catch (const std::exception &exc) {
             qWarning() << "Failed to retrieve rows:" << exc.what();
-            e->setError(std::current_exception());
+            e->setError(true);
             return;
         }
         cursize = e->getRows()->size();
