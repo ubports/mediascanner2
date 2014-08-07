@@ -42,7 +42,7 @@ Item {
             compare(model.albumArtist, undefined);
             compare(model.genre, undefined);
 
-            compare(model.rowCount, 4);
+            compare(model.count, 4);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(0, AlbumsModel.RoleArtist), "Spiderbait");
 
@@ -67,39 +67,39 @@ Item {
         function test_artist() {
             model.artist = "The John Butler Trio";
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.artist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
         function test_album_artist() {
             model.albumArtist = "The John Butler Trio";
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.albumArtist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
         function test_genre() {
             model.genre = "rock";
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(1, AlbumsModel.RoleTitle), "Spiderbait");
 
             model.genre = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
     }

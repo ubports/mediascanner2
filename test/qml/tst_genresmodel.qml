@@ -35,7 +35,7 @@ Item {
 
         function test_initial_state() {
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
             compare(model.get(0, ArtistsModel.RoleGenre), "rock");
             compare(model.get(1, ArtistsModel.RoleGenre), "roots");
         }

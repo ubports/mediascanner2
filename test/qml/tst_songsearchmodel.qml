@@ -33,11 +33,11 @@ Item {
         function test_search() {
             // By default, the model lists all songs.
             waitForReady();
-            compare(model.rowCount, 7, "songs_model.rowCount == 7");
+            compare(model.count, 7, "songs_model.count == 7");
 
             model.query = "revolution";
             waitForReady();
-            compare(model.rowCount, 1, "songs_model.rowCount == 1");
+            compare(model.count, 1, "songs_model.count == 1");
             compare(model.get(0, SongsSearchModel.RoleTitle), "Revolution");
         }
     }

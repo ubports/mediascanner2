@@ -41,7 +41,7 @@ Item {
             compare(model.genre, undefined);
 
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
             compare(model.get(0, ArtistsModel.RoleArtist), "Spiderbait");
             compare(model.get(1, ArtistsModel.RoleArtist), "The John Butler Trio");
         }
@@ -57,7 +57,7 @@ Item {
         function test_album_artists() {
             model.albumArtists = true;
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
 
             compare(model.get(0, ArtistsModel.RoleArtist), "Spiderbait");
             compare(model.get(1, ArtistsModel.RoleArtist), "The John Butler Trio");
@@ -66,17 +66,17 @@ Item {
         function test_genre() {
             model.genre = "rock";
             waitForReady();
-            compare(model.rowCount, 1);
+            compare(model.count, 1);
             compare(model.get(0, ArtistsModel.RoleArtist), "Spiderbait");
 
             model.genre = "roots";
             waitForReady();
-            compare(model.rowCount, 1);
+            compare(model.count, 1);
             compare(model.get(0, ArtistsModel.RoleArtist), "The John Butler Trio");
 
             model.genre = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
     }

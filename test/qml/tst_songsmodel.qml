@@ -43,7 +43,7 @@ Item {
             compare(model.albumArtist, undefined);
             compare(model.album, undefined);
 
-            compare(model.rowCount, 7);
+            compare(model.count, 7);
             compare(model.get(0, SongsModel.RoleTitle), "Buy Me a Pony")
             compare(model.get(0, SongsModel.RoleAlbum), "Ivy and the Big Apples");
             compare(model.get(0, SongsModel.RoleAuthor), "Spiderbait");
@@ -67,46 +67,46 @@ Item {
         function test_artist() {
             model.artist = "The John Butler Trio";
             waitForReady();
-            compare(model.rowCount, 4);
+            compare(model.count, 4);
 
             compare(model.get(0, SongsModel.RoleTitle), "Revolution");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.artist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
         function test_album_artist() {
             model.albumArtist = "The John Butler Trio";
             waitForReady();
-            compare(model.rowCount, 4);
+            compare(model.count, 4);
 
             compare(model.get(0, SongsModel.RoleTitle), "Revolution");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.albumArtist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
         function test_album() {
             model.album = "Sunrise Over Sea";
             waitForReady();
-            compare(model.rowCount, 2);
+            compare(model.count, 2);
 
             compare(model.get(0, SongsModel.RoleTitle), "Peaches & Cream");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.albumArtist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
         function test_genre() {
             model.genre = "rock";
             waitForReady();
-            compare(model.rowCount, 3);
+            compare(model.count, 3);
 
             compare(model.get(0, SongsModel.RoleTitle), "Buy Me a Pony");
             compare(model.get(1, SongsModel.RoleTitle), "Straight Through The Sun");
@@ -114,7 +114,7 @@ Item {
 
             model.albumArtist = "unknown";
             waitForReady();
-            compare(model.rowCount, 0);
+            compare(model.count, 0);
         }
 
     }
