@@ -20,6 +20,7 @@
 #include "StreamingModel.hh"
 
 #include <cassert>
+#include <exception>
 
 #include <QEvent>
 #include <QCoreApplication>
@@ -35,14 +36,22 @@ const int BATCH_SIZE = 200;
 class AdditionEvent : public QEvent {
 private:
     std::unique_ptr<StreamingModel::RowData> rows;
+    std::exception_ptr error;
     int generation;
 
 public:
-    AdditionEvent(std::unique_ptr<StreamingModel::RowData> &&rows, int generation) :
-        QEvent(AdditionEvent::additionEventType()), rows(std::move(rows)), generation(generation) {
+    AdditionEvent(int generation) :
+        QEvent(AdditionEvent::additionEventType()), generation(generation) {
     }
 
+    void setRows(std::unique_ptr<StreamingModel::RowData> &&r) {
+        rows = std::move(r);
+    }
+    void setError(const std::exception_ptr &e) {
+        error = e;
+    }
     std::unique_ptr<StreamingModel::RowData>& getRows() { return rows; }
+    const std::exception_ptr& getError() const { return error; }
     int getGeneration() const { return generation; }
 
     static QEvent::Type additionEventType()
@@ -62,8 +71,14 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
         if(model->shouldWorkerStop()) {
             return;
         }
-        QScopedPointer<AdditionEvent> e(
-            new AdditionEvent(model->retrieveRows(store, BATCH_SIZE, offset), generation));
+        QScopedPointer<AdditionEvent> e(new AdditionEvent(generation));
+        try {
+            e->setRows(model->retrieveRows(store, BATCH_SIZE, offset));
+        } catch (const std::exception &exc) {
+            qWarning() << "Failed to retrieve rows:" << exc.what();
+            e->setError(std::current_exception());
+            return;
+        }
         cursize = e->getRows()->size();
         if (model->shouldWorkerStop()) {
             return;
@@ -113,6 +128,11 @@ bool StreamingModel::event(QEvent *e) {
     // Old results may be in Qt's event queue and get delivered
     // after we have moved to a new query. Ignore them.
     if(ae->getGeneration() != generation) {
+        return true;
+    }
+
+    if (ae->getError()) {
+        setStatus(Error);
         return true;
     }
 

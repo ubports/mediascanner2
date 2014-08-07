@@ -18,7 +18,6 @@
  */
 
 #include "AlbumsModel.hh"
-#include <exception>
 #include <QDebug>
 
 using namespace mediascanner::qml;
@@ -102,12 +101,6 @@ std::unique_ptr<StreamingModel::RowData> AlbumsModel::retrieveRows(std::shared_p
     auto limit_filter = filter;
     limit_filter.setLimit(limit);
     limit_filter.setOffset(offset);
-    std::vector<mediascanner::Album> albums;
-    try {
-        albums = store->listAlbums(limit_filter);
-    } catch (const std::exception &e) {
-        qWarning() << "Failed to retrieve album list:" << e.what();
-    }
     return std::unique_ptr<StreamingModel::RowData>(
-        new AlbumRowData(std::move(albums)));
+        new AlbumRowData(store->listAlbums(limit_filter)));
 }
