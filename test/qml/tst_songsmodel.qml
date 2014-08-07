@@ -15,31 +15,27 @@ Item {
     }
 
     SignalSpy {
-        id: modelFilled
+        id: modelStatus
         target: model
-        signalName: "filled"
+        signalName: "statusChanged"
     }
 
     TestCase {
         name: "SongsModelTests"
 
+        function waitForReady() {
+            while (model.status == SongsModel.Loading) {
+                modelStatus.wait();
+            }
+            compare(model.status, SongsModel.Ready);
+        }
+
         function cleanup() {
-            if (model.artist != undefined) {
-                model.artist = undefined;
-                modelFilled.wait();
-            }
-            if (model.albumArtist != undefined) {
-                model.albumArtist = undefined;
-                modelFilled.wait();
-            }
-            if (model.album != undefined) {
-                model.album = undefined;
-                modelFilled.wait();
-            }
-            if (model.genre != undefined) {
-                model.genre = undefined;
-                modelFilled.wait();
-            }
+            model.artist = undefined;
+            model.albumArtist = undefined;
+            model.album = undefined;
+            model.genre = undefined;
+            waitForReady();
         }
 
         function test_initial_state() {
@@ -70,46 +66,46 @@ Item {
 
         function test_artist() {
             model.artist = "The John Butler Trio";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 4);
 
             compare(model.get(0, SongsModel.RoleTitle), "Revolution");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.artist = "unknown";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 0);
         }
 
         function test_album_artist() {
             model.albumArtist = "The John Butler Trio";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 4);
 
             compare(model.get(0, SongsModel.RoleTitle), "Revolution");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.albumArtist = "unknown";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 0);
         }
 
         function test_album() {
             model.album = "Sunrise Over Sea";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 2);
 
             compare(model.get(0, SongsModel.RoleTitle), "Peaches & Cream");
             compare(model.get(0, SongsModel.RoleAuthor), "The John Butler Trio");
 
             model.albumArtist = "unknown";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 0);
         }
 
         function test_genre() {
             model.genre = "rock";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 3);
 
             compare(model.get(0, SongsModel.RoleTitle), "Buy Me a Pony");
@@ -117,7 +113,7 @@ Item {
             compare(model.get(2, SongsModel.RoleTitle), "It's Beautiful");
 
             model.albumArtist = "unknown";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 0);
         }
 

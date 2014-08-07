@@ -75,7 +75,8 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
 
 }
 
-StreamingModel::StreamingModel(QObject *parent) : QAbstractListModel(parent), generation(0) {
+StreamingModel::StreamingModel(QObject *parent) :
+    QAbstractListModel(parent), generation(0), status_(Ready) {
 }
 
 StreamingModel::~StreamingModel() {
@@ -90,9 +91,10 @@ StreamingModel::~StreamingModel() {
 void StreamingModel::updateModel() {
     if (store.isNull()) {
         query_future = QFuture<void>();
-        Q_EMIT filled();
+        setStatus(Ready);
         return;
     }
+    setStatus(Loading);
     setWorkerStop(false);
     query_future = QtConcurrent::run(runQuery, ++generation, this, store->store);
 }
@@ -119,14 +121,14 @@ bool StreamingModel::event(QEvent *e) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount()+newrows->size()-1);
     appendRows(std::move(newrows));
     endInsertRows();
-    Q_EMIT rowCountChanged();
+    Q_EMIT countChanged();
     if (lastBatch) {
-        Q_EMIT filled();
+        setStatus(Ready);
     }
     return true;
 }
 
-MediaStoreWrapper *StreamingModel::getStore() {
+MediaStoreWrapper *StreamingModel::getStore() const {
     return store.data();
 }
 
@@ -145,12 +147,21 @@ void StreamingModel::setStore(MediaStoreWrapper *store) {
     }
 }
 
+StreamingModel::ModelStatus StreamingModel::status() const {
+    return status_;
+}
+
+void StreamingModel::setStatus(StreamingModel::ModelStatus status) {
+    status_ = status;
+    Q_EMIT statusChanged();
+}
+
 void StreamingModel::invalidate() {
     setWorkerStop(true);
     query_future.waitForFinished();
     beginResetModel();
     clearBacking();
     endResetModel();
-    Q_EMIT rowCountChanged();
+    Q_EMIT countChanged();
     updateModel();
 }

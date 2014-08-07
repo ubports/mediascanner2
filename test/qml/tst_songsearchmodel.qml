@@ -15,20 +15,28 @@ Item {
     }
 
     SignalSpy {
-        id: modelFilled
+        id: modelStatus
         target: model
-        signalName: "filled"
+        signalName: "statusChanged"
     }
 
     TestCase {
         name: "SongsSearchModelTests"
+
+        function waitForReady() {
+            while (model.status == SongsSearchModel.Loading) {
+                modelStatus.wait();
+            }
+            compare(model.status, SongsSearchModel.Ready);
+        }
+
         function test_search() {
             // By default, the model lists all songs.
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 7, "songs_model.rowCount == 7");
 
             model.query = "revolution";
-            modelFilled.wait();
+            waitForReady();
             compare(model.rowCount, 1, "songs_model.rowCount == 1");
             compare(model.get(0, SongsSearchModel.RoleTitle), "Revolution");
         }

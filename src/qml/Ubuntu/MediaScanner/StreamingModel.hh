@@ -34,9 +34,18 @@ namespace qml {
 
 class StreamingModel : public QAbstractListModel {
     Q_OBJECT
+    Q_ENUMS(ModelStatus)
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
-    Q_PROPERTY(int rowCount READ rowCount NOTIFY rowCountChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+    Q_PROPERTY(int rowCount READ rowCount NOTIFY countChanged)
+    Q_PROPERTY(ModelStatus status READ status NOTIFY statusChanged)
 public:
+    enum ModelStatus {
+        Ready,
+        Loading,
+        Error
+    };
+
     explicit StreamingModel(QObject *parent=nullptr);
     virtual ~StreamingModel();
 
@@ -56,8 +65,11 @@ public:
     virtual void clearBacking() = 0;
 
 protected:
-    MediaStoreWrapper *getStore();
+    MediaStoreWrapper *getStore() const;
     void setStore(MediaStoreWrapper *store);
+
+    ModelStatus status() const;
+    void setStatus(ModelStatus status);
 
 private:
     void updateModel();
@@ -67,10 +79,11 @@ private:
     QFuture<void> query_future;
     int generation;
     std::atomic<bool> stopflag;
+    ModelStatus status_;
 
 Q_SIGNALS:
-    void rowCountChanged();
-    void filled();
+    void countChanged();
+    void statusChanged();
 
 public Q_SLOTS:
 
