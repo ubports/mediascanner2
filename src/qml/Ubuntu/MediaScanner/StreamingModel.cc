@@ -132,7 +132,15 @@ MediaStoreWrapper *StreamingModel::getStore() {
 
 void StreamingModel::setStore(MediaStoreWrapper *store) {
     if (this->store != store) {
+        if (this->store) {
+            disconnect(this->store, &MediaStoreWrapper::updated,
+                       this, &StreamingModel::invalidate);
+        }
         this->store = store;
+        if (store) {
+            connect(this->store, &MediaStoreWrapper::updated,
+                    this, &StreamingModel::invalidate);
+        }
         invalidate();
     }
 }
