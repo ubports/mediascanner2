@@ -36,7 +36,7 @@ const int BATCH_SIZE = 200;
 class AdditionEvent : public QEvent {
 private:
     std::unique_ptr<StreamingModel::RowData> rows;
-    bool error;
+    bool error = false;
     int generation;
 
 public:
