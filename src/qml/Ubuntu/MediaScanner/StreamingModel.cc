@@ -116,7 +116,7 @@ bool StreamingModel::event(QEvent *e) {
 
     auto &newrows = ae->getRows();
     bool lastBatch = newrows->size() < BATCH_SIZE;
-    beginInsertRows(QModelIndex(), rowCount(), rowCount()+newrows->size());
+    beginInsertRows(QModelIndex(), rowCount(), rowCount()+newrows->size()-1);
     appendRows(std::move(newrows));
     endInsertRows();
     Q_EMIT rowCountChanged();

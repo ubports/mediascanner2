@@ -1,3 +1,11 @@
+mediascanner2 (0.102+14.10.20140805-0ubuntu1) utopic; urgency=low
+
+  [ James Henstridge ]
+  * Fix off by one error when appending new rows to QML models. (LP:
+    #1350529)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 05 Aug 2014 11:44:48 +0000
+
 mediascanner2 (0.102+14.10.20140730.1-0ubuntu1) utopic; urgency=medium
 
   [ Jussi Pakkanen ]
