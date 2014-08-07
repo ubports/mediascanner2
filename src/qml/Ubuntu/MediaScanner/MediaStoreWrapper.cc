@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <QDBusConnection>
 #include <QDebug>
 #include <QQmlEngine>
 
@@ -29,6 +30,11 @@
 #include <ms-dbus/service-stub.hh>
 
 using namespace mediascanner::qml;
+
+static const char SCANNER_BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
+static const char SCANNER_IFACE[] = "com.canonical.unity.scopes";
+static const char SCANNER_PATH[] = "/com/canonical/unity/scopes";
+static const char INVALIDATE_RESULTS[] = "InvalidateResults";
 
 static core::dbus::Bus::Ptr the_session_bus() {
     static core::dbus::Bus::Ptr bus = std::make_shared<core::dbus::Bus>(
@@ -49,6 +55,18 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     } else {
         store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
     }
+
+    QDBusConnection::sessionBus().connect(
+        SCANNER_BUS_NAME, SCANNER_PATH,
+        SCANNER_IFACE, INVALIDATE_RESULTS, "s",
+        this, SLOT(resultsInvalidated(QString)));
+}
+
+MediaStoreWrapper::~MediaStoreWrapper() {
+    QDBusConnection::sessionBus().disconnect(
+        SCANNER_BUS_NAME, SCANNER_PATH,
+        SCANNER_IFACE, INVALIDATE_RESULTS, "s",
+        this, SLOT(resultsInvalidated(QString)));
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
@@ -74,4 +92,10 @@ MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
     }
     QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
     return wrapper;
+}
+
+void MediaStoreWrapper::resultsInvalidated(const QString &scopeName) {
+    if (scopeName == "mediascanner-music") {
+        Q_EMIT updated();
+    }
 }

@@ -44,11 +44,18 @@ public:
         AllMedia = mediascanner::AllMedia,
     };
     MediaStoreWrapper(QObject *parent=0);
+    ~MediaStoreWrapper();
 
     Q_INVOKABLE QList<QObject*> query(const QString &q, MediaType type);
     Q_INVOKABLE mediascanner::qml::MediaFileWrapper *lookup(const QString &filename);
 
     std::shared_ptr<mediascanner::MediaStoreBase> store;
+
+Q_SIGNALS:
+    void updated();
+
+private Q_SLOTS:
+    void resultsInvalidated(const QString &scopeName);
 };
 
 }
