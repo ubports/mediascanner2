@@ -29,6 +29,7 @@
 #include<map>
 #include<memory>
 #include<cassert>
+#include<dirent.h>
 
 #include<glib.h>
 #include<glib-unix.h>
@@ -63,6 +64,8 @@ private:
     static gboolean signalCallback(gpointer data);
     void processEvents();
     void addMountedVolumes();
+    bool mountEvent(const string& abspath, struct inotify_event* event);
+    bool preMountEvent(const string& abspath, struct inotify_event* event);
 
     int mountfd;
     unique_ptr<GSource,void(*)(GSource*)> mount_source;
@@ -74,6 +77,11 @@ private:
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
     unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
+    // Under some circumstances the directory /media/username does not
+    // exist when Mediascanner is first run. In this case we need to track
+    // when it appears and then change into tracking changes there.
+    // /media/username is never deleted during the life cycle of Mediascanner.
+    bool mountdir_exists;
 };
 
 static std::string getCurrentUser() {
@@ -90,10 +98,14 @@ static std::string getCurrentUser() {
 ScannerDaemon::ScannerDaemon() :
     mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
     main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
+
     mountDir = string("/media/") + getCurrentUser();
-    unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
-    store = move(tmp);
+    auto dir = opendir(mountDir.c_str());
+    mountdir_exists = dir ? true : false;
+    closedir(dir);
+    store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
     extractor.reset(new MetadataExtractor());
+
     setupMountWatcher();
     addMountedVolumes();
 
@@ -169,7 +181,8 @@ void ScannerDaemon::addDir(const string &dir) {
 
 void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
-    assert(subtrees.find(dir) != subtrees.end());
+    if(subtrees.find(dir) == subtrees.end())
+        return;
     store->archiveItems(dir);
     subtrees.erase(dir);
 }
@@ -211,8 +224,9 @@ void ScannerDaemon::setupMountWatcher() {
         msg += strerror(errno);
         throw runtime_error(msg);
     }
-    int wd = inotify_add_watch(mountfd, mountDir.c_str(),
-            IN_CREATE |  IN_DELETE | IN_ONLYDIR);
+    std::string watched_dir = mountdir_exists ? mountDir : "/media";
+    auto watch_flags = mountdir_exists ? (IN_CREATE |  IN_DELETE | IN_ONLYDIR) : (IN_CREATE | IN_ONLYDIR);
+    int wd = inotify_add_watch(mountfd, watched_dir.c_str(), watch_flags);
     if(wd == -1) {
         if (errno == ENOENT) {
             printf("Mount directory does not exist\n");
@@ -226,6 +240,60 @@ void ScannerDaemon::setupMountWatcher() {
     mount_source.reset(g_unix_fd_source_new(mountfd, G_IO_IN));
     g_source_set_callback(mount_source.get(), reinterpret_cast<GSourceFunc>(&ScannerDaemon::sourceCallback), this, nullptr);
     g_source_attach(mount_source.get(), nullptr);
+}
+
+bool ScannerDaemon::mountEvent(const string& abspath, struct inotify_event* event) {
+    bool changed = false;
+    if (event->mask & IN_CREATE) {
+        printf("Volume %s was mounted.\n", abspath.c_str());
+        addDir(abspath);
+        changed = true;
+    } else if (event->mask & IN_DELETE) {
+        printf("Volume %s was unmounted.\n", abspath.c_str());
+        if (subtrees.find(abspath) != subtrees.end()) {
+            removeDir(abspath);
+            changed = true;
+        } else {
+            // This volume was not tracked because it looked rootlike,
+            // or maybe it got lost in an inotify event flood.
+            // Thus we don't need to do anything.
+        }
+    }
+    return changed;
+}
+
+bool ScannerDaemon::preMountEvent(const string& abspath, struct inotify_event* event) {
+    bool changed = false;
+    if(mountdir_exists) {
+        return false; // There may have been multiple events in the queue so ignore later ones.
+    }
+    if (event->mask & IN_CREATE) {
+        if(abspath == mountDir) {
+            printf("Media mount location %s was created.\n", abspath.c_str());
+            mountdir_exists = true;
+            close(mountfd);
+            setupMountWatcher();
+
+            // Add directories to list.
+            unique_ptr<DIR, int(*)(DIR*)> dir(opendir(abspath.c_str()), closedir);
+            unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
+                                free);
+            struct dirent *de;
+            while(readdir_r(dir.get(), entry.get(), &de) == 0 && de) {
+                struct stat statbuf;
+                string fname = entry.get()->d_name;
+                if(fname[0] == '.') // Ignore hidden files and dirs.
+                    continue;
+                string fullpath = mountDir + "/" + fname;
+                lstat(fullpath.c_str(), &statbuf);
+                if(S_ISDIR(statbuf.st_mode)) {
+                    addDir(fullpath);
+                    changed = true;
+                }
+            }
+        }
+    }
+    return changed;
 }
 
 void ScannerDaemon::processEvents() {
@@ -247,23 +315,11 @@ void ScannerDaemon::processEvents() {
         string directory = mountDir;
         string filename(event->name);
         string abspath = directory + '/' + filename;
-        struct stat statbuf;
-        lstat(abspath.c_str(), &statbuf);
-        if(S_ISDIR(statbuf.st_mode)) {
-            if(event->mask & IN_CREATE) {
-                printf("Volume %s was mounted.\n", abspath.c_str());
-                addDir(abspath);
-                changed = true;
-            } else if(event->mask & IN_DELETE){
-                printf("Volume %s was unmounted.\n", abspath.c_str());
-                if(subtrees.find(abspath) != subtrees.end()) {
-                    removeDir(abspath);
-                    changed = true;
-                } else {
-                    // This volume was not tracked because it looked rootlike.
-                    // Thus we don't need to do anything.
-                }
-            }
+        // We only get events for directories as per the inotify flags.
+        if(mountdir_exists) {
+            changed = mountEvent(abspath, event);
+        } else {
+            changed = preMountEvent(abspath, event);
         }
         p += sizeof(struct inotify_event) + event->len;
     }
