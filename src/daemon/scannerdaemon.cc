@@ -312,7 +312,7 @@ void ScannerDaemon::processEvents() {
     }
     for(char *p = buf; p < buf + num_read;) {
         struct inotify_event *event = (struct inotify_event *) p;
-        string directory = mountDir;
+        string directory = mountdir_exists ? mountDir : "/media";
         string filename(event->name);
         string abspath = directory + '/' + filename;
         // We only get events for directories as per the inotify flags.
