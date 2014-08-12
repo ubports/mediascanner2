@@ -38,7 +38,7 @@ class StreamingModel : public QAbstractListModel {
     Q_PROPERTY(mediascanner::qml::MediaStoreWrapper* store READ getStore WRITE setStore)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(int rowCount READ rowCount NOTIFY countChanged)
-    Q_PROPERTY(ModelStatus status READ status NOTIFY statusChanged)
+    Q_PROPERTY(ModelStatus status READ getStatus NOTIFY statusChanged)
 public:
     enum ModelStatus {
         Ready,
@@ -68,7 +68,7 @@ protected:
     MediaStoreWrapper *getStore() const;
     void setStore(MediaStoreWrapper *store);
 
-    ModelStatus status() const;
+    ModelStatus getStatus() const;
     void setStatus(ModelStatus status);
 
 private:
@@ -79,7 +79,7 @@ private:
     QFuture<void> query_future;
     int generation;
     std::atomic<bool> stopflag;
-    ModelStatus status_;
+    ModelStatus status;
 
 Q_SIGNALS:
     void countChanged();

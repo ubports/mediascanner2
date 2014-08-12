@@ -91,7 +91,7 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
 }
 
 StreamingModel::StreamingModel(QObject *parent) :
-    QAbstractListModel(parent), generation(0), status_(Ready) {
+    QAbstractListModel(parent), generation(0), status(Ready) {
 }
 
 StreamingModel::~StreamingModel() {
@@ -167,12 +167,12 @@ void StreamingModel::setStore(MediaStoreWrapper *store) {
     }
 }
 
-StreamingModel::ModelStatus StreamingModel::status() const {
-    return status_;
+StreamingModel::ModelStatus StreamingModel::getStatus() const {
+    return status;
 }
 
 void StreamingModel::setStatus(StreamingModel::ModelStatus status) {
-    status_ = status;
+    this->status = status;
     Q_EMIT statusChanged();
 }
 
