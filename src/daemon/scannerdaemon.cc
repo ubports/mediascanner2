@@ -237,6 +237,9 @@ void ScannerDaemon::setupMountWatcher() {
         throw runtime_error(msg);
     }
 
+    if(!mountdir_exists) {
+        printf("%s does not exist yet, watching /media until it appears.\n", mountDir.c_str());
+    }
     mount_source.reset(g_unix_fd_source_new(mountfd, G_IO_IN));
     g_source_set_callback(mount_source.get(), reinterpret_cast<GSourceFunc>(&ScannerDaemon::sourceCallback), this, nullptr);
     g_source_attach(mount_source.get(), nullptr);
