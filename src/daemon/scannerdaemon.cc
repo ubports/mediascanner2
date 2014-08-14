@@ -63,7 +63,7 @@ private:
     static gboolean sourceCallback(int, GIOCondition, gpointer data);
     static gboolean signalCallback(gpointer data);
     void processEvents();
-    void addMountedVolumes();
+    bool addMountedVolumes();
     bool mountEvent(const string& abspath, struct inotify_event* event);
     bool preMountEvent(const string& abspath, struct inotify_event* event);
 
@@ -275,25 +275,9 @@ bool ScannerDaemon::preMountEvent(const string& abspath, struct inotify_event* e
             printf("Media mount location %s was created.\n", abspath.c_str());
             mountdir_exists = true;
             close(mountfd);
+            mount_source.reset(nullptr);
             setupMountWatcher();
-
-            // Add directories to list.
-            unique_ptr<DIR, int(*)(DIR*)> dir(opendir(abspath.c_str()), closedir);
-            unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
-                                free);
-            struct dirent *de;
-            while(readdir_r(dir.get(), entry.get(), &de) == 0 && de) {
-                struct stat statbuf;
-                string fname = entry.get()->d_name;
-                if(fname[0] == '.') // Ignore hidden files and dirs.
-                    continue;
-                string fullpath = mountDir + "/" + fname;
-                lstat(fullpath.c_str(), &statbuf);
-                if(S_ISDIR(statbuf.st_mode)) {
-                    addDir(fullpath);
-                    changed = true;
-                }
-            }
+            changed = addMountedVolumes();
         }
     }
     return changed;
@@ -331,10 +315,11 @@ void ScannerDaemon::processEvents() {
     }
 }
 
-void ScannerDaemon::addMountedVolumes() {
+bool ScannerDaemon::addMountedVolumes() {
+    bool changed = false;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(mountDir.c_str()), closedir);
     if(!dir) {
-        return;
+        return changed;
     }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
             free);
@@ -347,9 +332,11 @@ void ScannerDaemon::addMountedVolumes() {
         string fullpath = mountDir + "/" + fname;
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
+            changed = true;
             addDir(fullpath);
         }
     }
+    return changed;
 }
 
 int main(int argc, char **argv) {
