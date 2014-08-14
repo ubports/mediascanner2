@@ -95,8 +95,15 @@ static std::string getCurrentUser() {
     return pwd->pw_name;
 }
 
+static void source_destroyer(GSource *s) {
+    if(s) {
+        g_source_destroy(s);
+        g_source_unref(s);
+    }
+}
+
 ScannerDaemon::ScannerDaemon() :
-    mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
+    mount_source(nullptr, source_destroyer), sigint_id(0), sigterm_id(0),
     main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
 
     mountDir = string("/media/") + getCurrentUser();
@@ -135,9 +142,6 @@ ScannerDaemon::~ScannerDaemon() {
     }
     if (sigterm_id != 0) {
         g_source_remove(sigterm_id);
-    }
-    if (mount_source) {
-        g_source_destroy(mount_source.get());
     }
     close(mountfd);
 }
