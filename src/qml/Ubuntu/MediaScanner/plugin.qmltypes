@@ -170,6 +170,7 @@ Module {
         Property { name: "count"; type: "int"; isReadonly: true }
         Property { name: "rowCount"; type: "int"; isReadonly: true }
         Property { name: "status"; type: "ModelStatus"; isReadonly: true }
+        Signal { name: "filled" }
         Method { name: "invalidate" }
         Method {
             name: "get"

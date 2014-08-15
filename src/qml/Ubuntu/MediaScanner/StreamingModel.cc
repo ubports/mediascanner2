@@ -174,6 +174,10 @@ StreamingModel::ModelStatus StreamingModel::getStatus() const {
 void StreamingModel::setStatus(StreamingModel::ModelStatus status) {
     this->status = status;
     Q_EMIT statusChanged();
+
+    if (status == Ready) {
+        Q_EMIT filled();
+    }
 }
 
 void StreamingModel::invalidate() {

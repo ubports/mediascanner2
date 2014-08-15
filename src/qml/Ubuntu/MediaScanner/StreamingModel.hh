@@ -84,6 +84,8 @@ private:
 Q_SIGNALS:
     void countChanged();
     void statusChanged();
+    // This next signal is here for backwards compatibility
+    void filled();
 
 public Q_SLOTS:
 
