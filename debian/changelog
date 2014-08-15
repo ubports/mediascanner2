@@ -1,4 +1,4 @@
-mediascanner2 (0.103-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.103+14.10.20140815.1-0ubuntu1) utopic; urgency=medium
 
   [ Dimitri John Ledkov ]
   * Add missing dependencies to libmediascanner-2.0-dev package. (LP: 
@@ -15,7 +15,7 @@ mediascanner2 (0.103-0ubuntu1) UNRELEASED; urgency=medium
   * Handle the case when /media/username does not exist when 
     Mediascanner first starts up. (LP: #1354543)
 
- -- James Henstridge <james.henstridge@canonical.com>  Fri, 15 Aug 2014 15:08:20 +0800
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 15 Aug 2014 11:18:39 +0000
 
 mediascanner2 (0.102+14.10.20140805-0ubuntu1) utopic; urgency=low
 
