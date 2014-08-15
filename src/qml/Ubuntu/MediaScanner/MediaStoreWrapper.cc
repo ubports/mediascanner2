@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <QDBusConnection>
 #include <QDebug>
 #include <QQmlEngine>
 
@@ -49,6 +50,13 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     } else {
         store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
     }
+
+    QDBusConnection::sessionBus().connect(
+        "com.canonical.MediaScanner2.Daemon",
+        "/com/canonical/unity/scopes",
+        "com.canonical.unity.scopes", "InvalidateResults",
+        QStringList{"mediascanner-music"}, "s",
+        this, SLOT(resultsInvalidated()));
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
@@ -74,4 +82,8 @@ MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
     }
     QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
     return wrapper;
+}
+
+void MediaStoreWrapper::resultsInvalidated() {
+    Q_EMIT updated();
 }

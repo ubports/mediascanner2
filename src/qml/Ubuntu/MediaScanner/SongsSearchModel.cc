@@ -18,7 +18,6 @@
  */
 
 #include "SongsSearchModel.hh"
-#include <exception>
 #include <QDebug>
 
 using namespace mediascanner::qml;
@@ -42,11 +41,7 @@ std::unique_ptr<StreamingModel::RowData> SongsSearchModel::retrieveRows(std::sha
     std::vector<mediascanner::MediaFile> songs;
     // No batching support, so only send results for the zero offset.
     if (offset == 0) {
-        try {
-            songs = store->query(query.toStdString(), mediascanner::AudioMedia);
-        } catch (const std::exception &e) {
-            qWarning() << "Failed to retrieve song search results:" << e.what();
-        }
+        songs = store->query(query.toStdString(), mediascanner::AudioMedia);
     }
     return std::unique_ptr<StreamingModel::RowData>(
         new MediaFileRowData(std::move(songs)));

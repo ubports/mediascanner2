@@ -52,7 +52,6 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends},
 Depends: gstreamer1.0-plugins-base,
          gstreamer1.0-plugins-good,
-# For dbus-send.
          dbus,
          ${misc:Depends},
          ${shlibs:Depends},

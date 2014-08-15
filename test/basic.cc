@@ -99,7 +99,6 @@ TEST_F(ScanTest, index) {
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
     InvalidationSender invalidator;
-    invalidator.disable();
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(subdir);
     ASSERT_EQ(store.size(), 0);
@@ -122,7 +121,6 @@ TEST_F(ScanTest, subdir) {
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor;
     InvalidationSender invalidator;
-    invalidator.disable();
     SubtreeWatcher watcher(store, extractor, invalidator);
     ASSERT_EQ(watcher.directoryCount(), 0);
     watcher.addDir(testdir);

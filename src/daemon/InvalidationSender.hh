@@ -20,6 +20,10 @@
 #ifndef INVALIDATIONSENDER_HH
 #define INVALIDATIONSENDER_HH
 
+#include <memory>
+
+typedef struct _GDBusConnection GDBusConnection;
+
 /**
  * A class that sends a broadcast signal that the state of media
  * files has changed.
@@ -33,11 +37,12 @@ public:
     InvalidationSender& operator=(const InvalidationSender &o) = delete;
 
     void invalidate();
-    void disable();
+    void setBus(GDBusConnection *bus);
+
 private:
     static int callback(void *data);
 
-    bool enabled;
+    std::unique_ptr<GDBusConnection, void(*)(void*)> bus;
     unsigned int timeout_id;
 };
 
