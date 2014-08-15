@@ -15,20 +15,27 @@ Item {
     }
 
     SignalSpy {
-        id: modelFilled
+        id: modelStatus
         target: model
-        signalName: "filled"
+        signalName: "statusChanged"
     }
 
     TestCase {
         name: "GenresModelTests"
 
+        function waitForReady() {
+            while (model.status == GenresModel.Loading) {
+                modelStatus.wait();
+            }
+            compare(model.status, GenresModel.Ready);
+        }
+
         function cleanup() {
         }
 
         function test_initial_state() {
-            modelFilled.wait();
-            compare(model.rowCount, 2);
+            waitForReady();
+            compare(model.count, 2);
             compare(model.get(0, ArtistsModel.RoleGenre), "rock");
             compare(model.get(1, ArtistsModel.RoleGenre), "roots");
         }

@@ -52,7 +52,6 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends},
 Depends: gstreamer1.0-plugins-base,
          gstreamer1.0-plugins-good,
-# For dbus-send.
          dbus,
          ${misc:Depends},
          ${shlibs:Depends},
@@ -65,6 +64,8 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
 Depends: libmediascanner-2.0-1 (= ${binary:Version}),
+         libsqlite3-dev,
+         libglib2.0-dev,
          ${misc:Depends},
 Description: Development files for libmediascanner
  This package provides the infrastructure for using the media scanner's

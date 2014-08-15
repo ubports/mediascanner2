@@ -49,6 +49,12 @@ public:
     Q_INVOKABLE mediascanner::qml::MediaFileWrapper *lookup(const QString &filename);
 
     std::shared_ptr<mediascanner::MediaStoreBase> store;
+
+Q_SIGNALS:
+    void updated();
+
+private Q_SLOTS:
+    void resultsInvalidated();
 };
 
 }

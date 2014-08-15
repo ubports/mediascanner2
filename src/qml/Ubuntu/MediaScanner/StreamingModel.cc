@@ -20,6 +20,7 @@
 #include "StreamingModel.hh"
 
 #include <cassert>
+#include <exception>
 
 #include <QEvent>
 #include <QCoreApplication>
@@ -35,14 +36,22 @@ const int BATCH_SIZE = 200;
 class AdditionEvent : public QEvent {
 private:
     std::unique_ptr<StreamingModel::RowData> rows;
+    bool error = false;
     int generation;
 
 public:
-    AdditionEvent(std::unique_ptr<StreamingModel::RowData> &&rows, int generation) :
-        QEvent(AdditionEvent::additionEventType()), rows(std::move(rows)), generation(generation) {
+    AdditionEvent(int generation) :
+        QEvent(AdditionEvent::additionEventType()), generation(generation) {
     }
 
+    void setRows(std::unique_ptr<StreamingModel::RowData> &&r) {
+        rows = std::move(r);
+    }
+    void setError(bool e) {
+        error = e;
+    }
     std::unique_ptr<StreamingModel::RowData>& getRows() { return rows; }
+    bool getError() const { return error; }
     int getGeneration() const { return generation; }
 
     static QEvent::Type additionEventType()
@@ -62,8 +71,14 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
         if(model->shouldWorkerStop()) {
             return;
         }
-        QScopedPointer<AdditionEvent> e(
-            new AdditionEvent(model->retrieveRows(store, BATCH_SIZE, offset), generation));
+        QScopedPointer<AdditionEvent> e(new AdditionEvent(generation));
+        try {
+            e->setRows(model->retrieveRows(store, BATCH_SIZE, offset));
+        } catch (const std::exception &exc) {
+            qWarning() << "Failed to retrieve rows:" << exc.what();
+            e->setError(true);
+            return;
+        }
         cursize = e->getRows()->size();
         if (model->shouldWorkerStop()) {
             return;
@@ -75,7 +90,8 @@ void runQuery(int generation, StreamingModel *model, std::shared_ptr<mediascanne
 
 }
 
-StreamingModel::StreamingModel(QObject *parent) : QAbstractListModel(parent), generation(0) {
+StreamingModel::StreamingModel(QObject *parent) :
+    QAbstractListModel(parent), generation(0), status(Ready) {
 }
 
 StreamingModel::~StreamingModel() {
@@ -90,9 +106,10 @@ StreamingModel::~StreamingModel() {
 void StreamingModel::updateModel() {
     if (store.isNull()) {
         query_future = QFuture<void>();
-        Q_EMIT filled();
+        setStatus(Ready);
         return;
     }
+    setStatus(Loading);
     setWorkerStop(false);
     query_future = QtConcurrent::run(runQuery, ++generation, this, store->store);
 }
@@ -114,26 +131,52 @@ bool StreamingModel::event(QEvent *e) {
         return true;
     }
 
+    if (ae->getError()) {
+        setStatus(Error);
+        return true;
+    }
+
     auto &newrows = ae->getRows();
     bool lastBatch = newrows->size() < BATCH_SIZE;
     beginInsertRows(QModelIndex(), rowCount(), rowCount()+newrows->size()-1);
     appendRows(std::move(newrows));
     endInsertRows();
-    Q_EMIT rowCountChanged();
+    Q_EMIT countChanged();
     if (lastBatch) {
-        Q_EMIT filled();
+        setStatus(Ready);
     }
     return true;
 }
 
-MediaStoreWrapper *StreamingModel::getStore() {
+MediaStoreWrapper *StreamingModel::getStore() const {
     return store.data();
 }
 
 void StreamingModel::setStore(MediaStoreWrapper *store) {
     if (this->store != store) {
+        if (this->store) {
+            disconnect(this->store, &MediaStoreWrapper::updated,
+                       this, &StreamingModel::invalidate);
+        }
         this->store = store;
+        if (store) {
+            connect(this->store, &MediaStoreWrapper::updated,
+                    this, &StreamingModel::invalidate);
+        }
         invalidate();
+    }
+}
+
+StreamingModel::ModelStatus StreamingModel::getStatus() const {
+    return status;
+}
+
+void StreamingModel::setStatus(StreamingModel::ModelStatus status) {
+    this->status = status;
+    Q_EMIT statusChanged();
+
+    if (status == Ready) {
+        Q_EMIT filled();
     }
 }
 
@@ -143,6 +186,6 @@ void StreamingModel::invalidate() {
     beginResetModel();
     clearBacking();
     endResetModel();
-    Q_EMIT rowCountChanged();
+    Q_EMIT countChanged();
     updateModel();
 }

@@ -15,27 +15,26 @@ Item {
     }
 
     SignalSpy {
-        id: modelFilled
+        id: modelStatus
         target: model
-        signalName: "filled"
+        signalName: "statusChanged"
     }
 
     TestCase {
         name: "AlbumsModelTests"
 
+        function waitForReady() {
+            while (model.status == AlbumsModel.Loading) {
+                modelStatus.wait();
+            }
+            compare(model.status, AlbumsModel.Ready);
+        }
+
         function cleanup() {
-            if (model.artist != undefined) {
-                model.artist = undefined;
-                modelFilled.wait();
-            }
-            if (model.albumArtist != undefined) {
-                model.albumArtist = undefined;
-                modelFilled.wait();
-            }
-            if (model.genre != undefined) {
-                model.genre = undefined;
-                modelFilled.wait();
-            }
+            model.artist = undefined;
+            model.albumArtist = undefined;
+            model.genre = undefined;
+            waitForReady();
         }
 
         function test_initial_state() {
@@ -43,7 +42,7 @@ Item {
             compare(model.albumArtist, undefined);
             compare(model.genre, undefined);
 
-            compare(model.rowCount, 4);
+            compare(model.count, 4);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(0, AlbumsModel.RoleArtist), "Spiderbait");
 
@@ -67,40 +66,40 @@ Item {
 
         function test_artist() {
             model.artist = "The John Butler Trio";
-            modelFilled.wait();
-            compare(model.rowCount, 2);
+            waitForReady();
+            compare(model.count, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.artist = "unknown";
-            modelFilled.wait();
-            compare(model.rowCount, 0);
+            waitForReady();
+            compare(model.count, 0);
         }
 
         function test_album_artist() {
             model.albumArtist = "The John Butler Trio";
-            modelFilled.wait();
-            compare(model.rowCount, 2);
+            waitForReady();
+            compare(model.count, 2);
 
             compare(model.get(0, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(0, AlbumsModel.RoleArtist), "The John Butler Trio");
 
             model.albumArtist = "unknown";
-            modelFilled.wait();
-            compare(model.rowCount, 0);
+            waitForReady();
+            compare(model.count, 0);
         }
 
         function test_genre() {
             model.genre = "rock";
-            modelFilled.wait();
-            compare(model.rowCount, 2);
+            waitForReady();
+            compare(model.count, 2);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(1, AlbumsModel.RoleTitle), "Spiderbait");
 
             model.genre = "unknown";
-            modelFilled.wait();
-            compare(model.rowCount, 0);
+            waitForReady();
+            compare(model.count, 0);
         }
 
     }

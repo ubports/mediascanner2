@@ -22,13 +22,19 @@
 #include<cstdlib>
 #include<cstdio>
 #include <glib.h>
+#include <gio/gio.h>
 
 using namespace std;
 
 // timer delay in seconds
 const unsigned int DELAY = 1;
 
-InvalidationSender::InvalidationSender() : enabled(true), timeout_id(0) {
+static const char SCOPES_DBUS_IFACE[] = "com.canonical.unity.scopes";
+static const char SCOPES_DBUS_PATH[] = "/com/canonical/unity/scopes";
+static const char SCOPES_INVALIDATE_RESULTS[] = "InvalidateResults";
+
+InvalidationSender::InvalidationSender() :
+    bus(nullptr, g_object_unref), timeout_id(0) {
 }
 
 InvalidationSender::~InvalidationSender() {
@@ -37,8 +43,12 @@ InvalidationSender::~InvalidationSender() {
     }
 }
 
+void InvalidationSender::setBus(GDBusConnection *bus) {
+    this->bus.reset(static_cast<GDBusConnection*>(g_object_ref(bus)));
+}
+
 void InvalidationSender::invalidate() {
-    if (!enabled) {
+    if (!bus) {
         return;
     }
     if (timeout_id != 0) {
@@ -49,22 +59,25 @@ void InvalidationSender::invalidate() {
 
 int InvalidationSender::callback(void *data) {
     auto invalidator = static_cast<InvalidationSender*>(data);
+    GError *error = nullptr;
 
-    string invocation("dbus-send /com/canonical/unity/scopes ");
-    invocation += "com.canonical.unity.scopes.InvalidateResults string:";
-    const string m_invoc = invocation + "mediascanner-music";
-    const string v_invoc = invocation + "mediascanner-video";
-    if(system(m_invoc.c_str()) != 0) {
-        fprintf(stderr, "Could not invalidate music scope results.\n");
+    if (!g_dbus_connection_emit_signal(
+            invalidator->bus.get(), nullptr,
+            SCOPES_DBUS_PATH, SCOPES_DBUS_IFACE, SCOPES_INVALIDATE_RESULTS,
+            g_variant_new("(s)", "mediascanner-music"), &error)) {
+        fprintf(stderr, "Could not invalidate music scope results: %s\n", error->message);
+        g_error_free(error);
+        error = nullptr;
     }
-    if(system(v_invoc.c_str()) != 0) {
-        fprintf(stderr, "Could not invalidate video scope results.\n");
+    if (!g_dbus_connection_emit_signal(
+            invalidator->bus.get(), nullptr,
+            SCOPES_DBUS_PATH, SCOPES_DBUS_IFACE, SCOPES_INVALIDATE_RESULTS,
+            g_variant_new("(s)", "mediascanner-video"), &error)) {
+        fprintf(stderr, "Could not invalidate video scope results: %s\n", error->message);
+        g_error_free(error);
+        error = nullptr;
     }
 
     invalidator->timeout_id = 0;
-    return FALSE;
-}
-
-void InvalidationSender::disable() {
-    enabled = false;
+    return G_SOURCE_REMOVE;
 }

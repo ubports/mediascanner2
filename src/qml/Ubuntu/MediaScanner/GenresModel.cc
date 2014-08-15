@@ -18,7 +18,6 @@
  */
 
 #include "GenresModel.hh"
-#include <exception>
 #include <QDebug>
 
 using namespace mediascanner::qml;
@@ -70,14 +69,8 @@ std::unique_ptr<StreamingModel::RowData> GenresModel::retrieveRows(std::shared_p
     auto limit_filter = filter;
     limit_filter.setLimit(limit);
     limit_filter.setOffset(offset);
-    std::vector<std::string> genres;
-    try {
-        genres = store->listGenres(limit_filter);
-    } catch (const std::exception &e) {
-        qWarning() << "Failed to retrieve genre list:" << e.what();
-    }
     return std::unique_ptr<StreamingModel::RowData>(
-        new GenreRowData(std::move(genres)));
+        new GenreRowData(store->listGenres(limit_filter)));
 }
 
 void GenresModel::appendRows(std::unique_ptr<StreamingModel::RowData> &&row_data) {

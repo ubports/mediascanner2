@@ -29,9 +29,11 @@
 #include<map>
 #include<memory>
 #include<cassert>
+#include<dirent.h>
 
 #include<glib.h>
 #include<glib-unix.h>
+#include<gio/gio.h>
 #include<gst/gst.h>
 
 #include "../mediascanner/MediaFile.hh"
@@ -46,6 +48,8 @@ using namespace std;
 
 using namespace mediascanner;
 
+static const char BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
+
 class ScannerDaemon final {
 public:
     ScannerDaemon();
@@ -54,6 +58,7 @@ public:
 
 private:
 
+    void setupBus();
     void setupSignals();
     void setupMountWatcher();
     void readFiles(MediaStore &store, const string &subdir, const MediaType type);
@@ -61,12 +66,15 @@ private:
     void removeDir(const string &dir);
     static gboolean sourceCallback(int, GIOCondition, gpointer data);
     static gboolean signalCallback(gpointer data);
+    static void busNameLostCallback(GDBusConnection *connection, const char *name, gpointer data);
     void processEvents();
-    void addMountedVolumes();
+    bool addMountedVolumes();
+    bool mountEvent(const string& abspath, struct inotify_event* event);
+    bool preMountEvent(const string& abspath, struct inotify_event* event);
 
     int mountfd;
     unique_ptr<GSource,void(*)(GSource*)> mount_source;
-    int sigint_id, sigterm_id;
+    unsigned int sigint_id = 0, sigterm_id = 0;
     string mountDir;
     string cachedir;
     unique_ptr<MediaStore> store;
@@ -74,6 +82,13 @@ private:
     map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
     unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
+    unique_ptr<GDBusConnection,void(*)(void*)> session_bus;
+    unsigned int bus_name_id = 0;
+    // Under some circumstances the directory /media/username does not
+    // exist when Mediascanner is first run. In this case we need to track
+    // when it appears and then change into tracking changes there.
+    // /media/username is never deleted during the life cycle of Mediascanner.
+    bool mountdir_exists;
 };
 
 static std::string getCurrentUser() {
@@ -87,13 +102,25 @@ static std::string getCurrentUser() {
     return pwd->pw_name;
 }
 
+static void source_destroyer(GSource *s) {
+    if(s) {
+        g_source_destroy(s);
+        g_source_unref(s);
+    }
+}
+
 ScannerDaemon::ScannerDaemon() :
-    mount_source(nullptr, g_source_unref), sigint_id(0), sigterm_id(0),
-    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref) {
+    mount_source(nullptr, source_destroyer),
+    main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref),
+    session_bus(nullptr, g_object_unref) {
+    setupBus();
     mountDir = string("/media/") + getCurrentUser();
-    unique_ptr<MediaStore> tmp(new MediaStore(MS_READ_WRITE, "/media/"));
-    store = move(tmp);
+    auto dir = opendir(mountDir.c_str());
+    mountdir_exists = dir ? true : false;
+    closedir(dir);
+    store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
     extractor.reset(new MetadataExtractor());
+
     setupMountWatcher();
     addMountedVolumes();
 
@@ -124,16 +151,43 @@ ScannerDaemon::~ScannerDaemon() {
     if (sigterm_id != 0) {
         g_source_remove(sigterm_id);
     }
-    if (mount_source) {
-        g_source_destroy(mount_source.get());
+    if (bus_name_id != 0) {
+        g_bus_unown_name(bus_name_id);
     }
     close(mountfd);
+}
+
+void ScannerDaemon::busNameLostCallback(GDBusConnection *, const char *name,
+                                        gpointer data) {
+    ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
+    fprintf(stderr, "Exiting due to loss of control of bus name %s\n", name);
+    daemon->bus_name_id = 0;
+    g_main_loop_quit(daemon->main_loop.get());
+}
+
+void ScannerDaemon::setupBus() {
+    GError *error = nullptr;
+    session_bus.reset(g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error));
+    if (!session_bus) {
+        string errortxt(error->message);
+        g_error_free(error);
+        string msg = "Failed to connect to session bus: ";
+        msg += errortxt;
+        throw runtime_error(msg);
+    }
+    invalidator.setBus(session_bus.get());
+
+    bus_name_id = g_bus_own_name_on_connection(
+        session_bus.get(), BUS_NAME, static_cast<GBusNameOwnerFlags>(
+            G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
+            G_BUS_NAME_OWNER_FLAGS_REPLACE),
+        nullptr, &ScannerDaemon::busNameLostCallback, this, nullptr);
 }
 
 gboolean ScannerDaemon::signalCallback(gpointer data) {
     ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
     g_main_loop_quit(daemon->main_loop.get());
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 
 void ScannerDaemon::setupSignals() {
@@ -169,7 +223,8 @@ void ScannerDaemon::addDir(const string &dir) {
 
 void ScannerDaemon::removeDir(const string &dir) {
     assert(dir[0] == '/');
-    assert(subtrees.find(dir) != subtrees.end());
+    if(subtrees.find(dir) == subtrees.end())
+        return;
     store->archiveItems(dir);
     subtrees.erase(dir);
 }
@@ -201,7 +256,7 @@ int ScannerDaemon::run() {
 gboolean ScannerDaemon::sourceCallback(int, GIOCondition, gpointer data) {
     ScannerDaemon *daemon = static_cast<ScannerDaemon*>(data);
     daemon->processEvents();
-    return TRUE;
+    return G_SOURCE_CONTINUE;
 }
 
 void ScannerDaemon::setupMountWatcher() {
@@ -211,8 +266,9 @@ void ScannerDaemon::setupMountWatcher() {
         msg += strerror(errno);
         throw runtime_error(msg);
     }
-    int wd = inotify_add_watch(mountfd, mountDir.c_str(),
-            IN_CREATE |  IN_DELETE | IN_ONLYDIR);
+    std::string watched_dir = mountdir_exists ? mountDir : "/media";
+    auto watch_flags = mountdir_exists ? (IN_CREATE |  IN_DELETE | IN_ONLYDIR) : (IN_CREATE | IN_ONLYDIR);
+    int wd = inotify_add_watch(mountfd, watched_dir.c_str(), watch_flags);
     if(wd == -1) {
         if (errno == ENOENT) {
             printf("Mount directory does not exist\n");
@@ -223,9 +279,50 @@ void ScannerDaemon::setupMountWatcher() {
         throw runtime_error(msg);
     }
 
+    if(!mountdir_exists) {
+        printf("%s does not exist yet, watching /media until it appears.\n", mountDir.c_str());
+    }
     mount_source.reset(g_unix_fd_source_new(mountfd, G_IO_IN));
     g_source_set_callback(mount_source.get(), reinterpret_cast<GSourceFunc>(&ScannerDaemon::sourceCallback), this, nullptr);
     g_source_attach(mount_source.get(), nullptr);
+}
+
+bool ScannerDaemon::mountEvent(const string& abspath, struct inotify_event* event) {
+    bool changed = false;
+    if (event->mask & IN_CREATE) {
+        printf("Volume %s was mounted.\n", abspath.c_str());
+        addDir(abspath);
+        changed = true;
+    } else if (event->mask & IN_DELETE) {
+        printf("Volume %s was unmounted.\n", abspath.c_str());
+        if (subtrees.find(abspath) != subtrees.end()) {
+            removeDir(abspath);
+            changed = true;
+        } else {
+            // This volume was not tracked because it looked rootlike,
+            // or maybe it got lost in an inotify event flood.
+            // Thus we don't need to do anything.
+        }
+    }
+    return changed;
+}
+
+bool ScannerDaemon::preMountEvent(const string& abspath, struct inotify_event* event) {
+    bool changed = false;
+    if(mountdir_exists) {
+        return false; // There may have been multiple events in the queue so ignore later ones.
+    }
+    if (event->mask & IN_CREATE) {
+        if(abspath == mountDir) {
+            printf("Media mount location %s was created.\n", abspath.c_str());
+            mountdir_exists = true;
+            close(mountfd);
+            mount_source.reset(nullptr);
+            setupMountWatcher();
+            changed = addMountedVolumes();
+        }
+    }
+    return changed;
 }
 
 void ScannerDaemon::processEvents() {
@@ -244,26 +341,14 @@ void ScannerDaemon::processEvents() {
     }
     for(char *p = buf; p < buf + num_read;) {
         struct inotify_event *event = (struct inotify_event *) p;
-        string directory = mountDir;
+        string directory = mountdir_exists ? mountDir : "/media";
         string filename(event->name);
         string abspath = directory + '/' + filename;
-        struct stat statbuf;
-        lstat(abspath.c_str(), &statbuf);
-        if(S_ISDIR(statbuf.st_mode)) {
-            if(event->mask & IN_CREATE) {
-                printf("Volume %s was mounted.\n", abspath.c_str());
-                addDir(abspath);
-                changed = true;
-            } else if(event->mask & IN_DELETE){
-                printf("Volume %s was unmounted.\n", abspath.c_str());
-                if(subtrees.find(abspath) != subtrees.end()) {
-                    removeDir(abspath);
-                    changed = true;
-                } else {
-                    // This volume was not tracked because it looked rootlike.
-                    // Thus we don't need to do anything.
-                }
-            }
+        // We only get events for directories as per the inotify flags.
+        if(mountdir_exists) {
+            changed = mountEvent(abspath, event);
+        } else {
+            changed = preMountEvent(abspath, event);
         }
         p += sizeof(struct inotify_event) + event->len;
     }
@@ -272,10 +357,11 @@ void ScannerDaemon::processEvents() {
     }
 }
 
-void ScannerDaemon::addMountedVolumes() {
+bool ScannerDaemon::addMountedVolumes() {
+    bool changed = false;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(mountDir.c_str()), closedir);
     if(!dir) {
-        return;
+        return changed;
     }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
             free);
@@ -288,9 +374,11 @@ void ScannerDaemon::addMountedVolumes() {
         string fullpath = mountDir + "/" + fname;
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
+            changed = true;
             addDir(fullpath);
         }
     }
+    return changed;
 }
 
 int main(int argc, char **argv) {

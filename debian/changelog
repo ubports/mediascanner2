@@ -1,3 +1,22 @@
+mediascanner2 (0.103-0ubuntu1) UNRELEASED; urgency=medium
+
+  [ Dimitri John Ledkov ]
+  * Add missing dependencies to libmediascanner-2.0-dev package. (LP: 
+    #1351358)
+
+  [ James Henstridge ]
+  * Automatically update models when the daemon sends the 
+    InvalidateResults D-Bus signal. Add a status property to models to 
+    let loading progress be tracked. Rename rowCount property to count, 
+    keeping the old name around for compatibility. (LP: #1347444)
+
+  [ Jussi Pakkanen ]
+  * Minor fixes for libc++.
+  * Handle the case when /media/username does not exist when 
+    Mediascanner first starts up. (LP: #1354543)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Fri, 15 Aug 2014 15:08:20 +0800
+
 mediascanner2 (0.102+14.10.20140805-0ubuntu1) utopic; urgency=low
 
   [ James Henstridge ]

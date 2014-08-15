@@ -124,6 +124,7 @@ Module {
                 "AllMedia": 255
             }
         }
+        Signal { name: "updated" }
         Method {
             name: "query"
             type: "QList<QObject*>"
@@ -157,8 +158,18 @@ Module {
     Component {
         name: "mediascanner::qml::StreamingModel"
         prototype: "QAbstractListModel"
+        Enum {
+            name: "ModelStatus"
+            values: {
+                "Ready": 0,
+                "Loading": 1,
+                "Error": 2
+            }
+        }
         Property { name: "store"; type: "mediascanner::qml::MediaStoreWrapper"; isPointer: true }
+        Property { name: "count"; type: "int"; isReadonly: true }
         Property { name: "rowCount"; type: "int"; isReadonly: true }
+        Property { name: "status"; type: "ModelStatus"; isReadonly: true }
         Signal { name: "filled" }
         Method { name: "invalidate" }
         Method {
