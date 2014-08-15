@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include<cstdio>
+#include<cstdlib>
 #include<memory>
 #include<cassert>
 
