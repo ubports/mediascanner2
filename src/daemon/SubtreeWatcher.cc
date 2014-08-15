@@ -126,7 +126,7 @@ void SubtreeWatcher::addDir(const string &root) {
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX),
                     free);
     struct dirent *de;
-        while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
+    while(readdir_r(dir.get(), entry.get(), &de) == 0 && de ) {
         struct stat statbuf;
         string fname = entry.get()->d_name;
         if(fname[0] == '.') // Ignore hidden entries and also "." and "..".
