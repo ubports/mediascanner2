@@ -234,11 +234,15 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
     while(true) {
         try {
             auto d = s.next();
-            // If the file is unchanged, skip it.
-            if (d.etag == store.getETag(d.filename))
+            // If the file is broken or unchanged, skip it.
+            if (store.is_broken_file(d.filename) || d.etag == store.getETag(d.filename))
                 continue;
             try {
+                store.insert_broken_file(d.filename);
                 store.insert(extractor->extract(d));
+                // If the above line crashes, then brokenness
+                // persists.
+                store.remove_broken_file(d.filename);
             } catch(const exception &e) {
                 fprintf(stderr, "Error when indexing: %s\n", e.what());
             }
