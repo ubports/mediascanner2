@@ -46,7 +46,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 6;
+static const int schemaVersion = 7;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -56,6 +56,9 @@ struct MediaStorePrivate {
 
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
+    void insert_broken_file(const std::string &fname) const;
+    void remove_broken_file(const std::string &fname) const;
+    bool is_broken_file(const std::string &fname) const;
     MediaFile lookup(const std::string &filename) const;
     std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
     std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
@@ -192,6 +195,7 @@ DROP TABLE IF EXISTS media;
 DROP TABLE IF EXISTS media_fts;
 DROP TABLE IF EXISTS media_attic;
 DROP TABLE IF EXISTS schemaVersion;
+DROP TABLE IF EXISTS broken_files;
 )");
     execute_sql(db, deleteCmd);
 }
@@ -263,6 +267,10 @@ END;
 CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
   INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
 END;
+
+CREATE TABLE broken_files (
+    filename TEXT PRIMARY KEY NOT NULL
+);
 )");
     execute_sql(db, schema);
 
@@ -361,6 +369,24 @@ void MediaStorePrivate::remove(const string &fname) const {
     Statement del(db, "DELETE FROM media WHERE filename = ?");
     del.bind(1, fname);
     del.step();
+}
+
+void MediaStorePrivate::insert_broken_file(const std::string &fname) const {
+    Statement del(db, "INSERT OR REPLACE INTO broken_files (filename) VALUES (?)");
+    del.bind(1, fname);
+    del.step();
+}
+
+void MediaStorePrivate::remove_broken_file(const std::string &fname) const {
+    Statement del(db, "DELETE FROM broken_files WHERE filename = ?");
+    del.bind(1, fname);
+    del.step();
+}
+
+bool MediaStorePrivate::is_broken_file(const std::string &fname) const {
+    Statement query(db, "SELECT * FROM broken_files WHERE filename = ?");
+    query.bind(1, fname);
+    return query.step();
 }
 
 static MediaFile make_media(Statement &query) {
@@ -750,6 +776,21 @@ void MediaStore::insert(const MediaFile &m) const {
 void MediaStore::remove(const std::string &fname) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     p->remove(fname);
+}
+
+void MediaStore::insert_broken_file(const std::string &fname) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->insert_broken_file(fname);
+}
+
+void MediaStore::remove_broken_file(const std::string &fname) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->remove_broken_file(fname);
+}
+
+bool MediaStore::is_broken_file(const std::string &fname) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->is_broken_file(fname);
 }
 
 MediaFile MediaStore::lookup(const std::string &filename) const {
