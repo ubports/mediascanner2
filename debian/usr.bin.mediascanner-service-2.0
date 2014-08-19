@@ -87,9 +87,6 @@
   /{,android/}system/etc/media_codecs.xml r,
   /etc/wildmidi/wildmidi.cfg r,
 
-  # Explicitly deny loading any libraries owned by us
-  audit deny owner /** m,
-
   # Allow read on all directories
   /**/ r,
 
