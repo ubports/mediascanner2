@@ -43,9 +43,9 @@ public:
     virtual ~ServiceStub();
 
     virtual MediaFile lookup(const std::string &filename) const override;
-    virtual std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const override;
-    virtual std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const override;
-    virtual std::vector<std::string> queryArtists(const std::string &q, int limit=-1) const override;
+    virtual std::vector<MediaFile> query(const std::string &q, MediaType type, const Filter &filter) const override;
+    virtual std::vector<Album> queryAlbums(const std::string &core_term, const Filter &filter) const override;
+    virtual std::vector<std::string> queryArtists(const std::string &q, const Filter &filter) const override;
     virtual std::vector<MediaFile> getAlbumSongs(const Album& album) const override;
     virtual std::string getETag(const std::string &filename) const override;
     virtual std::vector<MediaFile> listSongs(const Filter &filter) const override;

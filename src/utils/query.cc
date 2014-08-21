@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mediascanner/Filter.hh"
 #include "mediascanner/MediaFile.hh"
 #include "mediascanner/MediaStore.hh"
 
@@ -31,7 +32,7 @@ using namespace mediascanner;
 void queryDb(const string &core_term) {
     MediaStore store(MS_READ_ONLY);
     vector<MediaFile> results;
-    results = store.query(core_term, AudioMedia);
+    results = store.query(core_term, AudioMedia, Filter());
     if(results.empty()) {
         printf("No audio matches.\n");
     } else {
@@ -41,7 +42,7 @@ void queryDb(const string &core_term) {
         printf("Filename: %s\n", i.getFileName().c_str());
     }
 
-    results = store.query(core_term, VideoMedia);
+    results = store.query(core_term, VideoMedia, Filter());
     if(results.empty()) {
         printf("No video matches.\n");
     } else {

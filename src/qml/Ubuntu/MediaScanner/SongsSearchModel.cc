@@ -19,6 +19,7 @@
 
 #include "SongsSearchModel.hh"
 #include <QDebug>
+#include <mediascanner/Filter.hh>
 
 using namespace mediascanner::qml;
 
@@ -37,12 +38,11 @@ void SongsSearchModel::setQuery(const QString query) {
     }
 }
 
-std::unique_ptr<StreamingModel::RowData> SongsSearchModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int /*limit*/, int offset) const {
+std::unique_ptr<StreamingModel::RowData> SongsSearchModel::retrieveRows(std::shared_ptr<MediaStoreBase> store, int limit, int offset) const {
     std::vector<mediascanner::MediaFile> songs;
-    // No batching support, so only send results for the zero offset.
-    if (offset == 0) {
-        songs = store->query(query.toStdString(), mediascanner::AudioMedia);
-    }
+    mediascanner::Filter limit_filter;
+    limit_filter.setLimit(limit);
+    limit_filter.setOffset(offset);
     return std::unique_ptr<StreamingModel::RowData>(
-        new MediaFileRowData(std::move(songs)));
+        new MediaFileRowData(store->query(query.toStdString(), mediascanner::AudioMedia, limit_filter)));
 }

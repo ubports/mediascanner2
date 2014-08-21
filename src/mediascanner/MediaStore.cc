@@ -57,9 +57,9 @@ struct MediaStorePrivate {
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
     MediaFile lookup(const std::string &filename) const;
-    std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
-    std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
-    std::vector<string> queryArtists(const std::string &q, int limit=-1) const;
+    std::vector<MediaFile> query(const std::string &q, MediaType type, const Filter &filter) const;
+    std::vector<Album> queryAlbums(const std::string &core_term, const Filter &filter) const;
+    std::vector<string> queryArtists(const std::string &q, const Filter &filter) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
 
@@ -404,16 +404,17 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
     return make_media(query);
 }
 
-vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, int limit) const {
+vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, const Filter &filter) const {
     if (core_term == "") {
         Statement query(db, R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
   WHERE type == ?
-  LIMIT ?
+  LIMIT ? OFFSET ?
 )");
         query.bind(1, (int)type);
-        query.bind(2, limit);
+        query.bind(2, filter.getLimit());
+        query.bind(3, filter.getOffset());
         return collect_media(query);
     } else {
         Statement query(db, R"(
@@ -424,11 +425,12 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
     ) AS ranktable ON (media.rowid = ranktable.docid)
   WHERE type == ?
   ORDER BY ranktable.rank DESC
-  LIMIT ?
+  LIMIT ? OFFSET ?
 )");
         query.bind(1, core_term + "*");
         query.bind(2, (int)type);
-        query.bind(3, limit);
+        query.bind(3, filter.getLimit());
+        query.bind(4, filter.getOffset());
         return collect_media(query);
     }
 }
@@ -447,16 +449,17 @@ static vector<Album> collect_albums(Statement &query) {
     return result;
 }
 
-vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, int limit) const {
+vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
     if (core_term == "") {
         Statement query(db, R"(
 SELECT album, album_artist FROM media
 WHERE type = ? AND album <> ''
 GROUP BY album, album_artist
-LIMIT ?
+LIMIT ? OFFSET ?
 )");
         query.bind(1, (int)AudioMedia);
-        query.bind(2, limit);
+        query.bind(2, filter.getLimit());
+        query.bind(3, filter.getOffset());
         return collect_albums(query);
     } else {
         Statement query(db, R"(
@@ -464,25 +467,27 @@ SELECT album, album_artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND album <> ''
 GROUP BY album, album_artist
-LIMIT ?
+LIMIT ? OFFSET ?
 )");
         query.bind(1, core_term + "*");
         query.bind(2, (int)AudioMedia);
-        query.bind(3, limit);
+        query.bind(3, filter.getLimit());
+        query.bind(4, filter.getOffset());
         return collect_albums(query);
     }
 }
 
-vector<string> MediaStorePrivate::queryArtists(const string &q, int limit) const {
+vector<string> MediaStorePrivate::queryArtists(const string &q, const Filter &filter) const {
     if (q.empty()) {
         Statement query(db, R"(
 SELECT artist FROM media
 WHERE type = ? AND artist <> ''
 GROUP BY artist
-LIMIT ?
+LIMIT ? OFFSET ?
 )");
         query.bind(1, (int)AudioMedia);
-        query.bind(2, limit);
+        query.bind(2, filter.getLimit());
+        query.bind(3, filter.getOffset());
         vector<string> result;
         while (query.step()) {
             result.push_back(query.getText(0));
@@ -494,11 +499,12 @@ SELECT artist FROM media
 WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
 AND type == ? AND artist <> ''
 GROUP BY artist
-LIMIT ?
+LIMIT ? OFFSET ?
 )");
         query.bind(1, q + "*");
         query.bind(2, (int)AudioMedia);
-        query.bind(3, limit);
+        query.bind(3, filter.getLimit());
+        query.bind(4, filter.getOffset());
         vector<string> result;
         while (query.step()) {
             result.push_back(query.getText(0));
@@ -757,19 +763,19 @@ MediaFile MediaStore::lookup(const std::string &filename) const {
     return p->lookup(filename);
 }
 
-std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, int limit) const {
+std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->query(q, type, limit);
+    return p->query(q, type, filter);
 }
 
-std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
+std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->queryAlbums(core_term, limit);
+    return p->queryAlbums(core_term, filter);
 }
 
-std::vector<string> MediaStore::queryArtists(const std::string &q, int limit) const {
+std::vector<string> MediaStore::queryArtists(const std::string &q, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->queryArtists(q, limit);
+    return p->queryArtists(q, filter);
 }
 
 std::vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {

@@ -26,6 +26,7 @@
 #include <QQmlEngine>
 
 #include <core/dbus/asio/executor.h>
+#include <mediascanner/Filter.hh>
 #include <mediascanner/MediaStore.hh>
 #include <ms-dbus/service-stub.hh>
 
@@ -62,7 +63,7 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
     QList<QObject*> result;
     try {
-        for (const auto &media : store->query(q.toStdString(), static_cast<mediascanner::MediaType>(type))) {
+        for (const auto &media : store->query(q.toStdString(), static_cast<mediascanner::MediaType>(type), mediascanner::Filter())) {
             auto wrapper = new MediaFileWrapper(media);
             QQmlEngine::setObjectOwnership(wrapper, QQmlEngine::JavaScriptOwnership);
             result.append(wrapper);
