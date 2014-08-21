@@ -62,6 +62,11 @@ struct MediaStorePrivate {
     std::vector<string> queryArtists(const std::string &q, const Filter &filter) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
+    std::vector<MediaFile> listSongs(const Filter &filter) const;
+    std::vector<Album> listAlbums(const Filter &filter) const;
+    std::vector<std::string> listArtists(const Filter &filter) const;
+    std::vector<std::string> listAlbumArtists(const Filter &filter) const;
+    std::vector<std::string> listGenres(const Filter &filter) const;
 
     size_t size() const;
     void pruneDeleted();
@@ -537,7 +542,7 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
-std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
+std::vector<MediaFile> MediaStorePrivate::listSongs(const Filter &filter) const {
     std::string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
@@ -559,7 +564,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 ORDER BY album_artist, album, disc_number, track_number, title
 LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasArtist()) {
@@ -580,7 +585,7 @@ LIMIT ? OFFSET ?
     return collect_media(query);
 }
 
-std::vector<Album> MediaStore::listAlbums(const Filter &filter) const {
+std::vector<Album> MediaStorePrivate::listAlbums(const Filter &filter) const {
     std::string qs(R"(
 SELECT album, album_artist FROM media
   WHERE type = ?
@@ -599,7 +604,7 @@ GROUP BY album, album_artist
 ORDER BY album_artist, album
 LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasArtist()) {
@@ -617,7 +622,7 @@ LIMIT ? OFFSET ?
     return collect_albums(query);
 }
 
-vector<std::string> MediaStore::listArtists(const Filter &filter) const {
+vector<std::string> MediaStorePrivate::listArtists(const Filter &filter) const {
     string qs(R"(
 SELECT artist FROM media
   WHERE type = ?
@@ -630,7 +635,7 @@ SELECT artist FROM media
   ORDER BY artist
   LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasGenre()) {
@@ -646,7 +651,7 @@ SELECT artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listAlbumArtists(const Filter &filter) const {
+vector<std::string> MediaStorePrivate::listAlbumArtists(const Filter &filter) const {
     string qs(R"(
 SELECT album_artist FROM media
   WHERE type = ?
@@ -659,7 +664,7 @@ SELECT album_artist FROM media
   ORDER BY album_artist
   LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasGenre()) {
@@ -675,8 +680,8 @@ SELECT album_artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listGenres(const Filter &filter) const {
-    Statement query(p->db, R"(
+vector<std::string> MediaStorePrivate::listGenres(const Filter &filter) const {
+    Statement query(db, R"(
 SELECT genre FROM media
   WHERE type = ?
   GROUP BY genre
@@ -787,6 +792,32 @@ std::string MediaStore::getETag(const std::string &filename) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     return p->getETag(filename);
 }
+
+std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listSongs(filter);
+}
+
+std::vector<Album> MediaStore::listAlbums(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listAlbums(filter);
+}
+
+std::vector<std::string> MediaStore::listArtists(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listArtists(filter);
+}
+
+std::vector<std::string> MediaStore::listAlbumArtists(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listAlbumArtists(filter);
+}
+
+std::vector<std::string> MediaStore::listGenres(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listGenres(filter);
+}
+
 
 size_t MediaStore::size() const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
