@@ -201,7 +201,7 @@ void createTables(sqlite3 *db) {
 CREATE TABLE schemaVersion (version INTEGER);
 
 CREATE TABLE media (
-    filename TEXT PRIMARY KEY NOT NULL,
+    filename TEXT PRIMARY KEY NOT NULL CHECK (filename LIKE '/%'),
     content_type TEXT,
     etag TEXT,
     title TEXT,
@@ -217,7 +217,7 @@ CREATE TABLE media (
     height INTEGER,       -- Only relevant to video/images
     latitude DOUBLE,
     longitude DOUBLE,
-    type INTEGER   -- 0=Audio, 1=Video
+    type INTEGER CHECK (type IN (1, 2, 3)) -- MediaType enum
 );
 
 CREATE INDEX media_type_idx ON media(type);
