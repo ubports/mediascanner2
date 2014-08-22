@@ -26,6 +26,8 @@
   owner @{PROC}/[0-9]*/task/[0-9]*/ r,
   owner @{PROC}/[0-9]*/cmdline r,
 
+  /etc/udev/udev.conf r,
+
   # specific to the mediatek soc
   @{PROC}/xlog/setfil r,
   @{PROC}/M4U_device r,
