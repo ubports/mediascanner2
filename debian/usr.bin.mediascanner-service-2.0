@@ -35,6 +35,9 @@
   /dev/devmap r,
   @{PROC}/mtk_mdp_cmdq r,
 
+  # For manta devices
+  /sys/devices/**/video4linux/video** r,
+
   /sys/kernel/debug/tracing/trace_marker w,
   /dev/ashmem rw,
 
