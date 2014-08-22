@@ -423,27 +423,26 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 )";
     }
     qs += " WHERE type = ?";
-    bool reverse = filter.getReverse();
     switch (filter.getOrder()) {
     case MediaOrder::Default:
     case MediaOrder::Rank:
         // We can only sort by rank if there was a query term
         if (!core_term.empty()) {
             qs += " ORDER BY ranktable.rank";
-            if (!reverse) { // Normal order is descending
+            if (!filter.getReverse()) { // Normal order is descending
                 qs += " DESC";
             }
         }
         break;
     case MediaOrder::Title:
         qs += " ORDER BY title";
-        if (reverse) {
+        if (filter.getReverse()) {
             qs += " DESC";
         }
         break;
     case MediaOrder::Date:
         qs += " ORDER BY date";
-        if (reverse) {
+        if (filter.getReverse()) {
             qs += " DESC";
         }
         break;
@@ -476,67 +475,77 @@ static vector<Album> collect_albums(Statement &query) {
 }
 
 vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
-    if (core_term == "") {
-        Statement query(db, R"(
+    string qs(R"(
 SELECT album, album_artist FROM media
 WHERE type = ? AND album <> ''
-GROUP BY album, album_artist
-LIMIT ? OFFSET ?
 )");
-        query.bind(1, (int)AudioMedia);
-        query.bind(2, filter.getLimit());
-        query.bind(3, filter.getOffset());
-        return collect_albums(query);
-    } else {
-        Statement query(db, R"(
-SELECT album, album_artist FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
-AND type == ? AND album <> ''
-GROUP BY album, album_artist
-LIMIT ? OFFSET ?
-)");
-        query.bind(1, core_term + "*");
-        query.bind(2, (int)AudioMedia);
-        query.bind(3, filter.getLimit());
-        query.bind(4, filter.getOffset());
-        return collect_albums(query);
+    if (!core_term.empty()) {
+        qs += " AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
+    qs += " GROUP BY album, album_artist";
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Title:
+        qs += " ORDER BY album";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Rank:
+        throw std::runtime_error("Can not query albums by rank");
+    case MediaOrder::Date:
+        throw std::runtime_error("Can not query albums by date");
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!core_term.empty()) {
+        query.bind(param++, core_term + "*");
+    }
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    return collect_albums(query);
 }
 
 vector<string> MediaStorePrivate::queryArtists(const string &q, const Filter &filter) const {
-    if (q.empty()) {
-        Statement query(db, R"(
+    string qs(R"(
 SELECT artist FROM media
 WHERE type = ? AND artist <> ''
-GROUP BY artist
-LIMIT ? OFFSET ?
 )");
-        query.bind(1, (int)AudioMedia);
-        query.bind(2, filter.getLimit());
-        query.bind(3, filter.getOffset());
-        vector<string> result;
-        while (query.step()) {
-            result.push_back(query.getText(0));
-        }
-        return result;
-    } else {
-        Statement query(db, R"(
-SELECT artist FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
-AND type == ? AND artist <> ''
-GROUP BY artist
-LIMIT ? OFFSET ?
-)");
-        query.bind(1, q + "*");
-        query.bind(2, (int)AudioMedia);
-        query.bind(3, filter.getLimit());
-        query.bind(4, filter.getOffset());
-        vector<string> result;
-        while (query.step()) {
-            result.push_back(query.getText(0));
-        }
-        return result;
+    if (!q.empty()) {
+        qs += "AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
+    qs += " GROUP BY artist";
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Title:
+        qs += " ORDER BY artist";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Rank:
+        throw std::runtime_error("Can not query artists by rank");
+    case MediaOrder::Date:
+        throw std::runtime_error("Can not query artists by date");
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!q.empty()) {
+        query.bind(param++, q + "*");
+    }
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    vector<string> result;
+    while (query.step()) {
+        result.push_back(query.getText(0));
+    }
+    return result;
 }
 
 vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
