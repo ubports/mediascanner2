@@ -72,8 +72,8 @@ libmediascanner-2.0.so.1 libmediascanner-2.0-1 #MINVER#
  (c++)"mediascanner::MediaStore::size() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::MediaType, int) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::insert(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaStore::is_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.103+14.10.20140815
- (c++)"mediascanner::MediaStore::insert_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.103+14.10.20140815
+ (c++)"mediascanner::MediaStore::is_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.103+14.10.20140815
+ (c++)"mediascanner::MediaStore::insert_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.103+14.10.20140815
  (c++)"mediascanner::MediaStore::remove_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.103+14.10.20140815
  (c++)"mediascanner::MediaStore::lookup(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::remove(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
