@@ -156,13 +156,13 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
 void SubtreeWatcher::fileAdded(const string &abspath) {
     printf("New file was created: %s.\n", abspath.c_str());
     try {
-        if(p->store.is_broken_file(abspath)) {
+        DetectedFile d = p->extractor.detect(abspath);
+        if(p->store.is_broken_file(abspath, d.etag)) {
             fprintf(stderr, "Skipping unscannable file %s.\n", abspath.c_str());
         }
-        DetectedFile d = p->extractor.detect(abspath);
         // Only extract and insert the file if the ETag has changed.
         if (d.etag != p->store.getETag(d.filename)) {
-            p->store.insert_broken_file(abspath);
+            p->store.insert_broken_file(abspath, d.etag);
             p->store.insert(p->extractor.extract(d));
             // If detection dies, insertion into broken files persists
             // and the next time this file is encountered, it is skipped.

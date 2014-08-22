@@ -56,9 +56,9 @@ struct MediaStorePrivate {
 
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
-    void insert_broken_file(const std::string &fname) const;
+    void insert_broken_file(const std::string &fname, const std::string &etag) const;
     void remove_broken_file(const std::string &fname) const;
-    bool is_broken_file(const std::string &fname) const;
+    bool is_broken_file(const std::string &fname, const std::string &etag) const;
     MediaFile lookup(const std::string &filename) const;
     std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
     std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
@@ -269,7 +269,8 @@ CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
 END;
 
 CREATE TABLE broken_files (
-    filename TEXT PRIMARY KEY NOT NULL
+    filename TEXT PRIMARY KEY NOT NULL,
+    etag TEXT NOT NULL
 );
 )");
     execute_sql(db, schema);
@@ -371,9 +372,10 @@ void MediaStorePrivate::remove(const string &fname) const {
     del.step();
 }
 
-void MediaStorePrivate::insert_broken_file(const std::string &fname) const {
-    Statement del(db, "INSERT OR REPLACE INTO broken_files (filename) VALUES (?)");
+void MediaStorePrivate::insert_broken_file(const std::string &fname, const std::string &etag) const {
+    Statement del(db, "INSERT OR REPLACE INTO broken_files (filename, etag) VALUES (?, ?)");
     del.bind(1, fname);
+    del.bind(2, etag);
     del.step();
 }
 
@@ -383,9 +385,10 @@ void MediaStorePrivate::remove_broken_file(const std::string &fname) const {
     del.step();
 }
 
-bool MediaStorePrivate::is_broken_file(const std::string &fname) const {
-    Statement query(db, "SELECT * FROM broken_files WHERE filename = ?");
+bool MediaStorePrivate::is_broken_file(const std::string &fname, const std::string &etag) const {
+    Statement query(db, "SELECT * FROM broken_files WHERE filename = ? AND etag = ?");
     query.bind(1, fname);
+    query.bind(2, etag);
     return query.step();
 }
 
@@ -778,9 +781,9 @@ void MediaStore::remove(const std::string &fname) const {
     p->remove(fname);
 }
 
-void MediaStore::insert_broken_file(const std::string &fname) const {
+void MediaStore::insert_broken_file(const std::string &fname, const std::string &etag) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    p->insert_broken_file(fname);
+    p->insert_broken_file(fname, etag);
 }
 
 void MediaStore::remove_broken_file(const std::string &fname) const {
@@ -788,9 +791,9 @@ void MediaStore::remove_broken_file(const std::string &fname) const {
     p->remove_broken_file(fname);
 }
 
-bool MediaStore::is_broken_file(const std::string &fname) const {
+bool MediaStore::is_broken_file(const std::string &fname, const std::string &etag) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->is_broken_file(fname);
+    return p->is_broken_file(fname, etag);
 }
 
 MediaFile MediaStore::lookup(const std::string &filename) const {

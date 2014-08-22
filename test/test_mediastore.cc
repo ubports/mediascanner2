@@ -944,19 +944,27 @@ TEST_F(MediaStoreTest, listArtists) {
 
 TEST_F(MediaStoreTest, brokenFiles) {
     MediaStore store(":memory:", MS_READ_WRITE);
-    std::string broken_file = "/foo/bar/baz.mp3";
-    std::string ok_file = "/foo/bar/baz2.mp3";
+    std::string file = "/foo/bar/baz.mp3";
+    std::string other_file = "/foo/bar/abc.mp3";
+    std::string broken_etag = "123";
+    std::string ok_etag = "124";
 
-    ASSERT_FALSE(store.is_broken_file(broken_file));
-    ASSERT_FALSE(store.is_broken_file(ok_file));
+    ASSERT_FALSE(store.is_broken_file(file, broken_etag));
+    ASSERT_FALSE(store.is_broken_file(file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, broken_etag));
 
-    store.insert_broken_file(broken_file);
-    ASSERT_TRUE(store.is_broken_file(broken_file));
-    ASSERT_FALSE(store.is_broken_file(ok_file));
+    store.insert_broken_file(file, broken_etag);
+    ASSERT_TRUE(store.is_broken_file(file, broken_etag));
+    ASSERT_FALSE(store.is_broken_file(file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, broken_etag));
 
-    store.remove_broken_file(broken_file);
-    ASSERT_FALSE(store.is_broken_file(broken_file));
-    ASSERT_FALSE(store.is_broken_file(ok_file));
+    store.remove_broken_file(file);
+    ASSERT_FALSE(store.is_broken_file(file, broken_etag));
+    ASSERT_FALSE(store.is_broken_file(file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, ok_etag));
+    ASSERT_FALSE(store.is_broken_file(other_file, broken_etag));
 }
 
 int main(int argc, char **argv) {

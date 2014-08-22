@@ -235,10 +235,10 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
         try {
             auto d = s.next();
             // If the file is broken or unchanged, skip it.
-            if (store.is_broken_file(d.filename) || d.etag == store.getETag(d.filename))
+            if (store.is_broken_file(d.filename, d.etag) || d.etag == store.getETag(d.filename))
                 continue;
             try {
-                store.insert_broken_file(d.filename);
+                store.insert_broken_file(d.filename, d.etag);
                 store.insert(extractor->extract(d));
                 // If the above line crashes, then brokenness
                 // persists.

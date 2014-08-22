@@ -149,10 +149,10 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
         while(true) {
             auto d  = s.next();
             // If the file is unchanged or known bad, skip it.
-            if (store.is_broken_file(d.filename) ||
+            if (store.is_broken_file(d.filename, d.etag) ||
                     d.etag == store.getETag(d.filename))
                 continue;
-            store.insert_broken_file(d.filename);
+            store.insert_broken_file(d.filename, d.etag);
             store.insert(extractor.extract(d));
             // If the above line crashes, then brokenness
             // persists.
