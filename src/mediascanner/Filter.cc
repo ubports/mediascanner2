@@ -29,19 +29,18 @@ struct Filter::Private {
     string album_artist;
     string genre;
 
-    int offset;
-    int limit;
+    int offset = 0;
+    int limit = -1;
 
-    bool have_artist;
-    bool have_album;
-    bool have_album_artist;
-    bool have_genre;
+    MediaOrder order = MediaOrder::Default;
+    bool reverse = false;
 
-    Private() :
-        offset(0), limit(-1),
-        have_artist(false), have_album(false), have_album_artist(false),
-        have_genre(false) {
-    }
+    bool have_artist = false;
+    bool have_album = false;
+    bool have_album_artist = false;
+    bool have_genre = false;
+
+    Private() {}
 };
 
 Filter::Filter() : p(new Private) {
@@ -66,7 +65,9 @@ bool Filter::operator==(const Filter &other) const {
         p->album_artist == other.p->album_artist &&
         p->genre == other.p->genre &&
         p->offset == other.p->offset &&
-        p->limit == other.p->limit;
+        p->limit == other.p->limit &&
+        p->order == other.p->order &&
+        p->reverse == other.p->reverse;
 }
 
 bool Filter::operator!=(const Filter &other) const {
@@ -85,6 +86,8 @@ void Filter::clear() {
     unsetGenre();
     p->offset = 0;
     p->limit = -1;
+    p->order = MediaOrder::Default;
+    p->reverse = false;
 }
 
 void Filter::setArtist(const std::string &artist) {
@@ -173,6 +176,22 @@ void Filter::setLimit(int limit) {
 
 int Filter::getLimit() const {
     return p->limit;
+}
+
+void Filter::setOrder(MediaOrder order) {
+    p->order = order;
+}
+
+MediaOrder Filter::getOrder() const {
+    return p->order;
+}
+
+void Filter::setReverse(bool reverse) {
+    p->reverse = reverse;
+}
+
+bool Filter::getReverse() const {
+    return p->reverse;
 }
 
 }

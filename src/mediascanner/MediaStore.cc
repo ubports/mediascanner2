@@ -410,34 +410,55 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 }
 
 vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, const Filter &filter) const {
-    if (core_term == "") {
-        Statement query(db, R"(
+    string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
-  WHERE type == ?
-  LIMIT ? OFFSET ?
 )");
-        query.bind(1, (int)type);
-        query.bind(2, filter.getLimit());
-        query.bind(3, filter.getOffset());
-        return collect_media(query);
-    } else {
-        Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
-  FROM media JOIN (
+    if (!core_term.empty()) {
+        qs += R"(
+  JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
     ) AS ranktable ON (media.rowid = ranktable.docid)
-  WHERE type == ?
-  ORDER BY ranktable.rank DESC
-  LIMIT ? OFFSET ?
-)");
-        query.bind(1, core_term + "*");
-        query.bind(2, (int)type);
-        query.bind(3, filter.getLimit());
-        query.bind(4, filter.getOffset());
-        return collect_media(query);
+)";
     }
+    qs += " WHERE type = ?";
+    bool reverse = filter.getReverse();
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Rank:
+        // We can only sort by rank if there was a query term
+        if (!core_term.empty()) {
+            qs += " ORDER BY ranktable.rank";
+            if (!reverse) { // Normal order is descending
+                qs += " DESC";
+            }
+        }
+        break;
+    case MediaOrder::Title:
+        qs += " ORDER BY title";
+        if (reverse) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Date:
+        qs += " ORDER BY date";
+        if (reverse) {
+            qs += " DESC";
+        }
+        break;
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    if (!core_term.empty()) {
+        query.bind(param++, core_term + "*");
+    }
+    query.bind(param++, (int)type);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    return collect_media(query);
 }
 
 static Album make_album(Statement &query) {
