@@ -148,10 +148,15 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     try {
         while(true) {
             auto d  = s.next();
-            // If the file is unchanged, skip it.
-            if (d.etag == store.getETag(d.filename))
+            // If the file is unchanged or known bad, skip it.
+            if (store.is_broken_file(d.filename, d.etag) ||
+                    d.etag == store.getETag(d.filename))
                 continue;
+            store.insert_broken_file(d.filename, d.etag);
             store.insert(extractor.extract(d));
+            // If the above line crashes, then brokenness
+            // persists.
+            store.remove_broken_file(d.filename);
         }
     } catch(const StopIteration &e) {
     }

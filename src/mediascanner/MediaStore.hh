@@ -44,6 +44,12 @@ public:
 
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
+
+    // Maintain a list of files known to crash GStreamer
+    // metadata scanner.
+    void insert_broken_file(const std::string &fname, const std::string &etag) const;
+    void remove_broken_file(const std::string &fname) const;
+    bool is_broken_file(const std::string &fname, const std::string &etag) const;
     virtual MediaFile lookup(const std::string &filename) const override;
     virtual std::vector<MediaFile> query(const std::string &q, MediaType type, const Filter &filter) const override;
     virtual std::vector<Album> queryAlbums(const std::string &core_term, const Filter &filter) const override;
