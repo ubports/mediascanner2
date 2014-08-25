@@ -714,6 +714,19 @@ TEST_F(MediaStoreTest, getETag) {
     EXPECT_EQ(store.getETag("/something-else.mp3"), "");
 }
 
+
+TEST_F(MediaStoreTest, constraints) {
+    MediaFile file = MediaFileBuilder("no_slash_at_beginning.ogg")
+        .setETag("etag")
+        .setType(AudioMedia);
+    MediaFile file2 = MediaFileBuilder("/invalid_type.ogg")
+        .setETag("etag");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    ASSERT_THROW(store.insert(file), std::runtime_error);
+    ASSERT_THROW(store.insert(file2), std::runtime_error);
+}
+
 TEST_F(MediaStoreTest, listSongs) {
     MediaFile audio1 = MediaFileBuilder("/home/username/Music/track1.ogg")
         .setType(AudioMedia)
