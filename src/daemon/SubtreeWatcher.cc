@@ -159,6 +159,7 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
         DetectedFile d = p->extractor.detect(abspath);
         if(p->store.is_broken_file(abspath, d.etag)) {
             fprintf(stderr, "Skipping unscannable file %s.\n", abspath.c_str());
+            return;
         }
         // Only extract and insert the file if the ETag has changed.
         if (d.etag != p->store.getETag(d.filename)) {
