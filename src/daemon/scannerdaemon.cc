@@ -290,9 +290,16 @@ void ScannerDaemon::setupMountWatcher() {
 bool ScannerDaemon::mountEvent(const string& abspath, struct inotify_event* event) {
     bool changed = false;
     if (event->mask & IN_CREATE) {
-        printf("Volume %s was mounted.\n", abspath.c_str());
-        addDir(abspath);
-        changed = true;
+        struct stat statbuf;
+        lstat(abspath.c_str(), &statbuf);
+        if(S_ISDIR(statbuf.st_mode)) {
+            printf("Volume %s was mounted.\n", abspath.c_str());
+            addDir(abspath);
+            changed = true;
+        } else {
+            // Someone wrote a file to /media/username.
+            // We'll just ignore those.
+        }
     } else if (event->mask & IN_DELETE) {
         printf("Volume %s was unmounted.\n", abspath.c_str());
         if (subtrees.find(abspath) != subtrees.end()) {
@@ -344,7 +351,7 @@ void ScannerDaemon::processEvents() {
         string directory = mountdir_exists ? mountDir : "/media";
         string filename(event->name);
         string abspath = directory + '/' + filename;
-        // We only get events for directories as per the inotify flags.
+
         if(mountdir_exists) {
             changed = mountEvent(abspath, event);
         } else {
