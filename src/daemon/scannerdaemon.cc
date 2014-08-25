@@ -117,7 +117,8 @@ ScannerDaemon::ScannerDaemon() :
     mountDir = string("/media/") + getCurrentUser();
     auto dir = opendir(mountDir.c_str());
     mountdir_exists = dir ? true : false;
-    closedir(dir);
+    if(dir)
+        closedir(dir);
     store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
     extractor.reset(new MetadataExtractor());
 
