@@ -1,7 +1,12 @@
 mediascanner2 (0.104-0ubuntu1) UNRELEASED; urgency=medium
 
+  [ James Henstridge ]
   * Add support for custom sort orders in query(), queryAlbums() and
     queryArtists() methods.  This breaks the ABI, so bump soname.
+
+  [ Ubuntu daily release ]
+  * debian/libmediascanner-2.0-2.symbols: auto-update to released
+    version
 
  -- James Henstridge <james.henstridge@canonical.com>  Fri, 22 Aug 2014 19:47:53 +0800
 
