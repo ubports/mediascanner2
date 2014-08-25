@@ -195,15 +195,16 @@ TEST_F(MediaStoreTest, roundtrip) {
     store.insert(video);
     store.insert(image);
 
-    vector<MediaFile> result = store.query("bbb", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("bbb", AudioMedia, filter);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio);
 
-    result = store.query("bbb", VideoMedia);
+    result = store.query("bbb", VideoMedia, filter);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], video);
 
-    result = store.query("bbb", ImageMedia);
+    result = store.query("bbb", ImageMedia, filter);
     ASSERT_EQ(1, result.size());
     EXPECT_EQ(image, result[0]);
 }
@@ -218,7 +219,8 @@ TEST_F(MediaStoreTest, query_by_album) {
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
-    vector<MediaFile> result = store.query("album", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("album", AudioMedia, filter);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio);
 }
@@ -233,7 +235,8 @@ TEST_F(MediaStoreTest, query_by_artist) {
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
-    vector<MediaFile> result = store.query("artist", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("artist", AudioMedia, filter);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio);
  }
@@ -277,7 +280,8 @@ TEST_F(MediaStoreTest, query_ranking) {
     store.insert(audio4);
     store.insert(audio5);
 
-    vector<MediaFile> result = store.query("aaa", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("aaa", AudioMedia, filter);
     ASSERT_EQ(result.size(), 4);
     EXPECT_EQ(result[0], audio5); // Term appears in title, artist and album
     EXPECT_EQ(result[1], audio2); // title has highest weighting
@@ -310,7 +314,9 @@ TEST_F(MediaStoreTest, query_limit) {
     store.insert(audio2);
     store.insert(audio3);
 
-    vector<MediaFile> result = store.query("aaa", AudioMedia, 2);
+    Filter filter;
+    filter.setLimit(2);
+    vector<MediaFile> result = store.query("aaa", AudioMedia, filter);
     ASSERT_EQ(result.size(), 2);
     EXPECT_EQ(result[0], audio1); // Term appears in title, artist and album
     EXPECT_EQ(result[1], audio2); // title has highest weighting
@@ -334,9 +340,10 @@ TEST_F(MediaStoreTest, query_short) {
     store.insert(audio1);
     store.insert(audio2);
 
-    vector<MediaFile> result = store.query("x", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("x", AudioMedia, filter);
     EXPECT_EQ(result.size(), 2);
-    result = store.query("xy", AudioMedia);
+    result = store.query("xy", AudioMedia, filter);
     EXPECT_EQ(result.size(), 1);
 }
 
@@ -366,8 +373,94 @@ TEST_F(MediaStoreTest, query_empty) {
     store.insert(audio3);
 
     // An empty query should return some results
-    vector<MediaFile> result = store.query("", AudioMedia, 2);
+    Filter filter;
+    filter.setLimit(2);
+    vector<MediaFile> result = store.query("", AudioMedia, filter);
     ASSERT_EQ(result.size(), 2);
+}
+
+TEST_F(MediaStoreTest, query_order) {
+    MediaFile audio1 = MediaFileBuilder("/path/foo1.ogg")
+        .setType(AudioMedia)
+        .setTitle("foo")
+        .setDate("2010-01-01")
+        .setAuthor("artist")
+        .setAlbum("album");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("foo foo")
+        .setDate("2010-01-03")
+        .setAuthor("artist")
+        .setAlbum("album");
+    MediaFile audio3 = MediaFileBuilder("/path/foo3.ogg")
+        .setType(AudioMedia)
+        .setTitle("foo foo foo")
+        .setDate("2010-01-02")
+        .setAuthor("artist")
+        .setAlbum("album");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    Filter filter;
+    // Default sort order is by rank
+    vector<MediaFile> result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo3.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[2].getFileName());
+
+    // Sorting by rank (same as default)
+    filter.setOrder(MediaOrder::Rank);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo3.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[2].getFileName());
+
+    // Sorting by rank, reversed
+    filter.setReverse(true);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo1.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo3.ogg", result[2].getFileName());
+
+    // Sorting by title
+    filter.setReverse(false);
+    filter.setOrder(MediaOrder::Title);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo1.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo3.ogg", result[2].getFileName());
+
+    // Sorting by title, reversed
+    filter.setReverse(true);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo3.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[2].getFileName());
+
+    // Sorting by date
+    filter.setReverse(false);
+    filter.setOrder(MediaOrder::Date);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo1.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo3.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[2].getFileName());
+
+    // Sorting by date, reversed
+    filter.setReverse(true);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo2.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo3.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[2].getFileName());
 }
 
 TEST_F(MediaStoreTest, unmount) {
@@ -380,16 +473,17 @@ TEST_F(MediaStoreTest, unmount) {
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
     store.insert(audio2);
-    vector<MediaFile> result = store.query("bbb", AudioMedia);
+    Filter filter;
+    vector<MediaFile> result = store.query("bbb", AudioMedia, filter);
     ASSERT_EQ(result.size(), 2);
 
     store.archiveItems("/media/username");
-    result = store.query("bbb", AudioMedia);
+    result = store.query("bbb", AudioMedia, filter);
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], audio2);
 
     store.restoreItems("/media/username");
-    result = store.query("bbb", AudioMedia);
+    result = store.query("bbb", AudioMedia, filter);
     ASSERT_EQ(result.size(), 2);
 }
 
@@ -444,19 +538,20 @@ TEST_F(MediaStoreTest, queryAlbums) {
     store.insert(audio4);
 
     // Query a track title
-    vector<Album> albums = store.queryAlbums("TitleOne");
+    Filter filter;
+    vector<Album> albums = store.queryAlbums("TitleOne", filter);
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
     EXPECT_EQ(albums[0].getArtist(), "Various Artists");
 
     // Query an album name
-    albums = store.queryAlbums("AlbumTwo");
+    albums = store.queryAlbums("AlbumTwo", filter);
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumTwo");
     EXPECT_EQ(albums[0].getArtist(), "ArtistFour");
 
     // Query an artist name
-    albums = store.queryAlbums("ArtistTwo");
+    albums = store.queryAlbums("ArtistTwo", filter);
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
     EXPECT_EQ(albums[0].getArtist(), "Various Artists");
@@ -501,9 +596,11 @@ TEST_F(MediaStoreTest, queryAlbums_limit) {
     store.insert(audio3);
     store.insert(audio4);
 
-    vector<Album> albums = store.queryAlbums("Artist");
+    Filter filter;
+    vector<Album> albums = store.queryAlbums("Artist", filter);
     EXPECT_EQ(2, albums.size());
-    albums = store.queryAlbums("Artist", 1);
+    filter.setLimit(1);
+    albums = store.queryAlbums("Artist", filter);
     EXPECT_EQ(1, albums.size());
 }
 
@@ -546,10 +643,68 @@ TEST_F(MediaStoreTest, queryAlbums_empty) {
     store.insert(audio3);
     store.insert(audio4);
 
-    vector<Album> albums = store.queryAlbums("");
+    Filter filter;
+    vector<Album> albums = store.queryAlbums("", filter);
     EXPECT_EQ(2, albums.size());
-    albums = store.queryAlbums("", 1);
+    filter.setLimit(1);
+    albums = store.queryAlbums("", filter);
     EXPECT_EQ(1, albums.size());
+}
+
+TEST_F(MediaStoreTest, queryAlbums_order) {
+    MediaFile audio1 = MediaFileBuilder("/path/foo1.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-01")
+        .setAuthor("artist")
+        .setAlbum("foo");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-03")
+        .setAuthor("artist")
+        .setAlbum("foo foo");
+    MediaFile audio3 = MediaFileBuilder("/path/foo3.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-02")
+        .setAuthor("artist")
+        .setAlbum("foo foo foo");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    // Default sort
+    Filter filter;
+    vector<Album> albums = store.queryAlbums("foo", filter);
+    ASSERT_EQ(3, albums.size());
+    EXPECT_EQ("foo", albums[0].getTitle());
+    EXPECT_EQ("foo foo", albums[1].getTitle());
+    EXPECT_EQ("foo foo foo", albums[2].getTitle());
+
+    // Sort by title (same as default)
+    filter.setOrder(MediaOrder::Title);
+    albums = store.queryAlbums("foo", filter);
+    ASSERT_EQ(3, albums.size());
+    EXPECT_EQ("foo", albums[0].getTitle());
+    EXPECT_EQ("foo foo", albums[1].getTitle());
+    EXPECT_EQ("foo foo foo", albums[2].getTitle());
+
+    // Sort by title, reversed
+    filter.setReverse(true);
+    albums = store.queryAlbums("foo", filter);
+    ASSERT_EQ(3, albums.size());
+    EXPECT_EQ("foo foo foo", albums[0].getTitle());
+    EXPECT_EQ("foo foo", albums[1].getTitle());
+    EXPECT_EQ("foo", albums[2].getTitle());
+
+    // Other orders are not supported
+    filter.setOrder(MediaOrder::Rank);
+    EXPECT_THROW(store.queryAlbums("foo", filter), std::runtime_error);
+    filter.setOrder(MediaOrder::Date);
+    EXPECT_THROW(store.queryAlbums("foo", filter), std::runtime_error);
 }
 
 TEST_F(MediaStoreTest, queryArtists) {
@@ -592,17 +747,18 @@ TEST_F(MediaStoreTest, queryArtists) {
     store.insert(audio4);
 
     // Query a track title
-    vector<string> artists = store.queryArtists("TitleOne");
+    Filter filter;
+    vector<string> artists = store.queryArtists("TitleOne", filter);
     ASSERT_EQ(artists.size(), 1);
     EXPECT_EQ(artists[0], "ArtistOne");
 
     // Query an album name
-    artists = store.queryArtists("AlbumTwo");
+    artists = store.queryArtists("AlbumTwo", filter);
     ASSERT_EQ(artists.size(), 1);
     EXPECT_EQ(artists[0], "ArtistFour");
 
     // Query an artist name
-    artists = store.queryArtists("ArtistTwo");
+    artists = store.queryArtists("ArtistTwo", filter);
     ASSERT_EQ(artists.size(), 1);
     EXPECT_EQ(artists[0], "ArtistTwo");
 }
@@ -629,9 +785,11 @@ TEST_F(MediaStoreTest, queryArtists_limit) {
     store.insert(audio1);
     store.insert(audio2);
 
-    vector<string> artists = store.queryArtists("Artist");
+    Filter filter;
+    vector<string> artists = store.queryArtists("Artist", filter);
     EXPECT_EQ(2, artists.size());
-    artists = store.queryArtists("Artist", 1);
+    filter.setLimit(1);
+    artists = store.queryArtists("Artist", filter);
     EXPECT_EQ(1, artists.size());
 }
 
@@ -657,10 +815,68 @@ TEST_F(MediaStoreTest, queryArtists_empty) {
     store.insert(audio1);
     store.insert(audio2);
 
-    vector<string> artists = store.queryArtists("");
+    Filter filter;
+    vector<string> artists = store.queryArtists("", filter);
     EXPECT_EQ(2, artists.size());
-    artists = store.queryArtists("", 1);
+    filter.setLimit(1);
+    artists = store.queryArtists("", filter);
     EXPECT_EQ(1, artists.size());
+}
+
+TEST_F(MediaStoreTest, queryArtists_order) {
+    MediaFile audio1 = MediaFileBuilder("/path/foo1.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-01")
+        .setAuthor("foo")
+        .setAlbum("album");
+    MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-03")
+        .setAuthor("foo foo")
+        .setAlbum("album");
+    MediaFile audio3 = MediaFileBuilder("/path/foo3.ogg")
+        .setType(AudioMedia)
+        .setTitle("title")
+        .setDate("2010-01-02")
+        .setAuthor("foo foo foo")
+        .setAlbum("album");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    store.insert(audio1);
+    store.insert(audio2);
+    store.insert(audio3);
+
+    // Default sort
+    Filter filter;
+    vector<std::string> artists = store.queryArtists("foo", filter);
+    ASSERT_EQ(3, artists.size());
+    EXPECT_EQ("foo", artists[0]);
+    EXPECT_EQ("foo foo", artists[1]);
+    EXPECT_EQ("foo foo foo", artists[2]);
+
+    // Sort by title (same as default)
+    filter.setOrder(MediaOrder::Title);
+    artists = store.queryArtists("foo", filter);
+    ASSERT_EQ(3, artists.size());
+    EXPECT_EQ("foo", artists[0]);
+    EXPECT_EQ("foo foo", artists[1]);
+    EXPECT_EQ("foo foo foo", artists[2]);
+
+    // Sort by title, reversed
+    filter.setReverse(true);
+    artists = store.queryArtists("foo", filter);
+    ASSERT_EQ(3, artists.size());
+    EXPECT_EQ("foo foo foo", artists[0]);
+    EXPECT_EQ("foo foo", artists[1]);
+    EXPECT_EQ("foo", artists[2]);
+
+    // Other orders are not supported
+    filter.setOrder(MediaOrder::Rank);
+    EXPECT_THROW(store.queryArtists("foo", filter), std::runtime_error);
+    filter.setOrder(MediaOrder::Date);
+    EXPECT_THROW(store.queryArtists("foo", filter), std::runtime_error);
 }
 
 TEST_F(MediaStoreTest, getAlbumSongs) {

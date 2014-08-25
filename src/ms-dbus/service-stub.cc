@@ -53,22 +53,22 @@ MediaFile ServiceStub::lookup(const string &filename) const {
     return result.value();
 }
 
-std::vector<MediaFile> ServiceStub::query(const string &q, MediaType type, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::Query, std::vector<MediaFile>>(q, (int32_t)type, (int32_t)limit);
+std::vector<MediaFile> ServiceStub::query(const string &q, MediaType type, const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::Query, std::vector<MediaFile>>(q, (int32_t)type, filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();
 }
 
-std::vector<Album> ServiceStub::queryAlbums(const string &core_term, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryAlbums, std::vector<Album>>(core_term, (int32_t)limit);
+std::vector<Album> ServiceStub::queryAlbums(const string &core_term, const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryAlbums, std::vector<Album>>(core_term, filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();
 }
 
-std::vector<string> ServiceStub::queryArtists(const string &q, int limit) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryArtists, std::vector<string>>(q, (int32_t)limit);
+std::vector<string> ServiceStub::queryArtists(const string &q, const Filter &filter) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::QueryArtists, std::vector<string>>(q, filter);
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();

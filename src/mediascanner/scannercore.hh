@@ -30,6 +30,13 @@ enum MediaType {
     AllMedia = 255,
 };
 
+enum class MediaOrder {
+    Default,
+    Rank,
+    Title,
+    Date,
+};
+
 }
 
 #endif

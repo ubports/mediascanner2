@@ -21,6 +21,7 @@
 #define MEDIAFILTER_H_
 
 #include <string>
+#include "scannercore.hh"
 
 namespace mediascanner {
 
@@ -60,6 +61,11 @@ public:
     int getOffset() const;
     void setLimit(int limit);
     int getLimit() const;
+
+    void setOrder(MediaOrder order);
+    MediaOrder getOrder() const;
+    void setReverse(bool reverse);
+    bool getReverse() const;
 
 private:
     struct Private;

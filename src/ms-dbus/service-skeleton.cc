@@ -188,15 +188,15 @@ struct ServiceSkeleton::Private {
     void handle_query(const Message::Ptr &message) {
         std::string query;
         int32_t type;
-        int32_t limit;
-        message->reader() >> query >> type >> limit;
+        Filter filter;
+        message->reader() >> query >> type >> filter;
 
         if (!check_access(message, (MediaType)type))
             return;
 
         Message::Ptr reply;
         try {
-            auto results = store->query(query, (MediaType)type, limit);
+            auto results = store->query(query, (MediaType)type, filter);
             reply = Message::make_method_return(message);
             reply->writer() << results;
         } catch (const std::exception &e) {
@@ -212,11 +212,11 @@ struct ServiceSkeleton::Private {
             return;
 
         std::string query;
-        int32_t limit;
-        message->reader() >> query >> limit;
+        Filter filter;
+        message->reader() >> query >> filter;
         Message::Ptr reply;
         try {
-            auto albums = store->queryAlbums(query, limit);
+            auto albums = store->queryAlbums(query, filter);
             reply = Message::make_method_return(message);
             reply->writer() << albums;
         } catch (const std::exception &e) {
@@ -232,11 +232,11 @@ struct ServiceSkeleton::Private {
             return;
 
         std::string query;
-        int32_t limit;
-        message->reader() >> query >> limit;
+        Filter filter;
+        message->reader() >> query >> filter;
         Message::Ptr reply;
         try {
-            auto artists = store->queryArtists(query, limit);
+            auto artists = store->queryArtists(query, filter);
             reply = Message::make_method_return(message);
             reply->writer() << artists;
         } catch (const std::exception &e) {

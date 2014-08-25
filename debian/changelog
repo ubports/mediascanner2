@@ -1,3 +1,10 @@
+mediascanner2 (0.104-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Add support for custom sort orders in query(), queryAlbums() and
+    queryArtists() methods.  This breaks the ABI, so bump soname.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Fri, 22 Aug 2014 19:47:53 +0800
+
 mediascanner2 (0.103+14.10.20140819-0ubuntu1) utopic; urgency=low
 
   [ Jussi Pakkanen ]

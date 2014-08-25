@@ -57,11 +57,16 @@ struct MediaStorePrivate {
     void insert(const MediaFile &m) const;
     void remove(const std::string &fname) const;
     MediaFile lookup(const std::string &filename) const;
-    std::vector<MediaFile> query(const std::string &q, MediaType type, int limit=-1) const;
-    std::vector<Album> queryAlbums(const std::string &core_term, int limit=-1) const;
-    std::vector<string> queryArtists(const std::string &q, int limit=-1) const;
+    std::vector<MediaFile> query(const std::string &q, MediaType type, const Filter &filter) const;
+    std::vector<Album> queryAlbums(const std::string &core_term, const Filter &filter) const;
+    std::vector<string> queryArtists(const std::string &q, const Filter &filter) const;
     std::vector<MediaFile> getAlbumSongs(const Album& album) const;
     std::string getETag(const std::string &filename) const;
+    std::vector<MediaFile> listSongs(const Filter &filter) const;
+    std::vector<Album> listAlbums(const Filter &filter) const;
+    std::vector<std::string> listArtists(const Filter &filter) const;
+    std::vector<std::string> listAlbumArtists(const Filter &filter) const;
+    std::vector<std::string> listGenres(const Filter &filter) const;
 
     size_t size() const;
     void pruneDeleted();
@@ -404,33 +409,55 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
     return make_media(query);
 }
 
-vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, int limit) const {
-    if (core_term == "") {
-        Statement query(db, R"(
+vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, const Filter &filter) const {
+    string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
-  WHERE type == ?
-  LIMIT ?
 )");
-        query.bind(1, (int)type);
-        query.bind(2, limit);
-        return collect_media(query);
-    } else {
-        Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
-  FROM media JOIN (
+    if (!core_term.empty()) {
+        qs += R"(
+  JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
     ) AS ranktable ON (media.rowid = ranktable.docid)
-  WHERE type == ?
-  ORDER BY ranktable.rank DESC
-  LIMIT ?
-)");
-        query.bind(1, core_term + "*");
-        query.bind(2, (int)type);
-        query.bind(3, limit);
-        return collect_media(query);
+)";
     }
+    qs += " WHERE type = ?";
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Rank:
+        // We can only sort by rank if there was a query term
+        if (!core_term.empty()) {
+            qs += " ORDER BY ranktable.rank";
+            if (!filter.getReverse()) { // Normal order is descending
+                qs += " DESC";
+            }
+        }
+        break;
+    case MediaOrder::Title:
+        qs += " ORDER BY title";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Date:
+        qs += " ORDER BY date";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    if (!core_term.empty()) {
+        query.bind(param++, core_term + "*");
+    }
+    query.bind(param++, (int)type);
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    return collect_media(query);
 }
 
 static Album make_album(Statement &query) {
@@ -447,64 +474,78 @@ static vector<Album> collect_albums(Statement &query) {
     return result;
 }
 
-vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, int limit) const {
-    if (core_term == "") {
-        Statement query(db, R"(
+vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
+    string qs(R"(
 SELECT album, album_artist FROM media
 WHERE type = ? AND album <> ''
-GROUP BY album, album_artist
-LIMIT ?
 )");
-        query.bind(1, (int)AudioMedia);
-        query.bind(2, limit);
-        return collect_albums(query);
-    } else {
-        Statement query(db, R"(
-SELECT album, album_artist FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
-AND type == ? AND album <> ''
-GROUP BY album, album_artist
-LIMIT ?
-)");
-        query.bind(1, core_term + "*");
-        query.bind(2, (int)AudioMedia);
-        query.bind(3, limit);
-        return collect_albums(query);
+    if (!core_term.empty()) {
+        qs += " AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
+    qs += " GROUP BY album, album_artist";
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Title:
+        qs += " ORDER BY album";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Rank:
+        throw std::runtime_error("Can not query albums by rank");
+    case MediaOrder::Date:
+        throw std::runtime_error("Can not query albums by date");
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!core_term.empty()) {
+        query.bind(param++, core_term + "*");
+    }
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    return collect_albums(query);
 }
 
-vector<string> MediaStorePrivate::queryArtists(const string &q, int limit) const {
-    if (q.empty()) {
-        Statement query(db, R"(
+vector<string> MediaStorePrivate::queryArtists(const string &q, const Filter &filter) const {
+    string qs(R"(
 SELECT artist FROM media
 WHERE type = ? AND artist <> ''
-GROUP BY artist
-LIMIT ?
 )");
-        query.bind(1, (int)AudioMedia);
-        query.bind(2, limit);
-        vector<string> result;
-        while (query.step()) {
-            result.push_back(query.getText(0));
-        }
-        return result;
-    } else {
-        Statement query(db, R"(
-SELECT artist FROM media
-WHERE rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)
-AND type == ? AND artist <> ''
-GROUP BY artist
-LIMIT ?
-)");
-        query.bind(1, q + "*");
-        query.bind(2, (int)AudioMedia);
-        query.bind(3, limit);
-        vector<string> result;
-        while (query.step()) {
-            result.push_back(query.getText(0));
-        }
-        return result;
+    if (!q.empty()) {
+        qs += "AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
+    qs += " GROUP BY artist";
+    switch (filter.getOrder()) {
+    case MediaOrder::Default:
+    case MediaOrder::Title:
+        qs += " ORDER BY artist";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
+    case MediaOrder::Rank:
+        throw std::runtime_error("Can not query artists by rank");
+    case MediaOrder::Date:
+        throw std::runtime_error("Can not query artists by date");
+    }
+    qs += " LIMIT ? OFFSET ?";
+
+    Statement query(db, qs.c_str());
+    int param = 1;
+    query.bind(param++, (int)AudioMedia);
+    if (!q.empty()) {
+        query.bind(param++, q + "*");
+    }
+    query.bind(param++, filter.getLimit());
+    query.bind(param++, filter.getOffset());
+    vector<string> result;
+    while (query.step()) {
+        result.push_back(query.getText(0));
+    }
+    return result;
 }
 
 vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
@@ -531,7 +572,7 @@ SELECT etag FROM media WHERE filename = ?
     }
 }
 
-std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
+std::vector<MediaFile> MediaStorePrivate::listSongs(const Filter &filter) const {
     std::string qs(R"(
 SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
   FROM media
@@ -553,7 +594,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 ORDER BY album_artist, album, disc_number, track_number, title
 LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasArtist()) {
@@ -574,7 +615,7 @@ LIMIT ? OFFSET ?
     return collect_media(query);
 }
 
-std::vector<Album> MediaStore::listAlbums(const Filter &filter) const {
+std::vector<Album> MediaStorePrivate::listAlbums(const Filter &filter) const {
     std::string qs(R"(
 SELECT album, album_artist FROM media
   WHERE type = ?
@@ -593,7 +634,7 @@ GROUP BY album, album_artist
 ORDER BY album_artist, album
 LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasArtist()) {
@@ -611,7 +652,7 @@ LIMIT ? OFFSET ?
     return collect_albums(query);
 }
 
-vector<std::string> MediaStore::listArtists(const Filter &filter) const {
+vector<std::string> MediaStorePrivate::listArtists(const Filter &filter) const {
     string qs(R"(
 SELECT artist FROM media
   WHERE type = ?
@@ -624,7 +665,7 @@ SELECT artist FROM media
   ORDER BY artist
   LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasGenre()) {
@@ -640,7 +681,7 @@ SELECT artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listAlbumArtists(const Filter &filter) const {
+vector<std::string> MediaStorePrivate::listAlbumArtists(const Filter &filter) const {
     string qs(R"(
 SELECT album_artist FROM media
   WHERE type = ?
@@ -653,7 +694,7 @@ SELECT album_artist FROM media
   ORDER BY album_artist
   LIMIT ? OFFSET ?
 )";
-    Statement query(p->db, qs.c_str());
+    Statement query(db, qs.c_str());
     int param = 1;
     query.bind(param++, (int)AudioMedia);
     if (filter.hasGenre()) {
@@ -669,8 +710,8 @@ SELECT album_artist FROM media
     return artists;
 }
 
-vector<std::string> MediaStore::listGenres(const Filter &filter) const {
-    Statement query(p->db, R"(
+vector<std::string> MediaStorePrivate::listGenres(const Filter &filter) const {
+    Statement query(db, R"(
 SELECT genre FROM media
   WHERE type = ?
   GROUP BY genre
@@ -757,19 +798,19 @@ MediaFile MediaStore::lookup(const std::string &filename) const {
     return p->lookup(filename);
 }
 
-std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, int limit) const {
+std::vector<MediaFile> MediaStore::query(const std::string &q, MediaType type, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->query(q, type, limit);
+    return p->query(q, type, filter);
 }
 
-std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, int limit) const {
+std::vector<Album> MediaStore::queryAlbums(const std::string &core_term, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->queryAlbums(core_term, limit);
+    return p->queryAlbums(core_term, filter);
 }
 
-std::vector<string> MediaStore::queryArtists(const std::string &q, int limit) const {
+std::vector<string> MediaStore::queryArtists(const std::string &q, const Filter &filter) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->queryArtists(q, limit);
+    return p->queryArtists(q, filter);
 }
 
 std::vector<MediaFile> MediaStore::getAlbumSongs(const Album& album) const {
@@ -781,6 +822,32 @@ std::string MediaStore::getETag(const std::string &filename) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     return p->getETag(filename);
 }
+
+std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listSongs(filter);
+}
+
+std::vector<Album> MediaStore::listAlbums(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listAlbums(filter);
+}
+
+std::vector<std::string> MediaStore::listArtists(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listArtists(filter);
+}
+
+std::vector<std::string> MediaStore::listAlbumArtists(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listAlbumArtists(filter);
+}
+
+std::vector<std::string> MediaStore::listGenres(const Filter &filter) const {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    return p->listGenres(filter);
+}
+
 
 size_t MediaStore::size() const {
     std::lock_guard<std::mutex> lock(p->dbMutex);

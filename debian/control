@@ -36,7 +36,7 @@ XS-Testsuite: autopkgtest
 # upstream branch
 Vcs-Bzr: lp:mediascanner2
 
-Package: libmediascanner-2.0-1
+Package: libmediascanner-2.0-2
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
@@ -63,7 +63,7 @@ Section: libdevel
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
-Depends: libmediascanner-2.0-1 (= ${binary:Version}),
+Depends: libmediascanner-2.0-2 (= ${binary:Version}),
          libsqlite3-dev,
          libglib2.0-dev,
          ${misc:Depends},

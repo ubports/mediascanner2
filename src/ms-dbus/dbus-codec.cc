@@ -33,6 +33,7 @@ using core::dbus::Codec;
 using core::dbus::types::Variant;
 using mediascanner::MediaFile;
 using mediascanner::MediaFileBuilder;
+using mediascanner::MediaOrder;
 using mediascanner::MediaType;
 using mediascanner::Album;
 using mediascanner::Filter;
@@ -127,6 +128,10 @@ void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) 
         w.open_dict_entry() << string("offset") << Variant::encode((int32_t)filter.getOffset()));
     w.close_dict_entry(
         w.open_dict_entry() << string("limit") << Variant::encode((int32_t)filter.getLimit()));
+    w.close_dict_entry(
+        w.open_dict_entry() << string("order") << Variant::encode(static_cast<int32_t>(filter.getOrder())));
+    w.close_dict_entry(
+        w.open_dict_entry() << string("reverse") << Variant::encode(filter.getReverse()));
 
     out.close_array(std::move(w));
 }
@@ -152,6 +157,10 @@ void Codec<Filter>::decode_argument(Message::Reader &in, Filter &filter) {
             filter.setOffset(value.as<int32_t>());
         } else if (key == "limit") {
             filter.setLimit(value.as<int32_t>());
+        } else if (key == "order") {
+            filter.setOrder(static_cast<MediaOrder>(value.as<int32_t>()));
+        } else if (key == "reverse") {
+            filter.setReverse(value.as<bool>());
         }
     }
 }
