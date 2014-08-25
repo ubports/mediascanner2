@@ -170,6 +170,7 @@ TEST_F(MediaStoreTest, roundtrip) {
         .setDiscNumber(0)
         .setTrackNumber(3)
         .setDuration(5)
+        .setHasThumbnail(true)
         .setType(AudioMedia);
     MediaFile video = MediaFileBuilder("aaa2")
         .setContentType("type")

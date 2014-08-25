@@ -56,6 +56,7 @@ public:
     int getHeight() const noexcept;
     double getLatitude() const noexcept;
     double getLongitude() const noexcept;
+    bool getHasThumbnail() const noexcept;
 
     MediaType getType() const noexcept;
     bool operator==(const MediaFile &other) const;

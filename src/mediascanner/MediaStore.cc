@@ -46,7 +46,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 6;
+static const int schemaVersion = 8;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -217,6 +217,7 @@ CREATE TABLE media (
     height INTEGER,       -- Only relevant to video/images
     latitude DOUBLE,
     longitude DOUBLE,
+    has_thumbnail INTEGER CHECK (has_thumbnail IN (0, 1)),
     type INTEGER   -- 0=Audio, 1=Video
 );
 
@@ -242,6 +243,7 @@ CREATE TABLE media_attic (
     height INTEGER,       -- Only relevant to video/images
     latitude DOUBLE,
     longitude DOUBLE,
+    has_thumbnail INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
 );
 
@@ -329,7 +331,7 @@ size_t MediaStorePrivate::size() const {
 }
 
 void MediaStorePrivate::insert(const MediaFile &m) const {
-    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     query.bind(1, m.getFileName());
     query.bind(2, m.getContentType());
     query.bind(3, m.getETag());
@@ -346,7 +348,8 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
     query.bind(14, m.getHeight());
     query.bind(15, m.getLatitude());
     query.bind(16, m.getLongitude());
-    query.bind(17, (int)m.getType());
+    query.bind(17, (int)m.getHasThumbnail());
+    query.bind(18, (int)m.getType());
     query.step();
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -380,7 +383,8 @@ static MediaFile make_media(Statement &query) {
         .setHeight(query.getInt(13))
         .setLatitude(query.getDouble(14))
         .setLongitude(query.getDouble(15))
-        .setType((MediaType)query.getInt(16));
+        .setHasThumbnail(query.getInt(16))
+        .setType((MediaType)query.getInt(17));
 }
 
 static vector<MediaFile> collect_media(Statement &query) {
@@ -393,7 +397,7 @@ static vector<MediaFile> collect_media(Statement &query) {
 
 MediaFile MediaStorePrivate::lookup(const std::string &filename) const {
     Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
   FROM media
   WHERE filename = ?
 )");
@@ -407,7 +411,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, int limit) const {
     if (core_term == "") {
         Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
   FROM media
   WHERE type == ?
   LIMIT ?
@@ -417,7 +421,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
         return collect_media(query);
     } else {
         Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
   FROM media JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
@@ -533,7 +537,7 @@ SELECT etag FROM media WHERE filename = ?
 
 std::vector<MediaFile> MediaStore::listSongs(const Filter &filter) const {
     std::string qs(R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
   FROM media
   WHERE type = ?
 )");

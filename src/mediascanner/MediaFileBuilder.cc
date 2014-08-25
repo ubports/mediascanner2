@@ -119,4 +119,9 @@ MediaFileBuilder &MediaFileBuilder::setLongitude(double l) {
     return *this;
 }
 
+MediaFileBuilder & MediaFileBuilder::setHasThumbnail(bool t) {
+    p->has_thumbnail = t;
+    return *this;
+}
+
 }

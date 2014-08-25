@@ -25,6 +25,7 @@ libmediascanner-2.0.so.1 libmediascanner-2.0-1 #MINVER#
  (c++)"mediascanner::MediaFileBuilder::setWidth(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setAuthor(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setHeight(int)@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFileBuilder::setHasThumbnail(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(mediascanner::MediaFile const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::MediaFileBuilder(mediascanner::MediaFile const&)@Base" 0.101+14.10.20140613
@@ -111,6 +112,7 @@ libmediascanner-2.0.so.1 libmediascanner-2.0-1 #MINVER#
  (c++)"mediascanner::MediaFile::getWidth() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getAuthor() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getHeight() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getHasThumbnail() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::operator==(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::operator!=(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"typeinfo for mediascanner::MediaStore@Base" 0.101+14.10.20140625
