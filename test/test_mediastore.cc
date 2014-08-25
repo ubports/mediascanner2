@@ -137,7 +137,7 @@ TEST_F(MediaStoreTest, equality) {
 }
 
 TEST_F(MediaStoreTest, lookup) {
-    MediaFile audio = MediaFileBuilder("aaa")
+    MediaFile audio = MediaFileBuilder("/aaa")
         .setContentType("type")
         .setETag("etag")
         .setDate("1900-01-01")
@@ -153,12 +153,12 @@ TEST_F(MediaStoreTest, lookup) {
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio);
 
-    EXPECT_EQ(store.lookup("aaa"), audio);
+    EXPECT_EQ(store.lookup("/aaa"), audio);
     EXPECT_THROW(store.lookup("not found"), std::runtime_error);
 }
 
 TEST_F(MediaStoreTest, roundtrip) {
-    MediaFile audio = MediaFileBuilder("aaa")
+    MediaFile audio = MediaFileBuilder("/aaa")
         .setContentType("type")
         .setETag("etag")
         .setDate("1900-01-01")
@@ -171,7 +171,7 @@ TEST_F(MediaStoreTest, roundtrip) {
         .setTrackNumber(3)
         .setDuration(5)
         .setType(AudioMedia);
-    MediaFile video = MediaFileBuilder("aaa2")
+    MediaFile video = MediaFileBuilder("/aaa2")
         .setContentType("type")
         .setETag("etag")
         .setDate("2012-01-01")
@@ -180,7 +180,7 @@ TEST_F(MediaStoreTest, roundtrip) {
         .setWidth(1280)
         .setHeight(720)
         .setType(VideoMedia);
-    MediaFile image = MediaFileBuilder("aaa3")
+    MediaFile image = MediaFileBuilder("/aaa3")
         .setContentType("type")
         .setETag("etag")
         .setDate("2012-01-01")
@@ -920,13 +920,27 @@ TEST_F(MediaStoreTest, getAlbumSongs) {
 
 TEST_F(MediaStoreTest, getETag) {
     MediaFile file = MediaFileBuilder("/path/file.ogg")
-        .setETag("etag");
+        .setETag("etag")
+        .setType(AudioMedia);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(file);
 
     EXPECT_EQ(store.getETag("/path/file.ogg"), "etag");
     EXPECT_EQ(store.getETag("/something-else.mp3"), "");
+}
+
+
+TEST_F(MediaStoreTest, constraints) {
+    MediaFile file = MediaFileBuilder("no_slash_at_beginning.ogg")
+        .setETag("etag")
+        .setType(AudioMedia);
+    MediaFile file2 = MediaFileBuilder("/invalid_type.ogg")
+        .setETag("etag");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    ASSERT_THROW(store.insert(file), std::runtime_error);
+    ASSERT_THROW(store.insert(file2), std::runtime_error);
 }
 
 TEST_F(MediaStoreTest, listSongs) {
