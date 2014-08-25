@@ -1,14 +1,27 @@
-mediascanner2 (0.104-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.104+14.10.20140825-0ubuntu1) utopic; urgency=medium
 
   [ James Henstridge ]
   * Add support for custom sort orders in query(), queryAlbums() and
     queryArtists() methods.  This breaks the ABI, so bump soname.
+  * Update AppArmor policy to allow read access to
+    /sys/devices/**/video4linux/video** (LP: #1353139)
 
   [ Ubuntu daily release ]
   * debian/libmediascanner-2.0-2.symbols: auto-update to released
     version
 
- -- James Henstridge <james.henstridge@canonical.com>  Fri, 22 Aug 2014 19:47:53 +0800
+  [ Jussi Pakkanen ]
+  * Fix inotify usage.
+  * Store information on files that break GStreamer and skip them when
+    encountered.
+  * Don't call closedir with a null argument.
+  * Add database integrity constraints.
+
+  [ Jamie Strandboge ]
+  * allow read access to /etc/udev/udev.conf for gstreamer (LP:
+    #1356883) (LP: #1356883)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 25 Aug 2014 12:52:17 +0000
 
 mediascanner2 (0.103+14.10.20140819-0ubuntu1) utopic; urgency=low
 
