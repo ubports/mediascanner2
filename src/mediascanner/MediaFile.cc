@@ -124,6 +124,10 @@ double MediaFile::getLongitude() const noexcept {
     return p->longitude;
 }
 
+bool MediaFile::getHasThumbnail() const noexcept {
+    return p->has_thumbnail;
+}
+
 MediaType MediaFile::getType() const noexcept {
     return p->type;
 }

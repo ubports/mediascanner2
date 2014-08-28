@@ -43,7 +43,7 @@ TEST_F(MediaStoreDBusTests, mediafile_codec) {
         .setType(mediascanner::AudioMedia);
     message->writer() << media;
 
-    EXPECT_EQ("(sssssssssiiiiiddi)", message->signature());
+    EXPECT_EQ("(sssssssssiiiiiddbi)", message->signature());
     EXPECT_EQ(core::dbus::helper::TypeMapper<mediascanner::MediaFile>::signature(), message->signature());
 
     mediascanner::MediaFile media2;

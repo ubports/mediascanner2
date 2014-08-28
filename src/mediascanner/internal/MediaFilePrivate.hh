@@ -42,6 +42,7 @@ struct MediaFilePrivate {
     int height;
     double latitude;  // In degrees, negative for South
     double longitude; // In degrees, negative for West
+    bool has_thumbnail;
 
     MediaType type;
 
