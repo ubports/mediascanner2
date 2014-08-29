@@ -133,5 +133,24 @@ bool has_scanblock(const std::string &path) {
     return file_exists(path + "/.nomedia");
 }
 
+static string uri_escape(const string &unescaped) {
+    char *result = g_uri_escape_string(unescaped.c_str(), NULL, FALSE);
+    string escaped(result);
+    g_free(result);
+    return escaped;
+}
+
+string make_album_art_uri(const string &artist, const string &album) {
+    string result = "image://albumart/artist=";
+    result += uri_escape(artist);
+    result += "&album=";
+    result += uri_escape(album);
+    return result;
+}
+
+std::string make_thumbnail_uri(const std::string &uri) {
+    return string("image://thumbnailer/") + uri;
+}
+
 }
 

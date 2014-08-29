@@ -48,6 +48,7 @@ public:
     const std::string& getDate() const noexcept;
     const std::string& getGenre() const noexcept;
     std::string getUri() const;
+    std::string getArtUri() const;
 
     int getDiscNumber() const noexcept;
     int getTrackNumber() const noexcept;

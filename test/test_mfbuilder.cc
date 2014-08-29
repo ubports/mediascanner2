@@ -179,6 +179,30 @@ TEST_F(MFBTest, faulty_usage) {
     ASSERT_THROW(MediaFile m3(mfb), std::logic_error);
 }
 
+TEST_F(MFBTest, album_art_uri) {
+    // No embedded art: use external art fetcher
+    MediaFile mf = MediaFileBuilder("/foo/bar/baz.mp3")
+        .setType(AudioMedia)
+        .setAuthor("The Artist")
+        .setAlbum("The Album");
+    EXPECT_EQ("image://albumart/artist=The%20Artist&album=The%20Album", mf.getArtUri());
+
+    // Embedded art: use thumbnailer
+    mf = MediaFileBuilder("/foo/bar/baz.mp3")
+        .setType(AudioMedia)
+        .setAuthor("The Artist")
+        .setAlbum("The Album")
+        .setHasThumbnail(true);
+    EXPECT_EQ("image://thumbnailer/file:///foo/bar/baz.mp3", mf.getArtUri());
+
+    // Videos use thumbnailer
+    mf = MediaFileBuilder("/foo/bar/baz.mp4")
+        .setType(VideoMedia)
+        .setAuthor("The Artist")
+        .setAlbum("The Album");
+    EXPECT_EQ("image://thumbnailer/file:///foo/bar/baz.mp4", mf.getArtUri());
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

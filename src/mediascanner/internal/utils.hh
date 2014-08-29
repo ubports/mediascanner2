@@ -31,6 +31,9 @@ bool is_rootlike(const std::string &path);
 bool is_optical_disc(const std::string &path);
 bool has_scanblock(const std::string &path);
 
+std::string make_album_art_uri(const std::string &artist, const std::string &album);
+std::string make_thumbnail_uri(const std::string &uri);
+
 }
 
 #endif

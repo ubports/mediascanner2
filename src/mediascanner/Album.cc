@@ -18,6 +18,7 @@
  */
 
 #include "Album.hh"
+#include "internal/utils.hh"
 
 using namespace std;
 
@@ -36,6 +37,10 @@ const std::string& Album::getTitle() const noexcept {
 
 const std::string& Album::getArtist() const noexcept {
     return artist;
+}
+
+std::string Album::getArtUri() const {
+    return make_album_art_uri(artist, title);
 }
 
 bool Album::operator==(const Album &other) const {
