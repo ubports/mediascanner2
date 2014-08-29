@@ -18,7 +18,6 @@
  */
 
 #include "MediaFileWrapper.hh"
-#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -100,5 +99,5 @@ bool MediaFileWrapper::hasThumbnail() const {
 
 
 QString MediaFileWrapper::art() const {
-    return make_album_art_uri(media.getAuthor(), media.getAlbum());
+    return QString::fromStdString(media.getArtUri());
 }

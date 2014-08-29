@@ -19,7 +19,6 @@
 
 #include "MediaFileModelBase.hh"
 #include "MediaFileWrapper.hh"
-#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -93,7 +92,7 @@ QVariant MediaFileModelBase::data(const QModelIndex &index, int role) const {
     case RoleLongitude:
         return media.getLongitude();
     case RoleArt:
-        return make_album_art_uri(media.getAuthor(), media.getAlbum());
+        return QString::fromStdString(media.getArtUri());
     default:
         return QVariant();
     }

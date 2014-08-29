@@ -5,7 +5,6 @@ set(QML_PLUGIN_DIR "${CMAKE_INSTALL_LIBDIR}/qt5/qml/Ubuntu/MediaScanner.0.1")
 
 add_library(mediascanner-qml MODULE
   plugin.cc
-  utils.cc
   MediaFileWrapper.cc
   MediaStoreWrapper.cc
   StreamingModel.cc

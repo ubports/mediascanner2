@@ -18,7 +18,6 @@
  */
 
 #include "AlbumModelBase.hh"
-#include "utils.hh"
 
 using namespace mediascanner::qml;
 
@@ -44,7 +43,7 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
     case RoleArtist:
         return QString::fromStdString(album.getArtist());
     case RoleArt:
-        return make_album_art_uri(album.getArtist(), album.getTitle());
+        return QString::fromStdString(album.getArtUri());
     default:
         return QVariant();
     }
