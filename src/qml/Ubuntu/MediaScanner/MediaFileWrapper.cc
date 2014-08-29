@@ -97,7 +97,6 @@ bool MediaFileWrapper::hasThumbnail() const {
     return media.getHasThumbnail();
 }
 
-
 QString MediaFileWrapper::art() const {
     return QString::fromStdString(media.getArtUri());
 }
