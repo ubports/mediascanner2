@@ -29,6 +29,7 @@ public:
 
     Album();
     Album(const std::string &title, const std::string &artist);
+    ~Album();
 
     const std::string& getTitle() const noexcept;
     const std::string& getArtist() const noexcept;
@@ -37,8 +38,8 @@ public:
     bool operator!=(const Album &other) const;
 
 private:
-    std::string title;
-    std::string artist;
+    struct Private;
+    Private *p;
 };
 
 }
