@@ -61,6 +61,7 @@ Album &Album::operator=(const Album &other) {
 
 Album &Album::operator=(Album &&other) {
     if (this != &other) {
+        delete p;
         p = other.p;
         other.p = nullptr;
     }

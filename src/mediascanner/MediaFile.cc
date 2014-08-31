@@ -66,6 +66,7 @@ MediaFile &MediaFile::operator=(const MediaFile &other) {
 
 MediaFile &MediaFile::operator=(MediaFile &&other) {
     if (this != &other) {
+        delete p;
         p = other.p;
         other.p = nullptr;
     }
