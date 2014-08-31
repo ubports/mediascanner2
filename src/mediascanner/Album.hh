@@ -29,7 +29,12 @@ public:
 
     Album();
     Album(const std::string &title, const std::string &artist);
+    Album(const Album &other);
+    Album(Album &&other);
     ~Album();
+
+    Album &operator=(const Album &other);
+    Album &operator=(Album &&other);
 
     const std::string& getTitle() const noexcept;
     const std::string& getArtist() const noexcept;

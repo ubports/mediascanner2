@@ -31,6 +31,9 @@ struct Album::Private {
     Private() {}
     Private(const string &title, const string &artist)
         : title(title), artist(artist) {}
+    Private(const Private &other) {
+        *this = other;
+    }
 };
 
 Album::Album() : p(new Private){
@@ -40,8 +43,28 @@ Album::Album(const std::string &title, const std::string &artist)
     : p(new Private(title, artist)) {
 }
 
+Album::Album(const Album &other) : p(new Private(*other.p)) {
+}
+
+Album::Album(Album &&other) : p(nullptr) {
+    *this = std::move(other);
+}
+
 Album::~Album() {
     delete p;
+}
+
+Album &Album::operator=(const Album &other) {
+    *p = *other.p;
+    return *this;
+}
+
+Album &Album::operator=(Album &&other) {
+    if (this != &other) {
+        p = other.p;
+        other.p = nullptr;
+    }
+    return *this;
 }
 
 const std::string& Album::getTitle() const noexcept {
