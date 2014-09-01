@@ -50,6 +50,10 @@ Filter::Filter(const Filter &other) : Filter() {
     *p = *other.p;
 }
 
+Filter::Filter(Filter &&other) : p(nullptr) {
+    *this = std::move(other);
+}
+
 Filter::~Filter() {
     delete p;
 }
@@ -76,6 +80,15 @@ bool Filter::operator!=(const Filter &other) const {
 
 Filter &Filter::operator=(const Filter &other) {
     *p = *other.p;
+    return *this;
+}
+
+Filter &Filter::operator=(Filter &&other) {
+    if (this != &other) {
+        delete p;
+        p = other.p;
+        other.p = nullptr;
+    }
     return *this;
 }
 
