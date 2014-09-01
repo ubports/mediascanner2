@@ -27,10 +27,13 @@ namespace mediascanner {
 struct Album::Private {
     string title;
     string artist;
+    string date;
+    string art_uri;
 
     Private() {}
-    Private(const string &title, const string &artist)
-        : title(title), artist(artist) {}
+    Private(const string &title, const string &artist,
+            const string &date, const string &art_uri)
+        : title(title), artist(artist), date(date), art_uri(art_uri) {}
     Private(const Private &other) {
         *this = other;
     }
@@ -39,8 +42,9 @@ struct Album::Private {
 Album::Album() : p(new Private){
 }
 
-Album::Album(const std::string &title, const std::string &artist)
-    : p(new Private(title, artist)) {
+Album::Album(const std::string &title, const std::string &artist,
+             const std::string &date, const std::string &art_uri)
+    : p(new Private(title, artist, date, art_uri)) {
 }
 
 Album::Album(const Album &other) : p(new Private(*other.p)) {
@@ -76,12 +80,19 @@ const std::string& Album::getArtist() const noexcept {
     return p->artist;
 }
 
-std::string Album::getArtUri() const {
-    return make_album_art_uri(p->artist, p->title);
+const std::string& Album::getDate() const noexcept {
+    return p->date;
+}
+
+const std::string& Album::getArtUri() const noexcept {
+    return p->art_uri;
 }
 
 bool Album::operator==(const Album &other) const {
-    return p->title == other.p->title && p->artist == other.p->artist;
+    return p->title == other.p->title &&
+        p->artist == other.p->artist &&
+        p->date == other.p->date &&
+        p->art_uri == other.p->art_uri;
 }
 
 bool Album::operator!=(const Album &other) const {

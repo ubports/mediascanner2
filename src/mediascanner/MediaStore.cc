@@ -576,7 +576,16 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 static Album make_album(Statement &query) {
     const string album = query.getText(0);
     const string album_artist = query.getText(1);
-    return Album(album, album_artist);
+    const string date = query.getText(2);
+    const string filename = query.getText(3);
+    const bool has_thumbnail = query.getInt(4);
+    string art_uri;
+    if (has_thumbnail) {
+        art_uri = make_thumbnail_uri(getUri(filename));
+    } else {
+        art_uri = make_album_art_uri(album_artist, album);
+    }
+    return Album(album, album_artist, date, art_uri);
 }
 
 static vector<Album> collect_albums(Statement &query) {

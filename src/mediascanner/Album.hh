@@ -28,7 +28,8 @@ class Album final {
 public:
 
     Album();
-    Album(const std::string &title, const std::string &artist);
+    Album(const std::string &title, const std::string &artist,
+          const std::string &date="", const std::string &art_uri="");
     Album(const Album &other);
     Album(Album &&other);
     ~Album();
@@ -38,7 +39,8 @@ public:
 
     const std::string& getTitle() const noexcept;
     const std::string& getArtist() const noexcept;
-    std::string getArtUri() const;
+    const std::string& getDate() const noexcept;
+    const std::string& getArtUri() const noexcept;
     bool operator==(const Album &other) const;
     bool operator!=(const Album &other) const;
 
