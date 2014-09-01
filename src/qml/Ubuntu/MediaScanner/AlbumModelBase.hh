@@ -36,6 +36,7 @@ public:
     enum Roles {
         RoleTitle,
         RoleArtist,
+        RoleDate,
         RoleArt,
     };
 
