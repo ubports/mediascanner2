@@ -26,6 +26,7 @@ AlbumModelBase::AlbumModelBase(QObject *parent)
     roles[Roles::RoleTitle] = "title";
     roles[Roles::RoleArtist] = "artist";
     roles[Roles::RoleDate] = "date";
+    roles[Roles::RoleGenre] = "genre";
     roles[Roles::RoleArt] = "art";
 }
 
@@ -45,6 +46,8 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
         return QString::fromStdString(album.getArtist());
     case RoleDate:
         return QString::fromStdString(album.getDate());
+    case RoleGenre:
+        return QString::fromStdString(album.getGenre());
     case RoleArt:
         return QString::fromStdString(album.getArtUri());
     default:

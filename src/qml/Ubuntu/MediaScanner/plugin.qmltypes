@@ -16,7 +16,8 @@ Module {
                 "RoleTitle": 0,
                 "RoleArtist": 1,
                 "RoleDate": 2,
-                "RoleArt": 3
+                "RoleGenre": 3,
+                "RoleArt": 4
             }
         }
     }

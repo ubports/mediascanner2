@@ -37,6 +37,7 @@ public:
         RoleTitle,
         RoleArtist,
         RoleDate,
+        RoleGenre,
         RoleArt,
     };
 

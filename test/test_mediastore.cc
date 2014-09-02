@@ -508,7 +508,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setAlbumArtist("Various Artists")
         .setDate("2000-01-01")
         .setDiscNumber(1)
-        .setTrackNumber(1);
+        .setTrackNumber(1)
+        .setGenre("GenreOne");
     MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
         .setType(AudioMedia)
         .setTitle("TitleTwo")
@@ -517,7 +518,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setAlbumArtist("Various Artists")
         .setDate("2000-01-01")
         .setDiscNumber(1)
-        .setTrackNumber(2);
+        .setTrackNumber(2)
+        .setGenre("GenreOne");
     MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
         .setType(AudioMedia)
         .setTitle("TitleThree")
@@ -526,7 +528,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setAlbumArtist("Various Artists")
         .setDate("2000-01-01")
         .setDiscNumber(2)
-        .setTrackNumber(1);
+        .setTrackNumber(1)
+        .setGenre("GenreOne");
     MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
         .setType(AudioMedia)
         .setTitle("TitleFour")
@@ -535,6 +538,7 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setAlbumArtist("ArtistFour")
         .setDate("2014-06-01")
         .setTrackNumber(1)
+        .setGenre("GenreTwo")
         .setHasThumbnail(true);
 
     MediaStore store(":memory:", MS_READ_WRITE);
@@ -550,6 +554,7 @@ TEST_F(MediaStoreTest, queryAlbums) {
     EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
     EXPECT_EQ(albums[0].getArtist(), "Various Artists");
     EXPECT_EQ(albums[0].getDate(), "2000-01-01");
+    EXPECT_EQ(albums[0].getGenre(), "GenreOne");
     EXPECT_EQ(albums[0].getArtUri(), "image://albumart/artist=Various%20Artists&album=AlbumOne");
 
     // Query an album name
@@ -558,6 +563,7 @@ TEST_F(MediaStoreTest, queryAlbums) {
     EXPECT_EQ(albums[0].getTitle(), "AlbumTwo");
     EXPECT_EQ(albums[0].getArtist(), "ArtistFour");
     EXPECT_EQ(albums[0].getDate(), "2014-06-01");
+    EXPECT_EQ(albums[0].getGenre(), "GenreTwo");
     EXPECT_EQ(albums[0].getArtUri(), "image://thumbnailer/file:///home/username/Music/fname.ogg");
 
     // Query an artist name

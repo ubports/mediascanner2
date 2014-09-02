@@ -28,12 +28,16 @@ struct Album::Private {
     string title;
     string artist;
     string date;
-    string art_uri;
+    string genre;
+    string filename;
+    bool has_thumbnail = false;
 
     Private() {}
     Private(const string &title, const string &artist,
-            const string &date, const string &art_uri)
-        : title(title), artist(artist), date(date), art_uri(art_uri) {}
+            const string &date, const string &genre,
+            const string &filename, bool has_thumbnail)
+        : title(title), artist(artist), date(date), genre(genre),
+          filename(filename), has_thumbnail(has_thumbnail) {}
     Private(const Private &other) {
         *this = other;
     }
@@ -42,9 +46,14 @@ struct Album::Private {
 Album::Album() : p(new Private){
 }
 
+Album::Album(const std::string &title, const std::string &artist)
+    : Album(title, artist, "", "", "", false) {
+}
+
 Album::Album(const std::string &title, const std::string &artist,
-             const std::string &date, const std::string &art_uri)
-    : p(new Private(title, artist, date, art_uri)) {
+             const std::string &date, const std::string &genre,
+             const std::string &filename, bool has_thumbnail)
+    : p(new Private(title, artist, date, genre, filename, has_thumbnail)) {
 }
 
 Album::Album(const Album &other) : p(new Private(*other.p)) {
@@ -84,15 +93,25 @@ const std::string& Album::getDate() const noexcept {
     return p->date;
 }
 
-const std::string& Album::getArtUri() const noexcept {
-    return p->art_uri;
+const std::string& Album::getGenre() const noexcept {
+    return p->genre;
+}
+
+std::string Album::getArtUri() const {
+    if (p->has_thumbnail) {
+        return make_thumbnail_uri(getUri(p->filename));
+    } else {
+        return make_album_art_uri(p->artist, p->title);
+    }
 }
 
 bool Album::operator==(const Album &other) const {
     return p->title == other.p->title &&
         p->artist == other.p->artist &&
         p->date == other.p->date &&
-        p->art_uri == other.p->art_uri;
+        p->genre == other.p->genre &&
+        p->filename == other.p->filename &&
+        p->has_thumbnail == other.p->has_thumbnail;
 }
 
 bool Album::operator!=(const Album &other) const {

@@ -577,15 +577,10 @@ static Album make_album(Statement &query) {
     const string album = query.getText(0);
     const string album_artist = query.getText(1);
     const string date = query.getText(2);
-    const string filename = query.getText(3);
-    const bool has_thumbnail = query.getInt(4);
-    string art_uri;
-    if (has_thumbnail) {
-        art_uri = make_thumbnail_uri(getUri(filename));
-    } else {
-        art_uri = make_album_art_uri(album_artist, album);
-    }
-    return Album(album, album_artist, date, art_uri);
+    const string genre = query.getText(3);
+    const string filename = query.getText(4);
+    const bool has_thumbnail = query.getInt(5);
+    return Album(album, album_artist, date, genre, filename, has_thumbnail);
 }
 
 static vector<Album> collect_albums(Statement &query) {
@@ -598,7 +593,7 @@ static vector<Album> collect_albums(Statement &query) {
 
 vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
     string qs(R"(
-SELECT album, album_artist, first(date) as date, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
 WHERE type = ? AND album <> ''
 )");
     if (!core_term.empty()) {
@@ -739,7 +734,7 @@ LIMIT ? OFFSET ?
 
 std::vector<Album> MediaStorePrivate::listAlbums(const Filter &filter) const {
     std::string qs(R"(
-SELECT album, album_artist, first(date) as date, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
   WHERE type = ?
 )");
     if (filter.hasArtist()) {
