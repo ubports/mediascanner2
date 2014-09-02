@@ -33,11 +33,13 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaFileBuilder::~MediaFileBuilder()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::Album(mediascanner::Album&&)@Base" 0replaceme
  (c++)"mediascanner::Album::Album(mediascanner::Album const&)@Base" 0replaceme
- (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 0replaceme
  (c++)"mediascanner::Album::Album()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::Album(mediascanner::Album&&)@Base" 0replaceme
  (c++)"mediascanner::Album::Album(mediascanner::Album const&)@Base" 0replaceme
- (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 0replaceme
  (c++)"mediascanner::Album::Album()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::~Album()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::operator=(mediascanner::Album&&)@Base" 0replaceme
@@ -96,6 +98,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStore::listSongs(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::MediaFileBuilder::build() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::getDate() const@Base" 0replaceme
+ (c++)"mediascanner::Album::getGenre() const@Base" 0replaceme
  (c++)"mediascanner::Album::getTitle() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::getArtUri() const@Base" 0replaceme
  (c++)"mediascanner::Album::getArtist() const@Base" 0replaceme
