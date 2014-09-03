@@ -1,15 +1,21 @@
-mediascanner2 (0.105-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.105+14.10.20140903-0ubuntu1) utopic; urgency=medium
 
   [ James Henstridge ]
   * Record whether files contain embedded artwork in the media index.
   * Use this info to generate art URIs that either use embedded artwork,
     or the network based albumart provider.
+  * Expose embedded album art for Album objects too. Bump soname to
+    account for Album class changing size.
 
   [ Ubuntu daily release ]
   * debian/libmediascanner-2.0-3.symbols: auto-update to released
     version
+  * New rebuild forced
 
- -- James Henstridge <james.henstridge@canonical.com>  Fri, 29 Aug 2014 18:13:29 +0800
+  [ Jussi Pakkanen ]
+  * Fix usage of blocking cache.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 03 Sep 2014 11:46:24 +0000
 
 mediascanner2 (0.104+14.10.20140825-0ubuntu1) utopic; urgency=medium
 
