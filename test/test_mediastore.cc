@@ -506,31 +506,40 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setAuthor("ArtistOne")
         .setAlbum("AlbumOne")
         .setAlbumArtist("Various Artists")
+        .setDate("2000-01-01")
         .setDiscNumber(1)
-        .setTrackNumber(1);
+        .setTrackNumber(1)
+        .setGenre("GenreOne");
     MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
         .setType(AudioMedia)
         .setTitle("TitleTwo")
         .setAuthor("ArtistTwo")
         .setAlbum("AlbumOne")
         .setAlbumArtist("Various Artists")
+        .setDate("2000-01-01")
         .setDiscNumber(1)
-        .setTrackNumber(2);
+        .setTrackNumber(2)
+        .setGenre("GenreOne");
     MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
         .setType(AudioMedia)
         .setTitle("TitleThree")
         .setAuthor("ArtistThree")
         .setAlbum("AlbumOne")
         .setAlbumArtist("Various Artists")
+        .setDate("2000-01-01")
         .setDiscNumber(2)
-        .setTrackNumber(1);
+        .setTrackNumber(1)
+        .setGenre("GenreOne");
     MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
         .setType(AudioMedia)
         .setTitle("TitleFour")
         .setAuthor("ArtistFour")
         .setAlbum("AlbumTwo")
         .setAlbumArtist("ArtistFour")
-        .setTrackNumber(1);
+        .setDate("2014-06-01")
+        .setTrackNumber(1)
+        .setGenre("GenreTwo")
+        .setHasThumbnail(true);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -544,12 +553,18 @@ TEST_F(MediaStoreTest, queryAlbums) {
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
     EXPECT_EQ(albums[0].getArtist(), "Various Artists");
+    EXPECT_EQ(albums[0].getDate(), "2000-01-01");
+    EXPECT_EQ(albums[0].getGenre(), "GenreOne");
+    EXPECT_EQ(albums[0].getArtUri(), "image://albumart/artist=Various%20Artists&album=AlbumOne");
 
     // Query an album name
     albums = store.queryAlbums("AlbumTwo", filter);
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumTwo");
     EXPECT_EQ(albums[0].getArtist(), "ArtistFour");
+    EXPECT_EQ(albums[0].getDate(), "2014-06-01");
+    EXPECT_EQ(albums[0].getGenre(), "GenreTwo");
+    EXPECT_EQ(albums[0].getArtUri(), "image://thumbnailer/file:///home/username/Music/fname.ogg");
 
     // Query an artist name
     albums = store.queryAlbums("ArtistTwo", filter);

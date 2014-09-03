@@ -34,6 +34,10 @@ MediaFile::MediaFile(const MediaFile &other) :
     p(new MediaFilePrivate(*other.p)) {
 }
 
+MediaFile::MediaFile(MediaFile &&other) : p(nullptr) {
+    *this = std::move(other);
+}
+
 MediaFile::MediaFile(const MediaFileBuilder &builder) {
     if(!builder.p) {
         throw logic_error("Tried to construct a Mediafile with an empty MediaFileBuilder.");
@@ -57,6 +61,15 @@ MediaFile::~MediaFile() {
 
 MediaFile &MediaFile::operator=(const MediaFile &other) {
     *p = *other.p;
+    return *this;
+}
+
+MediaFile &MediaFile::operator=(MediaFile &&other) {
+    if (this != &other) {
+        delete p;
+        p = other.p;
+        other.p = nullptr;
+    }
     return *this;
 }
 

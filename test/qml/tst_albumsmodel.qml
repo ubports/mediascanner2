@@ -45,15 +45,27 @@ Item {
             compare(model.count, 4);
             compare(model.get(0, AlbumsModel.RoleTitle), "Ivy and the Big Apples");
             compare(model.get(0, AlbumsModel.RoleArtist), "Spiderbait");
+            compare(model.get(0, AlbumsModel.RoleDate), "1996-10-04");
+            compare(model.get(0, AlbumsModel.RoleGenre), "rock");
+            compare(model.get(0, AlbumsModel.RoleArt), "image://albumart/artist=Spiderbait&album=Ivy%20and%20the%20Big%20Apples");
 
             compare(model.get(1, AlbumsModel.RoleTitle), "Spiderbait");
             compare(model.get(1, AlbumsModel.RoleArtist), "Spiderbait");
+            compare(model.get(1, AlbumsModel.RoleDate), "2013-11-15");
+            compare(model.get(1, AlbumsModel.RoleGenre), "rock");
+            compare(model.get(1, AlbumsModel.RoleArt), "image://albumart/artist=Spiderbait&album=Spiderbait");
 
             compare(model.get(2, AlbumsModel.RoleTitle), "April Uprising");
             compare(model.get(2, AlbumsModel.RoleArtist), "The John Butler Trio");
+            compare(model.get(2, AlbumsModel.RoleDate), "2010-01-01");
+            compare(model.get(2, AlbumsModel.RoleGenre), "roots");
+            compare(model.get(2, AlbumsModel.RoleArt), "image://albumart/artist=The%20John%20Butler%20Trio&album=April%20Uprising");
 
             compare(model.get(3, AlbumsModel.RoleTitle), "Sunrise Over Sea");
             compare(model.get(3, AlbumsModel.RoleArtist), "The John Butler Trio");
+            compare(model.get(3, AlbumsModel.RoleDate), "2004-03-08");
+            compare(model.get(3, AlbumsModel.RoleGenre), "roots");
+            compare(model.get(3, AlbumsModel.RoleArt), "image://albumart/artist=The%20John%20Butler%20Trio&album=Sunrise%20Over%20Sea");
         }
 
         function test_limit() {

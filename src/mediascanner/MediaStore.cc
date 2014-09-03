@@ -143,6 +143,81 @@ wrong_number_args:
     sqlite3_result_error(pCtx, "wrong number of arguments to function rank()", -1);
 }
 
+struct FirstContext {
+    int type;
+    union {
+        int i;
+        double f;
+        struct {
+            void *blob;
+            int length;
+        } b;
+    } data;
+};
+
+static void first_step(sqlite3_context *ctx, int /*argc*/, sqlite3_value **argv) {
+    FirstContext *d = static_cast<FirstContext*>(sqlite3_aggregate_context(ctx, sizeof(FirstContext*)));
+    if (d->type != 0) {
+        return;
+    }
+    sqlite3_value *arg = argv[0];
+    d->type = sqlite3_value_type(arg);
+    switch (d->type) {
+    case SQLITE_INTEGER:
+        d->data.i = sqlite3_value_int(arg);
+        break;
+    case SQLITE_FLOAT:
+        d->data.f = sqlite3_value_double(arg);
+        break;
+    case SQLITE_NULL:
+        break;
+    case SQLITE_TEXT:
+        d->data.b.length = sqlite3_value_bytes(arg);
+        d->data.b.blob = malloc(d->data.b.length);
+        memcpy(d->data.b.blob, sqlite3_value_text(arg), d->data.b.length);
+        break;
+    case SQLITE_BLOB:
+        d->data.b.length = sqlite3_value_bytes(arg);
+        d->data.b.blob = malloc(d->data.b.length);
+        memcpy(d->data.b.blob, sqlite3_value_blob(arg), d->data.b.length);
+        break;
+    default:
+        sqlite3_result_error(ctx, "Unhandled data type", -1);
+        sqlite3_result_error_code(ctx, SQLITE_MISMATCH);
+    }
+}
+
+static void first_finalize(sqlite3_context *ctx) {
+    FirstContext *d = static_cast<FirstContext*>(sqlite3_aggregate_context(ctx, 0));
+    if (d == nullptr) {
+        sqlite3_result_null(ctx);
+        return;
+    }
+    switch (d->type) {
+    case SQLITE_INTEGER:
+        sqlite3_result_int(ctx, d->data.i);
+        break;
+    case SQLITE_FLOAT:
+        sqlite3_result_double(ctx, d->data.f);
+        break;
+    case SQLITE_NULL:
+        sqlite3_result_null(ctx);
+        break;
+    case SQLITE_TEXT:
+        sqlite3_result_text(ctx, reinterpret_cast<char*>(d->data.b.blob),
+                            d->data.b.length, free);
+        d->data.b.blob = nullptr;
+        break;
+    case SQLITE_BLOB:
+        sqlite3_result_blob(ctx, d->data.b.blob, d->data.b.length, free);
+        d->data.b.blob = nullptr;
+        break;
+    default:
+        sqlite3_result_error(ctx, "Unhandled data type", -1);
+        sqlite3_result_error_code(ctx, SQLITE_MISMATCH);
+    }
+}
+
 static bool has_block_in_path(std::map<std::string, bool> &cache, const std::string &filename) {
     std::vector<std::string> path_segments;
     std::istringstream f(filename);
@@ -173,6 +248,11 @@ static bool has_block_in_path(std::map<std::string, bool> &cache, const std::str
 static void register_functions(sqlite3 *db) {
     if (sqlite3_create_function(db, "rank", -1, SQLITE_ANY, nullptr,
                                 rankfunc, nullptr, nullptr) != SQLITE_OK) {
+        throw runtime_error(sqlite3_errmsg(db));
+    }
+
+    if (sqlite3_create_function(db, "first", 1, SQLITE_ANY, nullptr,
+                                nullptr, first_step, first_finalize) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(db));
     }
 }
@@ -498,7 +578,11 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 static Album make_album(Statement &query) {
     const string album = query.getText(0);
     const string album_artist = query.getText(1);
-    return Album(album, album_artist);
+    const string date = query.getText(2);
+    const string genre = query.getText(3);
+    const string filename = query.getText(4);
+    const bool has_thumbnail = query.getInt(5);
+    return Album(album, album_artist, date, genre, has_thumbnail ? filename : "");
 }
 
 static vector<Album> collect_albums(Statement &query) {
@@ -511,7 +595,7 @@ static vector<Album> collect_albums(Statement &query) {
 
 vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
     string qs(R"(
-SELECT album, album_artist FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
 WHERE type = ? AND album <> ''
 )");
     if (!core_term.empty()) {
@@ -652,7 +736,7 @@ LIMIT ? OFFSET ?
 
 std::vector<Album> MediaStorePrivate::listAlbums(const Filter &filter) const {
     std::string qs(R"(
-SELECT album, album_artist FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
   WHERE type = ?
 )");
     if (filter.hasArtist()) {

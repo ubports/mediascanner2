@@ -15,7 +15,9 @@ Module {
             values: {
                 "RoleTitle": 0,
                 "RoleArtist": 1,
-                "RoleArt": 2
+                "RoleDate": 2,
+                "RoleGenre": 3,
+                "RoleArt": 4
             }
         }
     }
@@ -108,6 +110,7 @@ Module {
         Property { name: "height"; type: "int"; isReadonly: true }
         Property { name: "latitude"; type: "double"; isReadonly: true }
         Property { name: "longitude"; type: "double"; isReadonly: true }
+        Property { name: "hasThumbnail"; type: "bool"; isReadonly: true }
         Property { name: "art"; type: "string"; isReadonly: true }
     }
     Component {

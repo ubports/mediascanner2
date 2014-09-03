@@ -97,14 +97,17 @@ void Codec<Album>::encode_argument(Message::Writer &out, const Album &album) {
     auto w = out.open_structure();
     core::dbus::encode_argument(w, album.getTitle());
     core::dbus::encode_argument(w, album.getArtist());
+    core::dbus::encode_argument(w, album.getDate());
+    core::dbus::encode_argument(w, album.getGenre());
+    core::dbus::encode_argument(w, album.getArtFile());
     out.close_structure(std::move(w));
 }
 
 void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
     auto r = in.pop_structure();
-    string title, artist;
-    r >> title >> artist;
-    album = Album(title, artist);
+    string title, artist, date, genre, art_file;
+    r >> title >> artist >> date >> genre >> art_file;
+    album = Album(title, artist, date, genre, art_file);
 }
 
 void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) {

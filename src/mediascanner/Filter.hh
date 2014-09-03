@@ -29,9 +29,11 @@ class Filter final {
 public:
     Filter();
     Filter(const Filter &other);
+    Filter(Filter &&other);
     ~Filter();
 
     Filter &operator=(const Filter &other);
+    Filter &operator=(Filter &&other);
     bool operator==(const Filter &other) const;
     bool operator!=(const Filter &other) const;
 
