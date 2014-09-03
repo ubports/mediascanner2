@@ -63,6 +63,7 @@ public:
     MediaFileBuilder &setHeight(int h);
     MediaFileBuilder &setLatitude(double l);
     MediaFileBuilder &setLongitude(double l);
+    MediaFileBuilder &setHasThumbnail(bool t);
 
 private:
     MediaFilePrivate *p;

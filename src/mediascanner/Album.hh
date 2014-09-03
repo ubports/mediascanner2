@@ -32,6 +32,7 @@ public:
 
     const std::string& getTitle() const noexcept;
     const std::string& getArtist() const noexcept;
+    std::string getArtUri() const;
     bool operator==(const Album &other) const;
     bool operator!=(const Album &other) const;
 

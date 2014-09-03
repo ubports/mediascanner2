@@ -57,6 +57,7 @@ void Codec<MediaFile>::encode_argument(Message::Writer &out, const MediaFile &fi
     core::dbus::encode_argument(w, (int32_t)file.getHeight());
     core::dbus::encode_argument(w, file.getLatitude());
     core::dbus::encode_argument(w, file.getLongitude());
+    core::dbus::encode_argument(w, file.getHasThumbnail());
     core::dbus::encode_argument(w, (int32_t)file.getType());
     out.close_structure(std::move(w));
 }
@@ -67,10 +68,11 @@ void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
     string album, album_artist, date, genre;
     int32_t disc_number, track_number, duration, width, height, type;
     double latitude, longitude;
+    bool has_thumbnail;
     r >> filename >> content_type >> etag >> title >> author
       >> album >> album_artist >> date >> genre
       >> disc_number >> track_number >> duration
-      >> width >> height >> latitude >> longitude >> type;
+      >> width >> height >> latitude >> longitude >> has_thumbnail >> type;
     file = MediaFileBuilder(filename)
         .setContentType(content_type)
         .setETag(etag)
@@ -87,6 +89,7 @@ void Codec<MediaFile>::decode_argument(Message::Reader &in, MediaFile &file) {
         .setHeight(height)
         .setLatitude(latitude)
         .setLongitude(longitude)
+        .setHasThumbnail(has_thumbnail)
         .setType((MediaType)type);
 }
 
