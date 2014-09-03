@@ -580,7 +580,7 @@ static Album make_album(Statement &query) {
     const string genre = query.getText(3);
     const string filename = query.getText(4);
     const bool has_thumbnail = query.getInt(5);
-    return Album(album, album_artist, date, genre, filename, has_thumbnail);
+    return Album(album, album_artist, date, genre, has_thumbnail ? filename : "");
 }
 
 static vector<Album> collect_albums(Statement &query) {

@@ -31,7 +31,7 @@ public:
     Album(const std::string &title, const std::string &artist);
     Album(const std::string &title, const std::string &artist,
           const std::string &date, const std::string &genre,
-          const std::string &filename, bool has_thumbnail);
+          const std::string &filename);
     Album(const Album &other);
     Album(Album &&other);
     ~Album();
@@ -43,6 +43,7 @@ public:
     const std::string& getArtist() const noexcept;
     const std::string& getDate() const noexcept;
     const std::string& getGenre() const noexcept;
+    const std::string& getArtFile() const noexcept;
     std::string getArtUri() const;
     bool operator==(const Album &other) const;
     bool operator!=(const Album &other) const;
