@@ -153,10 +153,12 @@ static bool has_block_in_path(std::map<std::string, bool> &cache, const std::str
     path_segments.pop_back();
     std::string trial_path;
     for(const auto &seg : path_segments) {
-        trial_path += "/" + seg;
+        if(trial_path != "/")
+            trial_path += "/";
+        trial_path += seg;
         auto r = cache.find(trial_path);
-        if(r != cache.end()) {
-            return r->second;
+        if(r != cache.end() && r->second) {
+            return true;
         }
         if(has_scanblock(trial_path)) {
             cache[trial_path] = true;
@@ -368,9 +370,9 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
     printf("Added %s to backing store: %s\n", typestr, m.getFileName().c_str());
-    printf(" author   : '%s'\n", m.getAuthor().c_str());
+    printf(" author   : %s\n", m.getAuthor().c_str());
     printf(" title    : %s\n", m.getTitle().c_str());
-    printf(" album    : '%s'\n", m.getAlbum().c_str());
+    printf(" album    : %s\n", m.getAlbum().c_str());
     printf(" duration : %d\n", m.getDuration());
 }
 
@@ -775,7 +777,7 @@ void MediaStorePrivate::pruneDeleted() {
         }
     }
     query.finalize();
-    printf("%d files deleted from disk.\n", (int)deleted.size());
+    printf("%d files deleted from disk or in scanblocked directories.\n", (int)deleted.size());
     for(const auto &i : deleted) {
         remove(i);
     }
