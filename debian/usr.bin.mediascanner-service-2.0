@@ -10,6 +10,7 @@
   #include <abstractions/nameservice>
   #include <abstractions/private-files-strict>
   #include <abstractions/user-tmp>
+  #include <abstractions/video>
   #include "/usr/share/apparmor/hardware/audio.d"
   #include "/usr/share/apparmor/hardware/graphics.d"
   #include "/usr/share/apparmor/hardware/video.d"
@@ -27,6 +28,7 @@
   owner @{PROC}/[0-9]*/cmdline r,
 
   /etc/udev/udev.conf r,
+  deny /run/udev/data/** r,
 
   # specific to the mediatek soc
   @{PROC}/xlog/setfil r,
@@ -37,8 +39,9 @@
   /dev/devmap r,
   @{PROC}/mtk_mdp_cmdq r,
 
-  # For manta devices
-  /sys/devices/**/video4linux/video** r,
+  /dev/video*                           r,
+  /sys/devices/**/video4linux/video**   r,
+  /sys/devices/**/video4linux/**/uevent r,
 
   /sys/kernel/debug/tracing/trace_marker w,
   /dev/ashmem rw,
