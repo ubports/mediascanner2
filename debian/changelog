@@ -1,3 +1,16 @@
+mediascanner2 (0.105+14.10.20140909-0ubuntu1) utopic; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Print a log message when skipping a broken file.
+
+  [ Jamie Strandboge ]
+  * debian/usr.bin.mediascanner-service-2.0: add video abstraction.
+    silence access to /run/udev/data/** like we do elsewhere. allow read
+    on /dev/video*. allow read on /sys/devices/**/video4linux/**/uevent
+    .
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 09 Sep 2014 08:41:03 +0000
+
 mediascanner2 (0.105+14.10.20140903-0ubuntu1) utopic; urgency=medium
 
   [ James Henstridge ]
