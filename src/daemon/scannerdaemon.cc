@@ -398,8 +398,30 @@ bool ScannerDaemon::addMountedVolumes() {
     return changed;
 }
 
+static void print_banner() {
+    char timestr[200];
+    time_t t;
+    struct tm *tmp;
+
+    t = time(NULL);
+    tmp = localtime(&t);
+    if (tmp == NULL) {
+        printf("\nMediascanner service starting.\n\n");
+        return;
+    }
+
+    if (strftime(timestr, sizeof(timestr), "%Y-%m-%d %l:%M:%S", tmp) == 0) {
+        printf("\nMediascanner service starting.\n\n");
+        return;
+    }
+
+    printf("\nMediascanner service starting at %s.\n\n", timestr);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
+    print_banner();
+
     try {
         ScannerDaemon d;
         return d.run();
