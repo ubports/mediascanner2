@@ -235,9 +235,10 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
     while(true) {
         try {
             auto d = s.next();
-            // If the file is broken or unchanged, skip it.
+            // If the file is broken or unchanged, use fallback.
             if (store.is_broken_file(d.filename, d.etag)) {
-                fprintf(stderr, "Skipping unscannable file %s.\n", d.filename.c_str());
+                fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());
+                store.insert(extractor->fallback_extract(d));
                 continue;
             }
             if(d.etag == store.getETag(d.filename))
@@ -246,9 +247,8 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
             try {
                 store.insert_broken_file(d.filename, d.etag);
                 store.insert(extractor->extract(d));
-                // If the above line crashes, then brokenness
-                // persists.
-                store.remove_broken_file(d.filename);
+                // If the above line crashes, then brokenness of this file
+                // persists in the db.
             } catch(const exception &e) {
                 fprintf(stderr, "Error when indexing: %s\n", e.what());
             }
