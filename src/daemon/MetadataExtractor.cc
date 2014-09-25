@@ -396,7 +396,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
 }
 
 MediaFile MetadataExtractor::fallback_extract(const DetectedFile &d) {
-    return MediaFileBuilder(d.filename).setTitle(filenameToTitle(d.filename)).setType(d.type);
+    return MediaFileBuilder(d.filename).setType(d.type);
 }
 
 }
