@@ -21,6 +21,7 @@ pkg_check_modules(GLIB glib-2.0 REQUIRED)
 pkg_check_modules(EXIF libexif REQUIRED)
 pkg_check_modules(DBUSCPP dbus-cpp REQUIRED)
 pkg_check_modules(APPARMOR libapparmor REQUIRED)
+pkg_check_modules(UDISKS udisks2 REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
 
