@@ -243,8 +243,10 @@ void ScannerDaemon::mountEvent(const MountWatcher::Info& info) {
     bool changed = false;
     if (info.is_mounted) {
         printf("Volume %s was mounted.\n", info.mount_point.c_str());
-        addDir(info.mount_point);
-        changed = true;
+        if (info.mount_point.substr(0, 6) == "/media") {
+            addDir(info.mount_point);
+            changed = true;
+        }
     } else {
         printf("Volume %s was unmounted.\n", info.mount_point.c_str());
         if (subtrees.find(info.mount_point) != subtrees.end()) {
