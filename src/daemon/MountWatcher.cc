@@ -29,8 +29,6 @@
 #include <gio/gio.h>
 #include <udisks/udisks.h>
 
-using namespace std;
-
 namespace {
 const char BLOCK_DEVICE_PREFIX[] = "/org/freedesktop/UDisks2/block_devices/";
 const char FILESYSTEM_IFACE[] = "org.freedesktop.UDisks2.Filesystem";
@@ -39,7 +37,7 @@ struct DeviceInfo {
     mediascanner::MountWatcherPrivate *p;
     std::unique_ptr<UDisksObject, void(*)(void*)> device;
     std::unique_ptr<UDisksFilesystem, void(*)(void*)> filesystem;
-    string mount_point;
+    std::string mount_point;
     bool is_mounted = false;
     unsigned int mount_point_changed_id = 0;
 
@@ -64,7 +62,7 @@ struct MountWatcherPrivate {
     std::function<void(const MountWatcher::Info&)> callback;
     std::unique_ptr<UDisksClient, void(*)(void*)> client;
     GDBusObjectManager *manager = nullptr;
-    std::map<string,std::unique_ptr<DeviceInfo>> devices;
+    std::map<std::string,std::unique_ptr<DeviceInfo>> devices;
 
     unsigned int object_added_id = 0;
     unsigned int object_removed_id = 0;
@@ -91,12 +89,12 @@ MountWatcher::MountWatcher(std::function<void(const Info&)> callback)
     GError *error = nullptr;
     p->client.reset(udisks_client_new_sync(nullptr, &error));
     if (not p->client) {
-        string errortxt(error->message);
+        std::string errortxt(error->message);
         g_error_free(error);
         delete(p);
 
-        throw runtime_error(string("Failed to create udisks2 client: ") +
-                            errortxt);
+        throw std::runtime_error(
+            std::string("Failed to create udisks2 client: ") + errortxt);
     }
     p->manager = udisks_client_get_object_manager(p->client.get());
 
@@ -274,7 +272,7 @@ void DeviceInfo::update_mount_state() {
     mediascanner::MountWatcher::Info mount_info;
     mount_info.is_mounted = new_mount_point != nullptr;
     mount_info.mount_point =
-        mount_info.is_mounted ? string(new_mount_point) : mount_point;
+        mount_info.is_mounted ? std::string(new_mount_point) : mount_point;
     UDisksBlock *block = udisks_object_peek_block(device.get());
     const char *device = udisks_block_get_device(block);
     if (device != nullptr) {
