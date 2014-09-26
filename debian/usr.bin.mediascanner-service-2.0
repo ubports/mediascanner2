@@ -76,7 +76,6 @@
   deny /dev/log_system w,
 
   /bin/dash ixr,
-  /usr/bin/dbus-send ixr,
   /usr/bin/mediascanner-service-2.0 r,
 
   # GStreamer binary registry - hybris pulls this in for everything now, not
@@ -119,6 +118,20 @@
   # Write out the database files
   owner @{HOME}/.cache/mediascanner-2.0/   rw,
   owner @{HOME}/.cache/mediascanner-2.0/** rwkl,
+
+  # Allow communication with udisksd
+  dbus (send)
+       bus=system
+       path="/org/freedesktop/UDisks2*",
+  dbus (receive)
+       bus=system
+       interface="org.freedesktop.DBus.ObjectManager",
+  dbus (receive)
+       bus=system
+       interface="org.freedesktop.DBus.Properties",
+  dbus (receive)
+       bus=system
+       interface="org.freedesktop.UDisks2*",
 
   # Site-specific additions and overrides. See local/README for details.
   #include <local/usr.bin.mediascanner-service-2.0>
