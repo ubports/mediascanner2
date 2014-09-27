@@ -17,19 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include<pwd.h>
-#include<sys/select.h>
-#include<sys/stat.h>
-#include<sys/types.h>
-#include<sys/inotify.h>
-#include<unistd.h>
 #include<cstdio>
 #include<cerrno>
 #include<cstring>
 #include<map>
 #include<memory>
 #include<cassert>
-#include<dirent.h>
 
 #include<glib.h>
 #include<glib-unix.h>
