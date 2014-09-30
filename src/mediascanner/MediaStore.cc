@@ -454,6 +454,11 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
     printf(" title    : %s\n", m.getTitle().c_str());
     printf(" album    : %s\n", m.getAlbum().c_str());
     printf(" duration : %d\n", m.getDuration());
+
+    // Not atomic with the addition above but very unlikely to crash between the two.
+    // Even if it does, only one residual line remains and that will be cleaned up
+    // on the next scan.
+    remove_broken_file(m.getFileName());
 }
 
 void MediaStorePrivate::remove(const string &fname) const {

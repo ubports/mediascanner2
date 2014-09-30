@@ -395,4 +395,8 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     return mfb;
 }
 
+MediaFile MetadataExtractor::fallback_extract(const DetectedFile &d) {
+    return MediaFileBuilder(d.filename).setType(d.type);
+}
+
 }

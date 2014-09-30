@@ -148,9 +148,10 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
     try {
         while(true) {
             auto d  = s.next();
-            // If the file is unchanged or known bad, skip it.
+            // If the file is unchanged or known bad, do fallback.
             if (store.is_broken_file(d.filename, d.etag)) {
-                fprintf(stderr, "Skipping unscannable file %s.\n", d.filename.c_str());
+                fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());
+                store.insert(extractor.fallback_extract(d));
                 continue;
             }
             if(d.etag == store.getETag(d.filename)) {
@@ -158,9 +159,8 @@ void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
             }
             store.insert_broken_file(d.filename, d.etag);
             store.insert(extractor.extract(d));
-            // If the above line crashes, then brokenness
+            // If the above line crashes, then brokenness of this file
             // persists.
-            store.remove_broken_file(d.filename);
         }
     } catch(const StopIteration &e) {
     }

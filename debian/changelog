@@ -1,3 +1,13 @@
+mediascanner2 (0.105+14.10.20140925.1-0ubuntu1) utopic; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Print banner when starting the daemon so upstart logs are easier to
+    parse.
+  * Use fallback data for crasher files so they at least show up in
+    scope queries.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 25 Sep 2014 11:58:02 +0000
+
 mediascanner2 (0.105+14.10.20140909-0ubuntu1) utopic; urgency=low
 
   [ Jussi Pakkanen ]
