@@ -123,11 +123,13 @@
   dbus (send)
        bus=system
        path="/org/freedesktop/UDisks2*"
-       interface="org.freedesktop.DBus.ObjectManager",
+       interface="org.freedesktop.DBus.ObjectManager"
+       member=GetManagedObjects,
   dbus (send)
        bus=system
        path="/org/freedesktop/UDisks2*"
-       interface="org.freedesktop.DBus.Properties",
+       interface="org.freedesktop.DBus.Properties"
+       member={Get,GetAll},
   dbus (receive)
        bus=system
        interface="org.freedesktop.DBus.ObjectManager",
