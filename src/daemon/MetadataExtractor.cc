@@ -395,8 +395,6 @@ void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBu
         g_error_free(err);
         throw runtime_error(msg);
     }
-    std::unique_ptr<GFile, void(*)(GFile*)> f(g_file_new_for_path(d.filename.c_str()),
-            [](GFile*p){g_object_unref(G_OBJECT(p));});
 
     struct stat info;
     if(stat(d.filename.c_str(), &info) == 0) {
@@ -411,7 +409,6 @@ void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBu
 
     mfb.setWidth(gdk_pixbuf_get_width(pic.get()));
     mfb.setHeight(gdk_pixbuf_get_height(pic.get()));
-//    mfb.setDate(datestr.get());
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
