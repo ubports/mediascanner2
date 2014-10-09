@@ -132,6 +132,20 @@ TEST_F(MetadataExtractorTest, extract_photo) {
     EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
 }
 
+// PNG files don't have exif entries, so test we work with those, too.
+TEST_F(MetadataExtractorTest, png_file) {
+    MetadataExtractor e;
+    MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image3.png"));
+
+    EXPECT_EQ(ImageMedia, file.getType());
+    EXPECT_EQ(640, file.getWidth());
+    EXPECT_EQ(400, file.getHeight());
+    EXPECT_EQ("2014-10-09T07:38:05", file.getDate());
+    EXPECT_DOUBLE_EQ(0, file.getLatitude());
+    EXPECT_DOUBLE_EQ(0, file.getLongitude());
+
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
