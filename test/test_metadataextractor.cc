@@ -22,6 +22,7 @@
 
 #include "test_config.h"
 
+#include<algorithm>
 #include<stdexcept>
 #include<cstdio>
 #include<string>
@@ -140,7 +141,19 @@ TEST_F(MetadataExtractorTest, png_file) {
     EXPECT_EQ(ImageMedia, file.getType());
     EXPECT_EQ(640, file.getWidth());
     EXPECT_EQ(400, file.getHeight());
-    EXPECT_EQ("2014-10-09T07:38:05", file.getDate());
+    // The time stamp on the test file can be anything. We can't guarantee what it is,
+    // so just inspect the format.
+    auto timestr = file.getDate();
+    EXPECT_EQ(timestr.size(), 19);
+    EXPECT_EQ(timestr.find('T'), 10);
+
+    // These can't go inside EXPECT_EQ because it is a macro and mixing templates
+    // with macros makes things explode.
+    auto dashes = std::count_if(timestr.begin(), timestr.end(), [](char c) { return c == '-';});
+    auto colons = std::count_if(timestr.begin(), timestr.end(), [](char c) { return c == ':';});
+    EXPECT_EQ(dashes, 2);
+    EXPECT_EQ(colons, 2);
+
     EXPECT_DOUBLE_EQ(0, file.getLatitude());
     EXPECT_DOUBLE_EQ(0, file.getLongitude());
 
