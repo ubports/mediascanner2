@@ -387,12 +387,12 @@ bool MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuil
 }
 
 void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBuilder &mfb) {
-    GError *err = nullptr;
-    std::unique_ptr<GdkPixbuf, void(*)(GdkPixbuf*)> pic(gdk_pixbuf_new_from_file(d.filename.c_str(), &err),
-            [](GdkPixbuf*p){g_object_unref(G_OBJECT(p));});
-    if(err) {
-        string msg = err->message;
-        g_error_free(err);
+    gint width, height;
+
+    if(!gdk_pixbuf_get_file_info(d.filename.c_str(), &width, &height)) {
+        string msg("Could not determine resolution of ");
+        msg += d.filename;
+        msg += ".";
         throw runtime_error(msg);
     }
 
@@ -407,8 +407,8 @@ void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBu
     }
 
 
-    mfb.setWidth(gdk_pixbuf_get_width(pic.get()));
-    mfb.setHeight(gdk_pixbuf_get_height(pic.get()));
+    mfb.setWidth(width);
+    mfb.setHeight(height);
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
