@@ -399,9 +399,9 @@ void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBu
     struct stat info;
     if(stat(d.filename.c_str(), &info) == 0) {
         char buf[1024];
-        struct tm *ptm;
-        ptm = gmtime(&info.st_mtime);
-        if (strftime(buf, sizeof(buf), iso8601_date_format, ptm) != 0) {
+        struct tm ptm;
+        localtime_r(&info.st_mtime, &ptm);
+        if (strftime(buf, sizeof(buf), iso8601_date_format, &ptm) != 0) {
             mfb.setDate(buf);
         }
     }
