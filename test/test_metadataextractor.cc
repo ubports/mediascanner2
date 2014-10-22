@@ -132,6 +132,19 @@ TEST_F(MetadataExtractorTest, extract_photo) {
     EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
 }
 
+TEST_F(MetadataExtractorTest, blacklist) {
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/playlist.m3u";
+    try {
+        e.detect(testfile);
+    } catch(const std::runtime_error &e) {
+        std::string error_message(e.what());
+        ASSERT_NE(error_message.find("blacklist"), std::string::npos);
+        return;
+    }
+    ASSERT_TRUE(false) << "Blacklist exception was not thrown.\n";
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
