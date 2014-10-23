@@ -135,6 +135,8 @@ void SubtreeWatcher::addDir(const string &root) {
         lstat(fullpath.c_str(), &statbuf);
         if(S_ISDIR(statbuf.st_mode)) {
             addDir(fullpath);
+        } else if (S_ISREG(statbuf.st_mode)) {
+            fileAdded(fullpath);
         }
     }
 }
