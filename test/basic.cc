@@ -230,6 +230,31 @@ TEST(Mediascanner, root_skip) {
     ASSERT_THROW(s.next(), StopIteration);
 }
 
+TEST(Mediascanner, scan_files_found_in_new_dir) {
+    string testdir = TEST_DIR "/testdir";
+    string subdir = testdir + "/subdir";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+    string outfile = subdir + "/testfile.ogg";
+    clear_dir(testdir);
+    ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    MetadataExtractor extractor;
+    InvalidationSender invalidator;
+    SubtreeWatcher watcher(store, extractor, invalidator);
+    watcher.addDir(testdir);
+    ASSERT_EQ(watcher.directoryCount(), 1);
+    ASSERT_EQ(store.size(), 0);
+
+    // Create a new directory and a file inside that directory before
+    // the watcher has a chance to set up an inotify watch.
+    ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
+    copy_file(testfile, outfile);
+    iterate_main_loop();
+    ASSERT_EQ(watcher.directoryCount(), 2);
+    ASSERT_EQ(store.size(), 1);
+}
+
 int main(int argc, char **argv) {
     gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
