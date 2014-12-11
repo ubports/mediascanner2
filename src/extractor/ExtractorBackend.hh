@@ -36,12 +36,7 @@ public:
     ExtractorBackend(const ExtractorBackend&) = delete;
     ExtractorBackend& operator=(ExtractorBackend &o) = delete;
 
-    DetectedFile detect(const std::string &filename);
     MediaFile extract(const DetectedFile &d);
-
-    // In case the detected file is know to crash gstreamer,
-    // use this to generate fallback data.
-    MediaFile fallback_extract(const DetectedFile &d);
 
 private:
     ExtractorBackendPrivate *p;

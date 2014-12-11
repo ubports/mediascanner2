@@ -351,8 +351,4 @@ MediaFile ExtractorBackend::extract(const DetectedFile &d) {
     return mfb;
 }
 
-MediaFile ExtractorBackend::fallback_extract(const DetectedFile &d) {
-    return MediaFileBuilder(d.filename).setType(d.type);
-}
-
 }
