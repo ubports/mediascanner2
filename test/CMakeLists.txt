@@ -38,8 +38,12 @@ add_executable(test_mediastore test_mediastore.cc ../src/mediascanner/utils.cc)
 target_link_libraries(test_mediastore mediascanner gtest)
 add_test(test_mediastore test_mediastore)
 
+add_executable(test_extractorbackend test_extractorbackend.cc)
+target_link_libraries(test_extractorbackend extractor-backend gtest)
+add_test(test_extractorbackend test_extractorbackend)
+
 add_executable(test_metadataextractor test_metadataextractor.cc)
-target_link_libraries(test_metadataextractor mediascanner scannerstuff gtest)
+target_link_libraries(test_metadataextractor extractor-client gtest)
 add_test(test_metadataextractor test_metadataextractor)
 # The gvfs modules interfere with the private D-Bus test fixtures
 set_tests_properties(test_metadataextractor PROPERTIES
