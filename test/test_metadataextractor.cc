@@ -18,6 +18,7 @@
  */
 
 #include <mediascanner/MediaFile.hh>
+#include <extractor/DetectedFile.hh>
 #include <extractor/MetadataExtractor.hh>
 
 #include "test_config.h"
@@ -47,11 +48,11 @@ class MetadataExtractorTest : public ::testing::Test {
 };
 
 TEST_F(MetadataExtractorTest, init) {
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
 }
 
 TEST_F(MetadataExtractorTest, detect_audio) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -60,7 +61,7 @@ TEST_F(MetadataExtractorTest, detect_audio) {
 }
 
 TEST_F(MetadataExtractorTest, detect_video) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
     string testfile = SOURCE_DIR "/media/testvideo_480p.ogv";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -69,13 +70,13 @@ TEST_F(MetadataExtractorTest, detect_video) {
 }
 
 TEST_F(MetadataExtractorTest, detect_notmedia) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
     string testfile = SOURCE_DIR "/CMakeLists.txt";
     EXPECT_THROW(e.detect(testfile), runtime_error);
 }
 
 TEST_F(MetadataExtractorTest, extract) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -89,7 +90,7 @@ TEST_F(MetadataExtractorTest, extract) {
 }
 
 TEST_F(MetadataExtractorTest, extract_video) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
 
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_480p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
@@ -111,7 +112,7 @@ TEST_F(MetadataExtractorTest, extract_video) {
 }
 
 TEST_F(MetadataExtractorTest, extract_photo) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
 
     // An landscape image that should be rotated to portrait
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image1.jpg"));

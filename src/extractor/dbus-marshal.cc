@@ -2,6 +2,8 @@
 #include <mediascanner/MediaFile.hh>
 #include <mediascanner/MediaFileBuilder.hh>
 
+#include <stdexcept>
+
 namespace mediascanner {
 
 GVariant *media_to_variant(const MediaFile &media) {
@@ -30,6 +32,10 @@ GVariant *media_to_variant(const MediaFile &media) {
 }
 
 MediaFile media_from_variant(GVariant *variant) {
+    if (!g_variant_is_of_type(variant, G_VARIANT_TYPE("(sssssssssiiiiiddi)"))) {
+        throw std::runtime_error("variant is of wrong type");
+    }
+
     const char *filename = nullptr, *content_type = nullptr, *etag = nullptr,
         *title = nullptr, *author = nullptr, *album = nullptr,
         *album_artist = nullptr, *date = nullptr, *genre = nullptr;

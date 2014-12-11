@@ -17,36 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef METADATAEXTRACTOR_H
-#define METADATAEXTRACTOR_H
+#ifndef EXTRACTOR_DETECTEDFILE_H
+#define EXTRACTOR_DETECTEDFILE_H
 
 #include <string>
 #include "../mediascanner/scannercore.hh"
 
-typedef struct _GDBusConnection GDBusConnection;
-
 namespace mediascanner {
 
-class MediaFile;
-class DetectedFile;
-struct MetadataExtractorPrivate;
+struct DetectedFile {
+    DetectedFile(const std::string &filename,
+                 const std::string &etag,
+                 const std::string content_type,
+                 MediaType type)
+        : filename(filename), etag(etag), content_type(content_type)
+        , type(type) {}
 
-class MetadataExtractor final {
-public:
-    explicit MetadataExtractor(GDBusConnection *bus);
-    ~MetadataExtractor();
-    MetadataExtractor(const MetadataExtractor&) = delete;
-    MetadataExtractor& operator=(MetadataExtractor &o) = delete;
-
-    DetectedFile detect(const std::string &filename);
-    MediaFile extract(const DetectedFile &d);
-
-    // In case the detected file is know to crash gstreamer,
-    // use this to generate fallback data.
-    MediaFile fallback_extract(const DetectedFile &d);
-
-private:
-    MetadataExtractorPrivate *p;
+    std::string filename;
+    std::string etag;
+    std::string content_type;
+    MediaType type;
 };
 
 }

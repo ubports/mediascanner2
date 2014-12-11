@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2013-2014 Canonical, Ltd.
  *
  * Authors:
  *    Jussi Pakkanen <jussi.pakkanen@canonical.com>
+ *    James Henstridge <james.henstridge@canonical.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of version 3 of the GNU General Public License as published
@@ -17,26 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef METADATAEXTRACTOR_H
-#define METADATAEXTRACTOR_H
+#ifndef EXTRACTOR_EXTRACTORBACKEND_H
+#define EXTRACTOR_EXTRACTORBACKEND_H
 
 #include <string>
-#include "../mediascanner/scannercore.hh"
-
-typedef struct _GDBusConnection GDBusConnection;
 
 namespace mediascanner {
 
 class MediaFile;
 class DetectedFile;
-struct MetadataExtractorPrivate;
+struct ExtractorBackendPrivate;
 
-class MetadataExtractor final {
+class ExtractorBackend final {
 public:
-    explicit MetadataExtractor(GDBusConnection *bus);
-    ~MetadataExtractor();
-    MetadataExtractor(const MetadataExtractor&) = delete;
-    MetadataExtractor& operator=(MetadataExtractor &o) = delete;
+    explicit ExtractorBackend(int seconds=25);
+    ~ExtractorBackend();
+    ExtractorBackend(const ExtractorBackend&) = delete;
+    ExtractorBackend& operator=(ExtractorBackend &o) = delete;
 
     DetectedFile detect(const std::string &filename);
     MediaFile extract(const DetectedFile &d);
@@ -46,7 +44,7 @@ public:
     MediaFile fallback_extract(const DetectedFile &d);
 
 private:
-    MetadataExtractorPrivate *p;
+    ExtractorBackendPrivate *p;
 };
 
 }

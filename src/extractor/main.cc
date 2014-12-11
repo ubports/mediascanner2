@@ -7,7 +7,8 @@
 #include <gst/gst.h>
 
 #include <mediascanner/MediaFile.hh>
-#include "MetadataExtractor.hh"
+#include "DetectedFile.hh"
+#include "ExtractorBackend.hh"
 #include "dbus-generated.h"
 #include "dbus-marshal.hh"
 
@@ -37,7 +38,7 @@ private:
     void cancelExitTimer();
     static gboolean handleExitTimer(gpointer user_data);
 
-    MetadataExtractor extractor;
+    ExtractorBackend extractor;
     std::unique_ptr<GMainLoop, void(*)(GMainLoop*)> main_loop;
     std::unique_ptr<GDBusConnection, void(*)(void*)> session_bus;
     unsigned int bus_name_id = 0;

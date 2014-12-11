@@ -2,16 +2,21 @@
 add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS})
 include_directories(.. ${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(mediascanner-extractor
-  main.cc
+add_library(extractor-client STATIC
   MetadataExtractor.cc
   dbus-generated.c
   dbus-marshal.cc
   ../mediascanner/utils.cc
 )
 
+add_executable(mediascanner-extractor
+  main.cc
+  ExtractorBackend.cc
+)
+
 target_link_libraries(mediascanner-extractor
   mediascanner
+  extractor-client
   ${GST_LDFLAGS}
   ${EXIF_LDFLAGS}
 )

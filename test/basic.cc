@@ -23,6 +23,7 @@
 #include <daemon/InvalidationSender.hh>
 #include <daemon/SubtreeWatcher.hh>
 #include <daemon/Scanner.hh>
+#include <extractor/DetectedFile.hh>
 #include <extractor/MetadataExtractor.hh>
 
 #include "test_config.h"
@@ -55,7 +56,7 @@ class ScanTest : public ::testing::Test {
 
 TEST_F(ScanTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
 }
@@ -97,7 +98,7 @@ TEST_F(ScanTest, index) {
     clear_dir(subdir);
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(subdir);
@@ -119,7 +120,7 @@ TEST_F(ScanTest, subdir) {
     clear_dir(testdir);
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     ASSERT_EQ(watcher.directoryCount(), 0);
@@ -143,7 +144,7 @@ TEST_F(ScanTest, subdir) {
 
 // FIXME move this somewhere in the implementation.
 void scanFiles(MediaStore &store, const string &subdir, const MediaType type) {
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
     Scanner s(&extractor, subdir, type);
     try {
         while(true) {
@@ -223,7 +224,7 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
 }
 
 TEST(Mediascanner, root_skip) {
-    MetadataExtractor e;
+    MetadataExtractor e(nullptr);
     string root(SOURCE_DIR);
     Scanner s(&e, root, AudioMedia);
     s.next();
@@ -239,7 +240,7 @@ TEST(Mediascanner, scan_files_found_in_new_dir) {
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
 
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor;
+    MetadataExtractor extractor(nullptr);
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(testdir);

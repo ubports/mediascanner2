@@ -3,14 +3,13 @@ include_directories(..)
 
 add_library(scannerstuff STATIC
   InvalidationSender.cc
-  ../extractor/MetadataExtractor.cc
   MountWatcher.cc
   SubtreeWatcher.cc
   Scanner.cc
   ../mediascanner/utils.cc
 )
 
-target_link_libraries(scannerstuff ${GST_LIBRARIES} ${EXIF_LDFLAGS} ${UDISKS_LDFLAGS})
+target_link_libraries(scannerstuff extractor-client ${GST_LIBRARIES} ${EXIF_LDFLAGS} ${UDISKS_LDFLAGS})
 
 add_executable(scannerdaemon
   scannerdaemon.cc

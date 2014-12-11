@@ -31,6 +31,7 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"
+#include "../extractor/DetectedFile.hh"
 #include "../extractor/MetadataExtractor.hh"
 #include "MountWatcher.hh"
 #include "SubtreeWatcher.hh"
@@ -79,7 +80,7 @@ ScannerDaemon::ScannerDaemon() :
     session_bus(nullptr, g_object_unref) {
     setupBus();
     store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
-    extractor.reset(new MetadataExtractor());
+    extractor.reset(new MetadataExtractor(session_bus.get()));
 
     setupMountWatcher();
 
