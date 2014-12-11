@@ -4,10 +4,10 @@ include_directories(.. ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(mediascanner-extractor
   main.cc
-  ../daemon/MetadataExtractor.cc
-  ../mediascanner/utils.cc
+  MetadataExtractor.cc
   dbus-generated.c
   dbus-marshal.cc
+  ../mediascanner/utils.cc
 )
 
 target_link_libraries(mediascanner-extractor

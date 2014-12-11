@@ -18,7 +18,7 @@
  */
 
 #include <mediascanner/MediaFile.hh>
-#include <daemon/MetadataExtractor.hh>
+#include <extractor/MetadataExtractor.hh>
 
 #include "test_config.h"
 

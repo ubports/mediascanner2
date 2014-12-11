@@ -6,8 +6,8 @@
 #include <gio/gio.h>
 #include <gst/gst.h>
 
-#include "../mediascanner/MediaFile.hh"
-#include "../daemon/MetadataExtractor.hh"
+#include <mediascanner/MediaFile.hh>
+#include "MetadataExtractor.hh"
 #include "dbus-generated.h"
 #include "dbus-marshal.hh"
 

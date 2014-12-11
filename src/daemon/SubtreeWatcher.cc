@@ -21,7 +21,7 @@
 #include "../mediascanner/MediaStore.hh"
 #include "../mediascanner/MediaFile.hh"
 #include "InvalidationSender.hh"
-#include "MetadataExtractor.hh"
+#include "../extractor/MetadataExtractor.hh"
 #include "../mediascanner/internal/utils.hh"
 
 #include<sys/select.h>

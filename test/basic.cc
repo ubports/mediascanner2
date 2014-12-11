@@ -21,9 +21,9 @@
 #include <mediascanner/MediaFileBuilder.hh>
 #include <mediascanner/MediaStore.hh>
 #include <daemon/InvalidationSender.hh>
-#include <daemon/MetadataExtractor.hh>
 #include <daemon/SubtreeWatcher.hh>
 #include <daemon/Scanner.hh>
+#include <extractor/MetadataExtractor.hh>
 
 #include "test_config.h"
 

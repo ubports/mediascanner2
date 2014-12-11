@@ -3,7 +3,7 @@ include_directories(..)
 
 add_library(scannerstuff STATIC
   InvalidationSender.cc
-  MetadataExtractor.cc
+  ../extractor/MetadataExtractor.cc
   MountWatcher.cc
   SubtreeWatcher.cc
   Scanner.cc

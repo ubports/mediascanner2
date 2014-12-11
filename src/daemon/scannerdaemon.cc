@@ -31,7 +31,7 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"
-#include "MetadataExtractor.hh"
+#include "../extractor/MetadataExtractor.hh"
 #include "MountWatcher.hh"
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
