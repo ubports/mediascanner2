@@ -39,8 +39,6 @@ add_executable(mediascanner-extractor
   main.cc
 )
 target_link_libraries(mediascanner-extractor extractor-backend)
-set_target_properties(mediascanner-extractor
-  PROPERTIES OUTPUT_NAME "mediascanner-extractor-2.0")
 
 install(
   TARGETS mediascanner-extractor
