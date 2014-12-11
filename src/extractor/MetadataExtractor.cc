@@ -61,7 +61,7 @@ MetadataExtractor::MetadataExtractor(GDBusConnection *bus) {
     if (not p->proxy) {
         string errortxt(error->message);
         g_error_free(error);
-        delete(p);
+        delete p;
 
         string msg = "Failed to create D-Bus proxy: ";
         msg += errortxt;
@@ -129,7 +129,6 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
             d.content_type.c_str(), d.type, &res, nullptr, &error)) {
         string errortxt(error->message);
         g_error_free(error);
-        delete(p);
 
         string msg = "Failed to create D-Bus proxy: ";
         msg += errortxt;

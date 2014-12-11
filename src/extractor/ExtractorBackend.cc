@@ -57,7 +57,7 @@ ExtractorBackend::ExtractorBackend(int seconds) {
     if (not p->discoverer) {
         string errortxt(error->message);
         g_error_free(error);
-        delete(p);
+        delete p;
 
         string msg = "Failed to create discoverer: ";
         msg += errortxt;
