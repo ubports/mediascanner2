@@ -23,36 +23,58 @@
 
 #include "test_config.h"
 
-#include<stdexcept>
-#include<cstdio>
-#include<string>
-#include<gst/gst.h>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <gio/gio.h>
 #include <gtest/gtest.h>
 
 using namespace std;
 using namespace mediascanner;
 
 class MetadataExtractorTest : public ::testing::Test {
- protected:
-  MetadataExtractorTest() {
-  }
+protected:
+    MetadataExtractorTest() :
+        test_dbus(nullptr, g_object_unref),
+        session_bus(nullptr, g_object_unref) {
+    }
 
-  virtual ~MetadataExtractorTest() {
-  }
+    virtual ~MetadataExtractorTest() {
+    }
 
-  virtual void SetUp() {
-  }
+    virtual void SetUp() override{
+        test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
+        g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
+        g_test_dbus_up(test_dbus.get());
 
-  virtual void TearDown() {
-  }
+        GError *error = nullptr;
+        session_bus.reset(g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error));
+        if (!session_bus) {
+            std::string errortxt(error->message);
+            g_error_free(error);
+            throw std::runtime_error(
+                std::string("Failed to connect to session bus: ") + errortxt);
+        }
+    }
+
+    virtual void TearDown() override {
+        session_bus.reset();
+        g_test_dbus_down(test_dbus.get());
+        test_dbus.reset();
+    }
+
+    unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
+    unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus;
 };
 
+
 TEST_F(MetadataExtractorTest, init) {
-    MetadataExtractor extractor(nullptr);
+    MetadataExtractor extractor(session_bus.get());
 }
 
 TEST_F(MetadataExtractorTest, detect_audio) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -61,7 +83,7 @@ TEST_F(MetadataExtractorTest, detect_audio) {
 }
 
 TEST_F(MetadataExtractorTest, detect_video) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/testvideo_480p.ogv";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -70,13 +92,13 @@ TEST_F(MetadataExtractorTest, detect_video) {
 }
 
 TEST_F(MetadataExtractorTest, detect_notmedia) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/CMakeLists.txt";
     EXPECT_THROW(e.detect(testfile), runtime_error);
 }
 
 TEST_F(MetadataExtractorTest, extract) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -90,7 +112,7 @@ TEST_F(MetadataExtractorTest, extract) {
 }
 
 TEST_F(MetadataExtractorTest, extract_video) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
 
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_480p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
@@ -112,7 +134,7 @@ TEST_F(MetadataExtractorTest, extract_video) {
 }
 
 TEST_F(MetadataExtractorTest, extract_photo) {
-    MetadataExtractor e(nullptr);
+    MetadataExtractor e(session_bus.get());
 
     // An landscape image that should be rotated to portrait
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image1.jpg"));
@@ -134,7 +156,6 @@ TEST_F(MetadataExtractorTest, extract_photo) {
 }
 
 int main(int argc, char **argv) {
-    gst_init (&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

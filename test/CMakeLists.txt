@@ -23,9 +23,16 @@ include_directories(../src)
 configure_file(test_config.h.in test_config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+configure_file(
+  services/com.canonical.MediaScanner2.Extractor.service.in
+  services/com.canonical.MediaScanner2.Extractor.service)
+
 add_executable(basic basic.cc)
 target_link_libraries(basic mediascanner scannerstuff gtest)
 add_test(basic basic)
+# The gvfs modules interfere with the private D-Bus test fixtures
+set_tests_properties(basic PROPERTIES
+  ENVIRONMENT "GIO_MODULE_DIR=${CMAKE_CURRENT_BINARY_DIR}/modules")
 
 add_executable(test_mediastore test_mediastore.cc ../src/mediascanner/utils.cc)
 target_link_libraries(test_mediastore mediascanner gtest)
@@ -34,6 +41,9 @@ add_test(test_mediastore test_mediastore)
 add_executable(test_metadataextractor test_metadataextractor.cc)
 target_link_libraries(test_metadataextractor mediascanner scannerstuff gtest)
 add_test(test_metadataextractor test_metadataextractor)
+# The gvfs modules interfere with the private D-Bus test fixtures
+set_tests_properties(test_metadataextractor PROPERTIES
+  ENVIRONMENT "GIO_MODULE_DIR=${CMAKE_CURRENT_BINARY_DIR}/modules")
 
 add_executable(test_sqliteutils test_sqliteutils.cc)
 target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_LIBRARIES})

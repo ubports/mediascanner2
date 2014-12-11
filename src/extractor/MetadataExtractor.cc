@@ -53,7 +53,10 @@ MetadataExtractor::MetadataExtractor(GDBusConnection *bus) {
 
     GError *error = nullptr;
     p->proxy.reset(ms_extractor_proxy_new_sync(
-            bus, G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START_AT_CONSTRUCTION,
+            bus, static_cast<GDBusProxyFlags>(
+                G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+                G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
+                G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START_AT_CONSTRUCTION),
             BUS_NAME, BUS_PATH, nullptr, &error));
     if (not p->proxy) {
         string errortxt(error->message);
