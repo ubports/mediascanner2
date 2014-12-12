@@ -120,13 +120,26 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
-    printf("Extracting metadata from %s.\n", d.filename.c_str());
+    fprintf(stderr, "Extracting metadata from %s.\n", d.filename.c_str());
 
     GError *error = nullptr;
     GVariant *res = nullptr;
-    if (!ms_extractor_call_extract_metadata_sync(
+    gboolean success = ms_extractor_call_extract_metadata_sync(
             p->proxy.get(), d.filename.c_str(), d.etag.c_str(),
-            d.content_type.c_str(), d.type, &res, nullptr, &error)) {
+            d.content_type.c_str(), d.type, &res, nullptr, &error);
+    // If we get a synthesised "no reply" error, the server probably
+    // crashed due to a codec bug.  We retry the extraction once more
+    // in case the crash was due to bad cleanup from a previous job.
+    if (!success && error->domain == G_DBUS_ERROR &&
+        error->code == G_DBUS_ERROR_NO_REPLY) {
+        g_error_free(error);
+        error = nullptr;
+        fprintf(stderr, "No reply from extractor daemon, retrying once.\n");
+        success = ms_extractor_call_extract_metadata_sync(
+                p->proxy.get(), d.filename.c_str(), d.etag.c_str(),
+                d.content_type.c_str(), d.type, &res, nullptr, &error);
+    }
+    if (!success) {
         string errortxt(error->message);
         g_error_free(error);
 
