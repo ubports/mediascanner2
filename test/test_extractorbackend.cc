@@ -50,7 +50,7 @@ protected:
 
 
 TEST_F(ExtractorBackendTest, init) {
-    ExtractorBackend extractor();
+    ExtractorBackend extractor;
 }
 
 TEST_F(ExtractorBackendTest, extract_audio) {
