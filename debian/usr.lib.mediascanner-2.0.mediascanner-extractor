@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/lib/@{multiarch}/mediascanner-2.0/mediascanner-extractor {
+/usr/lib/*/mediascanner-2.0/mediascanner-extractor {
   #include <abstractions/base>
   #include <abstractions/audio>
   #include <abstractions/bash>
@@ -75,7 +75,7 @@
   deny /dev/log_events w,
   deny /dev/log_system w,
 
-  /usr/lib/@{multiarch}/mediascanner-2.0/mediascanner-extractor r,
+  /usr/lib/*/mediascanner-2.0/mediascanner-extractor r,
 
   # GStreamer binary registry - hybris pulls this in for everything now, not
   # just audio
