@@ -42,6 +42,9 @@ std::string detect_standalone_albumart(const string &absolute_filename) {
     string dirname = absolute_filename.substr(0, slash);
     string detected;
     unique_ptr<DIR, int(*)(DIR*)> dir(opendir(dirname.c_str()), closedir);
+    if(!dir) {
+        return "";
+    }
     unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free);
     struct dirent *de = nullptr;
     while(readdir_r(dir.get(), entry.get(), &de) == 0 && de) {

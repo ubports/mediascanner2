@@ -19,6 +19,9 @@
 
 #include <gtest/gtest.h>
 #include"../src/mediascanner/internal/utils.hh"
+#include"../src/mediascanner/MediaFile.hh"
+#include"../src/mediascanner/MediaFileBuilder.hh"
+
 #include "test_config.h"
 
 using namespace mediascanner;
