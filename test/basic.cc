@@ -206,7 +206,6 @@ TEST_F(ScanTest, scan) {
     store->pruneDeleted();
     ASSERT_EQ(store->size(), 0);
     delete store;
-
 }
 
 TEST_F(ScanTest, scan_skips_unchanged_files) {

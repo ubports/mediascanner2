@@ -1,0 +1,119 @@
+#include <tunables/global>
+
+/usr/lib/@{multiarch}/mediascanner-2.0/mediascanner-extractor {
+  #include <abstractions/base>
+  #include <abstractions/audio>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/dbus-session>
+  #include <abstractions/dbus-strict>
+  #include <abstractions/nameservice>
+  #include <abstractions/private-files-strict>
+  #include <abstractions/user-tmp>
+  #include <abstractions/video>
+  #include "/usr/share/apparmor/hardware/audio.d"
+  #include "/usr/share/apparmor/hardware/graphics.d"
+  #include "/usr/share/apparmor/hardware/video.d"
+
+  deny /dev/cpuctl/apps/tasks w,
+  deny /dev/cpuctl/apps/bg_non_interactive/tasks w,
+
+  @{PROC}/interrupts r,
+  @{PROC}/cmdline r,
+  owner @{PROC}/[0-9]*/auxv r,
+  owner @{PROC}/[0-9]*/fd/ r,
+  owner @{PROC}/[0-9]*/status r,
+  owner @{PROC}/[0-9]*/task/ r,
+  owner @{PROC}/[0-9]*/task/[0-9]*/ r,
+  owner @{PROC}/[0-9]*/cmdline r,
+
+  /etc/udev/udev.conf r,
+  deny /run/udev/data/** r,
+
+  # specific to the mediatek soc
+  @{PROC}/xlog/setfil r,
+  @{PROC}/M4U_device r,
+  /dev/Vcodec rw,
+  /sys/bus/platform/drivers/** rw,
+  /{,android/}system/etc/mtk_omx_core.cfg r,
+  /dev/devmap r,
+  @{PROC}/mtk_mdp_cmdq r,
+
+  /dev/video*                           r,
+  /sys/devices/**/video4linux/video**   r,
+  /sys/devices/**/video4linux/**/uevent r,
+
+  /sys/kernel/debug/tracing/trace_marker w,
+  /dev/ashmem rw,
+
+  ptrace (read) peer=@{profile_name},
+
+  # libhybris
+  /{,var/}run/shm/hybris_shm_data rw,
+  /usr/lib/@{multiarch}/libhybris/*.so mr,
+  /{,android/}system/build.prop r,
+  # These libraries can be in any of:
+  #  /vendor/lib
+  #  /system/lib
+  #  /system/vendor/lib
+  #  /android/vendor/lib
+  #  /android/system/lib
+  #  /android/system/vendor/lib
+  /{,android/}vendor/lib/**           r,
+  /{,android/}vendor/lib/**.so        m,
+  /{,android/}system/lib/**           r,
+  /{,android/}system/lib/**.so        m,
+  /{,android/}system/vendor/lib/**    r,
+  /{,android/}system/vendor/lib/**.so m,
+
+  # attach_disconnected path
+  /dev/socket/property_service rw,
+
+  # Android logging triggered by platform. Can safely deny
+  deny /dev/log_main w,
+  deny /dev/log_radio w,
+  deny /dev/log_events w,
+  deny /dev/log_system w,
+
+  /usr/lib/@{multiarch}/mediascanner-2.0/mediascanner-extractor r,
+
+  # GStreamer binary registry - hybris pulls this in for everything now, not
+  # just audio
+  owner @{HOME}/.gstreamer*/registry.*.bin*       rw,
+  owner @{HOME}/.gstreamer*/                      rw,
+  owner @{HOME}/.cache/gstreamer*/                rw,
+  owner @{HOME}/.cache/gstreamer*/registry.*.bin* rw,
+  /usr/lib/@{multiarch}/gstreamer*/gstreamer*/gst-plugin-scanner ix,
+  owner /tmp/orcexec* m,
+  # gstreamer writes JIT compiled code in the form of orcexec.* files. Various
+  # locations are tried so silence the ones we won't permit anyway
+  deny /{,var/}run/user/*/orcexec* w,
+  deny @{HOME}/orcexec* w,
+
+  /{,android/}system/etc/media_codecs.xml r,
+  /etc/wildmidi/wildmidi.cfg r,
+
+  # Allow read on all directories
+  /**/ r,
+
+  # Allow read on click install directories, removable media and files in
+  # /usr/local/share.
+  /usr/share/** r,
+  /usr/local/share/** r,
+  /{media,mnt,opt,srv}/** r,
+
+  # Allow reading any files in non-hidden directories
+  owner @{HOME}/[^.]*    rk,
+  owner @{HOME}/[^.]*/   rk,
+  owner @{HOME}/[^.]*/** rk,
+
+  # Allow reading files in XDG directories (ie, where apps are allowed to
+  # write)
+  owner @{HOME}/.config/user-dirs.dirs r,
+  owner @{HOME}/.cache/**       rk,
+  owner @{HOME}/.local/share/** rk,
+  owner /{,var/}run/user/[0-9]*/** rk,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.lib.mediascanner-2.0.mediascanner-extractor>
+}
