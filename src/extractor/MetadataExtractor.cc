@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2013-2014 Canonical, Ltd.
  *
  * Authors:
  *    Jussi Pakkanen <jussi.pakkanen@canonical.com>
+ *    James Henstridge <james.henstridge@canonical.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of version 3 of the GNU General Public License as published
