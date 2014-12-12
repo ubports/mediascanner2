@@ -30,12 +30,12 @@ public:
 
 private:
     void setupBus();
-    static void busNameLostCallback(GDBusConnection *, const char *name, gpointer data);
-    static gboolean handleExtractMetadata(MSExtractor *iface, GDBusMethodInvocation *invocation, const char *filename, const char *etag, const char *content_type, gint32 type, gpointer user_data);
     void extract(const DetectedFile &file, GDBusMethodInvocation *invocation);
-
     void startExitTimer();
     void cancelExitTimer();
+
+    static void busNameLostCallback(GDBusConnection *, const char *name, gpointer data);
+    static gboolean handleExtractMetadata(MSExtractor *iface, GDBusMethodInvocation *invocation, const char *filename, const char *etag, const char *content_type, gint32 type, gpointer user_data);
     static gboolean handleExitTimer(gpointer user_data);
 
     ExtractorBackend extractor;

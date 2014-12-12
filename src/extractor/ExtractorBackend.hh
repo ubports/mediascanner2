@@ -26,7 +26,7 @@
 namespace mediascanner {
 
 class MediaFile;
-class DetectedFile;
+struct DetectedFile;
 struct ExtractorBackendPrivate;
 
 class ExtractorBackend final {

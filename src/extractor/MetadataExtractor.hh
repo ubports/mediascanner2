@@ -28,7 +28,7 @@ typedef struct _GDBusConnection GDBusConnection;
 namespace mediascanner {
 
 class MediaFile;
-class DetectedFile;
+struct DetectedFile;
 struct MetadataExtractorPrivate;
 
 class MetadataExtractor final {
