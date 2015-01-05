@@ -3,10 +3,8 @@
 #include <memory>
 #include <string>
 
-#include <QProcess>
+#include <gio/gio.h>
 #include <QtQuickTest/quicktest.h>
-
-#include <core/dbus/fixture.h>
 
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/MediaFile.hh>
@@ -18,7 +16,7 @@ using namespace mediascanner;
 
 class MediaStoreData {
 public:
-    MediaStoreData() {
+    MediaStoreData() : test_dbus(nullptr, g_object_unref) {
         db_path = "./mediascanner-cache.XXXXXX";
         if (mkdtemp(const_cast<char*>(db_path.c_str())) == nullptr) {
             throw std::runtime_error("Could not create temporary directory");
@@ -26,27 +24,12 @@ public:
         setenv("MEDIASCANNER_CACHEDIR", db_path.c_str(), true);
         populate();
 
-        // Start up private bus, and start daemon.
-        dbus_fixture.reset(
-            new core::dbus::Fixture(
-                core::dbus::Fixture::default_session_bus_config_file(),
-                core::dbus::Fixture::default_system_bus_config_file()));
-
-        daemon.setProgram(TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0");
-        daemon.setProcessChannelMode(QProcess::ForwardedChannels);
-        daemon.start();
-        daemon.closeWriteChannel();
-        if (!daemon.waitForStarted()) {
-            throw std::runtime_error("Failed to start mediascanner-dbus-2.0");
-        }
+        test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
+        g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
+        g_test_dbus_up(test_dbus.get());
     }
     ~MediaStoreData() {
-        daemon.kill();
-        if (!daemon.waitForFinished()) {
-            fprintf(stderr, "Failed to stop mediascanner-dbus-2.0\n");
-        }
-
-        dbus_fixture.reset();
+        g_test_dbus_down(test_dbus.get());
 
         if (system("rm -rf \"$MEDIASCANNER_CACHEDIR\"") == -1) {
             throw std::runtime_error("rm -rf failed");
@@ -154,8 +137,7 @@ public:
 
 private:
     std::string db_path;
-    std::unique_ptr<core::dbus::Fixture> dbus_fixture;
-    QProcess daemon;
+    std::unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
 };
 
 MediaStoreData data;

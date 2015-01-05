@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.canonical.MediaScanner2
+Exec=@CMAKE_BINARY_DIR@/src/ms-dbus/mediascanner-dbus-2.0

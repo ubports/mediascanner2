@@ -24,6 +24,10 @@ configure_file(test_config.h.in test_config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 configure_file(
+  services/com.canonical.MediaScanner2.service.in
+  services/com.canonical.MediaScanner2.service)
+
+configure_file(
   services/com.canonical.MediaScanner2.Extractor.service.in
   services/com.canonical.MediaScanner2.Extractor.service)
 
@@ -63,7 +67,7 @@ add_test(test_dbus test_dbus)
 
 add_executable(test_qml test_qml.cc)
 qt5_use_modules(test_qml QuickTest)
-target_link_libraries(test_qml mediascanner ${DBUSCPP_LDFLAGS})
+target_link_libraries(test_qml mediascanner)
 add_test(test_qml test_qml -input ${CMAKE_CURRENT_SOURCE_DIR}/qml -import ${CMAKE_BINARY_DIR}/src/qml)
 set_tests_properties(test_qml PROPERTIES
   ENVIRONMENT "QT_QPA_PLATFORM=minimal"
