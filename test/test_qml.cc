@@ -4,6 +4,7 @@
 #include <string>
 
 #include <gio/gio.h>
+#include <QProcess>
 #include <QtQuickTest/quicktest.h>
 
 #include <mediascanner/MediaStore.hh>
@@ -27,8 +28,21 @@ public:
         test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
         g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
         g_test_dbus_up(test_dbus.get());
+
+        daemon.setProgram(TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0");
+        daemon.setProcessChannelMode(QProcess::ForwardedChannels);
+        daemon.start();
+        daemon.closeWriteChannel();
+        if (!daemon.waitForStarted()) {
+            throw std::runtime_error("Failed to start mediascanner-dbus-2.0");
+        }
     }
     ~MediaStoreData() {
+        daemon.kill();
+        if (!daemon.waitForFinished()) {
+            fprintf(stderr, "Failed to stop mediascanner-dbus-2.0\n");
+        }
+
         g_test_dbus_down(test_dbus.get());
 
         if (system("rm -rf \"$MEDIASCANNER_CACHEDIR\"") == -1) {
@@ -138,6 +152,7 @@ public:
 private:
     std::string db_path;
     std::unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
+    QProcess daemon;
 };
 
 MediaStoreData data;
