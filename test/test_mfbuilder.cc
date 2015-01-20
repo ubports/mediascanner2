@@ -206,7 +206,6 @@ TEST_F(MFBTest, album_art_uri) {
     EXPECT_EQ("image://thumbnailer/file:///foo/bar/baz.mp4", mf.getArtUri());
 }
 
-
 TEST_F(MFBTest, standaloneArt) {
     std::string fname(STANDALONE_DIR "/dummy.mp3");
     MediaFileBuilder mfb(fname);
