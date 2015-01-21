@@ -221,10 +221,8 @@ void SubtreeWatcher::processEvents() {
         struct stat statbuf;
         lstat(abspath.c_str(), &statbuf);
         // Remember: these are not valid in case of delete event.
-        if(S_ISDIR(statbuf.st_mode))
-            is_dir = true;
-        if(S_ISREG(statbuf.st_mode))
-            is_file = true;
+        is_dir = S_ISDIR(statbuf.st_mode);
+        is_file = S_ISREG(statbuf.st_mode);
 
         if(event->mask & IN_CREATE) {
             if(is_dir) {
