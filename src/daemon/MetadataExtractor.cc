@@ -27,6 +27,7 @@
 #include <gio/gio.h>
 #include <gst/gst.h>
 #include <gst/pbutils/pbutils.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include <cstdio>
 #include <ctime>
@@ -35,7 +36,17 @@
 #include <stdexcept>
 #include <vector>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using namespace std;
+
+namespace {
+const char exif_date_template[] = "%Y:%m:%d %H:%M:%S";
+const char iso8601_date_format[] = "%Y-%m-%dT%H:%M:%S";
+const char iso8601_date_with_zone_format[] = "%Y-%m-%dT%H:%M:%S%z";
+}
 
 namespace mediascanner {
 
@@ -44,7 +55,8 @@ struct MetadataExtractorPrivate {
     MetadataExtractorPrivate() : discoverer(nullptr, g_object_unref) {};
 
     void extract_gst(const DetectedFile &d, MediaFileBuilder &mfb);
-    void extract_exif(const DetectedFile &d, MediaFileBuilder &mfb);
+    bool extract_exif(const DetectedFile &d, MediaFileBuilder &mfb);
+    void extract_pixbuf(const DetectedFile &d, MediaFileBuilder &mfb);
 };
 
 MetadataExtractor::MetadataExtractor(int seconds) {
@@ -218,9 +230,6 @@ static void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilde
         EXIF_TAG_DATE_TIME_ORIGINAL,
         EXIF_TAG_DATE_TIME_DIGITIZED
     };
-    static const char exif_date_template[] = "%Y:%m:%d %H:%M:%S";
-    static const char iso8601_date_format[] = "%Y-%m-%dT%H:%M:%S";
-    static const char iso8601_date_with_zone_format[] = "%Y-%m-%dT%H:%M:%S%z";
     struct tm timeinfo;
     bool have_date = false;
 
@@ -356,7 +365,7 @@ static void parse_exif_location(ExifData *data, ExifByteOrder order, MediaFileBu
     mfb.setLongitude(longitude);
 }
 
-void MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuilder &mfb) {
+bool MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuilder &mfb) {
     std::unique_ptr<ExifLoader, void(*)(ExifLoader*)> loader(
         exif_loader_new(), exif_loader_unref);
     exif_loader_write_file(loader.get(), d.filename.c_str());
@@ -366,7 +375,7 @@ void MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuil
     loader.reset();
 
     if (!data) {
-        throw runtime_error("Unable to load EXIF data from " + d.filename);
+        return false;
     }
     exif_data_fix(data.get());
     ExifByteOrder order = exif_data_get_byte_order(data.get());
@@ -374,6 +383,32 @@ void MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuil
     parse_exif_date(data.get(), order, mfb);
     parse_exif_dimensions(data.get(), order, mfb);
     parse_exif_location(data.get(), order, mfb);
+    return true;
+}
+
+void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBuilder &mfb) {
+    gint width, height;
+
+    if(!gdk_pixbuf_get_file_info(d.filename.c_str(), &width, &height)) {
+        string msg("Could not determine resolution of ");
+        msg += d.filename;
+        msg += ".";
+        throw runtime_error(msg);
+    }
+
+    struct stat info;
+    if(stat(d.filename.c_str(), &info) == 0) {
+        char buf[1024];
+        struct tm ptm;
+        localtime_r(&info.st_mtime, &ptm);
+        if (strftime(buf, sizeof(buf), iso8601_date_format, &ptm) != 0) {
+            mfb.setDate(buf);
+        }
+    }
+
+
+    mfb.setWidth(width);
+    mfb.setHeight(height);
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
@@ -385,7 +420,9 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
 
     switch (d.type) {
     case ImageMedia:
-        p->extract_exif(d, mfb);
+        if(!p->extract_exif(d, mfb)) {
+            p->extract_pixbuf(d, mfb);
+        }
         break;
     default:
         p->extract_gst(d, mfb);
