@@ -1,3 +1,12 @@
+mediascanner2 (0.105+15.04.20150121-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Extract metadata from images that don't have exif entries. (LP:
+    #1378880)
+  * Make Valgrind uninitialised jump warning go away.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 21 Jan 2015 15:21:18 +0000
+
 mediascanner2 (0.105+15.04.20141030.1-0ubuntu1) vivid; urgency=low
 
   [ James Henstridge ]
