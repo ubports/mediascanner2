@@ -15,6 +15,7 @@ Build-Depends: cmake,
                libglib2.0-dev,
                libgstreamer-plugins-base1.0-dev,
                libgstreamer1.0-dev,
+               libgdk-pixbuf2.0-dev,
                libgtest-dev,
                libproperties-cpp-dev,
                libsqlite3-dev (>= 3.8.5),
@@ -30,6 +31,7 @@ Build-Depends: cmake,
 # For running unit tests
                gstreamer1.0-plugins-base,
                gstreamer1.0-plugins-good,
+               shared-mime-info,
 Homepage: https://launchpad.net/mediascanner2
 XS-Testsuite: autopkgtest
 # if you don't have have commit access to this branch but would like to upload

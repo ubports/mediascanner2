@@ -934,6 +934,18 @@ static int isDelim(
   return 0; /* no need to break; nothing to emit */
 }
 
+static inline int tokenizer_hides_wildcards(void) {
+    static int first_run = 1;
+    static int hides_wildcard;
+
+    if (first_run) {
+        int version = sqlite3_libversion_number();
+        hides_wildcard = version > 3008004 && version < 3008007;
+        first_run = 0;
+    }
+    return hides_wildcard;
+}
+
 /**
  * Generate a new token.  There are basically three types of token we can
  *  generate:
@@ -1080,9 +1092,14 @@ static int porterNext(
     /* We emit a token if:
      *  - there are two ideograms together,
      *  - there are three chars or more,
-     *  - we are at the end of the input and have at least one char.
-     * This final case is to cover wildcard prefix searches with short
-     * prefixes.
+     *  - we think this is a query and wildcard magic is desired.
+     * We think is a wildcard query when we have at least one
+     *  character, our current offset is one shy of nInput and the
+     *  character at iOffset is '*'.
+     *
+     * Sqlite 3.8.5 ... 3.8.6 changed how the tokenizer is called such
+     * that we can't detect wildcards.  In that case, we accept any
+     * short word at the end of the input.
      */
     // It is possible we have no token to emit here if iPrevBigramOffset was not
     //  0 on entry and there was no second CJK character.  iPrevBigramOffset
@@ -1093,7 +1110,9 @@ static int porterNext(
         (numChars >=3) ||
         // final word wildcard case:
         (numChars >= 1 &&
-         c->iOffset == c->nInput)) {
+         (tokenizer_hides_wildcards() ?
+          (c->iOffset == c->nInput) :
+          (c->iOffset == c->nInput - 1 && z[c->iOffset] == '*')))) {
       /* figure out the number of bytes to copy/stem */
       int n = c->iOffset - iStartOffset;
       /* make sure there is enough buffer space */
