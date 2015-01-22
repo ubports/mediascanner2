@@ -1,3 +1,13 @@
+mediascanner2 (0.105+15.04.20150122-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Add blacklist functionality and use it to block music playlists.
+    (LP: #1384295)
+  * Skip scanning of special directories if they point to user home dir.
+    (LP: #285998)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 22 Jan 2015 10:18:10 +0000
+
 mediascanner2 (0.105+15.04.20150121-0ubuntu1) vivid; urgency=low
 
   [ Jussi Pakkanen ]
