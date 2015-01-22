@@ -133,8 +133,21 @@ TEST_F(MetadataExtractorTest, extract_photo) {
     EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
 }
 
-// PNG files don't have exif entries, so test we work with those, too.
+TEST_F(MetadataExtractorTest, blacklist) {
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/playlist.m3u";
+    try {
+        e.detect(testfile);
+    } catch(const std::runtime_error &e) {
+        std::string error_message(e.what());
+        ASSERT_NE(error_message.find("blacklist"), std::string::npos);
+        return;
+    }
+    ASSERT_TRUE(false) << "Blacklist exception was not thrown.\n";
+}
+
 TEST_F(MetadataExtractorTest, png_file) {
+    // PNG files don't have exif entries, so test we work with those, too.
     MetadataExtractor e;
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image3.png"));
 
@@ -156,7 +169,6 @@ TEST_F(MetadataExtractorTest, png_file) {
 
     EXPECT_DOUBLE_EQ(0, file.getLatitude());
     EXPECT_DOUBLE_EQ(0, file.getLongitude());
-
 }
 
 int main(int argc, char **argv) {
