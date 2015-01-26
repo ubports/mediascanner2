@@ -23,6 +23,7 @@
 #include<ctime>
 #include<map>
 #include<memory>
+#include<cmath>
 
 #include<sys/types.h>
 #include<sys/stat.h>
@@ -44,6 +45,8 @@ using namespace std;
 
 using namespace mediascanner;
 
+#define NS_IN_S 1000000000.0
+
 namespace {
 
 bool is_same_directory(const char *dir1, const char *dir2) {
@@ -55,6 +58,11 @@ bool is_same_directory(const char *dir1, const char *dir2) {
         return false;
     }
     return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+}
+
+int timediff(const struct timespec &t1, const struct timespec &t2) {
+    double diffnsec = (t1.tv_sec*NS_IN_S + t1.tv_nsec) - (t2.tv_sec*NS_IN_S + t2.tv_nsec);
+    return fabs(diffnsec/NS_IN_S);
 }
 
 }
@@ -211,9 +219,18 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s(extractor.get(), subdir, type);
+    const int update_interval = 10; // Send an update every ten seconds.
+    struct timespec previous_update, current_time;
+    clock_gettime(CLOCK_MONOTONIC, &previous_update);
+    previous_update.tv_sec -= update_interval/2; // Send the first update sooner for better visual appeal.
     while(true) {
         try {
             auto d = s.next();
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
+            if(timediff(current_time, previous_update) < update_interval) {
+                invalidator.invalidate();
+                previous_update = current_time;
+            }
             // If the file is broken or unchanged, use fallback.
             if (store.is_broken_file(d.filename, d.etag)) {
                 fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());
