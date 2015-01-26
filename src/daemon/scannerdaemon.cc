@@ -219,7 +219,7 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s(extractor.get(), subdir, type);
-    const int update_interval = 10; // Send an update every ten seconds.
+    const int update_interval = 30; // How often to send invalidations.
     struct timespec previous_update, current_time;
     clock_gettime(CLOCK_MONOTONIC, &previous_update);
     previous_update.tv_sec -= update_interval/2; // Send the first update sooner for better visual appeal.
