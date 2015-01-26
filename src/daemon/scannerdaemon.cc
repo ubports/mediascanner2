@@ -23,7 +23,6 @@
 #include<ctime>
 #include<map>
 #include<memory>
-#include<cmath>
 
 #include<sys/types.h>
 #include<sys/stat.h>
@@ -45,8 +44,6 @@ using namespace std;
 
 using namespace mediascanner;
 
-#define NS_IN_S 1000000000.0
-
 namespace {
 
 bool is_same_directory(const char *dir1, const char *dir2) {
@@ -58,11 +55,6 @@ bool is_same_directory(const char *dir1, const char *dir2) {
         return false;
     }
     return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
-}
-
-int timediff(const struct timespec &t1, const struct timespec &t2) {
-    double diffnsec = (t1.tv_sec*NS_IN_S + t1.tv_nsec) - (t2.tv_sec*NS_IN_S + t2.tv_nsec);
-    return fabs(diffnsec/NS_IN_S);
 }
 
 }
@@ -230,7 +222,7 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
             while(g_main_context_pending(g_main_context_default())) {
                 g_main_context_iteration(g_main_context_default(), FALSE);
             }
-            if(timediff(current_time, previous_update) > update_interval) {
+            if(current_time.tv_sec - previous_update.tv_sec >= update_interval) {
                 invalidator.invalidate();
                 previous_update = current_time;
             }
