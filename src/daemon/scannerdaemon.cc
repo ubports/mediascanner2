@@ -227,6 +227,9 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
         try {
             auto d = s.next();
             clock_gettime(CLOCK_MONOTONIC, &current_time);
+            while(g_main_context_pending(g_main_context_default())) {
+                g_main_context_iteration(g_main_context_default(), FALSE);
+            }
             if(timediff(current_time, previous_update) < update_interval) {
                 invalidator.invalidate();
                 previous_update = current_time;
