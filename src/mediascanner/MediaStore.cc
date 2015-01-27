@@ -42,6 +42,11 @@
 
 using namespace std;
 
+static int dummy_callback(void*, int , char**, char**) {
+    return 0;
+}
+
+
 namespace mediascanner {
 
 // Increment this whenever changing db schema.
@@ -397,6 +402,16 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
     p = new MediaStorePrivate();
     if(sqlite3_open_v2(filename.c_str(), &p->db, sqliteFlags, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
+    }
+    if(access == MS_READ_WRITE) {
+        // The default journal mode does not seem to be safe but
+        // instead gives out database locked errors when writing
+        // and querying at the same time.
+        char *err;
+        sqlite3_exec(p->db, "PRAGMA journal_mode=WAL;", dummy_callback, nullptr, &err);
+        if(err) {
+            throw runtime_error(err);
+        }
     }
     register_tokenizer(p->db);
     register_functions(p->db);
