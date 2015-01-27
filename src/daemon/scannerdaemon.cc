@@ -211,9 +211,21 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s(extractor.get(), subdir, type);
+    const int update_interval = 10; // How often to send invalidations.
+    struct timespec previous_update, current_time;
+    clock_gettime(CLOCK_MONOTONIC, &previous_update);
+    previous_update.tv_sec -= update_interval/2; // Send the first update sooner for better visual appeal.
     while(true) {
         try {
             auto d = s.next();
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
+            while(g_main_context_pending(g_main_context_default())) {
+                g_main_context_iteration(g_main_context_default(), FALSE);
+            }
+            if(current_time.tv_sec - previous_update.tv_sec >= update_interval) {
+                invalidator.invalidate();
+                previous_update = current_time;
+            }
             // If the file is broken or unchanged, use fallback.
             if (store.is_broken_file(d.filename, d.etag)) {
                 fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());
