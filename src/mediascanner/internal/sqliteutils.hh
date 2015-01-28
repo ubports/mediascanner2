@@ -71,7 +71,20 @@ public:
     }
 
     bool step() {
-        rc = sqlite3_step(statement);
+        // Sqlite docs list a few cases where you need to to a rollback
+        // if a calling step fails. We don't match those cases but if
+        // we change queries that may start to happen.
+        // https://sqlite.org/c3ref/step.html
+        //
+        // The proper fix would probably be to move to a WAL log, but
+        // it seems to require write access to the mediastore dir
+        // even for readers, which is problematic for confined apps.
+        int retry_count=0;
+        const int max_retries = 100;
+        do {
+            rc = sqlite3_step(statement);
+            retry_count++;
+        } while(rc == SQLITE_BUSY && retry_count < max_retries);
         switch (rc) {
         case SQLITE_DONE:
             return false;
