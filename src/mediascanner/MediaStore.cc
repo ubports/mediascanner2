@@ -42,11 +42,6 @@
 
 using namespace std;
 
-static int dummy_callback(void*, int , char**, char**) {
-    return 0;
-}
-
-
 namespace mediascanner {
 
 // Increment this whenever changing db schema.
@@ -403,16 +398,6 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
     if(sqlite3_open_v2(filename.c_str(), &p->db, sqliteFlags, nullptr) != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(p->db));
     }
-    if(access == MS_READ_WRITE) {
-        // The default journal mode does not seem to be safe but
-        // instead gives out database locked errors when writing
-        // and querying at the same time.
-        char *err;
-        sqlite3_exec(p->db, "PRAGMA journal_mode=WAL;", dummy_callback, nullptr, &err);
-        if(err) {
-            throw runtime_error(err);
-        }
-    }
     register_tokenizer(p->db);
     register_functions(p->db);
     int detectedSchemaVersion = getSchemaVersion(p->db);
@@ -425,7 +410,11 @@ MediaStore::MediaStore(const std::string &filename, OpenType access, const std::
             archiveItems(retireprefix);
     } else {
         if(detectedSchemaVersion != schemaVersion) {
-            throw runtime_error("Tried to open a db with an unsupported schema version.");
+            std::string msg("Tried to open a db with schema version ");
+            msg += std::to_string(detectedSchemaVersion);
+            msg += ", while supported version is ";
+            msg += std::to_string(schemaVersion) + ".";
+            throw runtime_error(msg);
         }
     }
 }

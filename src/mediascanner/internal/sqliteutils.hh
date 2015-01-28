@@ -71,7 +71,17 @@ public:
     }
 
     bool step() {
-        rc = sqlite3_step(statement);
+        // Sqlite docs list a few cases where you need to to a rollback
+        // if a transaction fails. We don't match those cases but in case
+        // we change queries that may start to happen.
+        // https://sqlite.org/c3ref/step.html
+        //
+        // The proper fix would probably be to move to a WAL log, but
+        // it seems to require write access to the mediastore dir
+        // even for readers, which is problematic for confined apps.
+        do {
+            rc = sqlite3_step(statement);
+        } while(rc == SQLITE_BUSY);
         switch (rc) {
         case SQLITE_DONE:
             return false;
