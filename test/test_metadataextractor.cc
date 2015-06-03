@@ -130,6 +130,25 @@ TEST_F(MetadataExtractorTest, extract) {
     EXPECT_EQ(file.getDuration(), 5);
 }
 
+TEST_F(MetadataExtractorTest, extract_mp3) {
+    if (!supports_decoder("audio/mpeg")) {
+        printf("MP3 codec not supported\n");
+        return;
+    }
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/testfile.mp3";
+    MediaFile file = e.extract(e.detect(testfile));
+
+    EXPECT_EQ(file.getType(), AudioMedia);
+    EXPECT_EQ(file.getTitle(), "track1");
+    EXPECT_EQ(file.getAuthor(), "artist1");
+    EXPECT_EQ(file.getAlbum(), "album1");
+    EXPECT_EQ(file.getDate(), "2013-06-03");
+    EXPECT_EQ(file.getTrackNumber(), 1);
+    EXPECT_EQ(file.getDuration(), 1);
+    EXPECT_EQ(file.getGenre(), "Hip-Hop");
+}
+
 TEST_F(MetadataExtractorTest, extract_video) {
     MetadataExtractor e;
 
