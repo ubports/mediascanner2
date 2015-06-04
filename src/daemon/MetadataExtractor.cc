@@ -172,6 +172,9 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
         } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
             if (tagname == GST_TAG_DATE_TIME) {
                 GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));
+                if (!dt) {
+                    continue;
+                }
                 char *dt_string = gst_date_time_to_iso8601_string(dt);
                 mfb->setDate(dt_string);
                 g_free(dt_string);
