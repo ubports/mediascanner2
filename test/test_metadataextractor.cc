@@ -230,7 +230,6 @@ TEST_F(MetadataExtractorTest, blacklist) {
     } catch(const std::runtime_error &e) {
         std::string error_message(e.what());
         ASSERT_NE(error_message.find("blacklist"), std::string::npos);
-        return;
     }
 }
 
