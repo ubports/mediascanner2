@@ -64,6 +64,7 @@ public:
     MediaFileBuilder &setLatitude(double l);
     MediaFileBuilder &setLongitude(double l);
     MediaFileBuilder &setHasThumbnail(bool t);
+    MediaFileBuilder &setModificationTime(time_t t);
 
 private:
     MediaFilePrivate *p;

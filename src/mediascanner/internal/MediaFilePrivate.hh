@@ -20,6 +20,7 @@
 #ifndef MEDIAFILEPRIVATE_HH
 #define MEDIAFILEPRIVATE_HH
 
+#include <ctime>
 #include <string>
 
 namespace mediascanner {
@@ -34,17 +35,18 @@ struct MediaFilePrivate {
     std::string album;
     std::string album_artist;
     std::string genre;
-    int disc_number;
-    int track_number;
-    int duration; // In seconds.
+    int disc_number = 0;
+    int track_number = 0;
+    int duration = 0; // In seconds.
 
-    int width;
-    int height;
-    double latitude;  // In degrees, negative for South
-    double longitude; // In degrees, negative for West
-    bool has_thumbnail;
+    int width = 0;
+    int height = 0;
+    double latitude = 0.0;  // In degrees, negative for South
+    double longitude = 0.0; // In degrees, negative for West
+    bool has_thumbnail = false;
+    time_t modification_time = 0;
 
-    MediaType type;
+    MediaType type = UnknownMedia;
 
     MediaFilePrivate();
     MediaFilePrivate(const std::string &filename);
