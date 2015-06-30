@@ -32,7 +32,7 @@ if(${full_warnings})
 # C does not have any more warning flags.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 endif()
-include(cmake/coverage.cmake)
+include(EnableCoverageReport)
 
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
@@ -55,3 +55,28 @@ install(
   FILES mediascanner-2.0.conf
   DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions
 )
+
+enable_coverage_report(
+  TARGETS
+    mediascanner
+    scannerstuff
+    scannerdaemon
+    ms-dbus
+    mediascanner-dbus
+    mediascanner-qml
+    query
+    mountwatcher
+  FILTER
+    ${CMAKE_SOURCE_DIR}/tests/*
+    ${CMAKE_BINARY_DIR}/*
+  TESTS
+    basic
+    test_mediastore
+    test_metadataextractor
+    test_sqliteutils
+    test_mfbuilder
+    test_dbus
+    test_qml
+    test_util
+)
+
