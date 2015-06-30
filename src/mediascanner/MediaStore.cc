@@ -46,7 +46,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 8;
+static const int schemaVersion = 9;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -292,7 +292,8 @@ void createTables(sqlite3 *db) {
 CREATE TABLE schemaVersion (version INTEGER);
 
 CREATE TABLE media (
-    filename TEXT PRIMARY KEY NOT NULL CHECK (filename LIKE '/%'),
+    id INTEGER PRIMARY KEY,
+    filename TEXT UNIQUE NOT NULL CHECK (filename LIKE '/%'),
     content_type TEXT,
     etag TEXT,
     title TEXT,
@@ -309,16 +310,19 @@ CREATE TABLE media (
     latitude DOUBLE,
     longitude DOUBLE,
     has_thumbnail INTEGER CHECK (has_thumbnail IN (0, 1)),
+    mtime INTEGER,
     type INTEGER CHECK (type IN (1, 2, 3)) -- MediaType enum
 );
 
 CREATE INDEX media_type_idx ON media(type);
-CREATE INDEX media_song_info_idx ON media(type, album_artist, album, disc_number, track_number, title) WHERE type = 0;
-CREATE INDEX media_artist_idx ON media(type, artist) WHERE type = 0;
-CREATE INDEX media_genre_idx ON media(type, genre) WHERE type = 0;
+CREATE INDEX media_song_info_idx ON media(type, album_artist, album, disc_number, track_number, title) WHERE type = 1;
+CREATE INDEX media_artist_idx ON media(type, artist) WHERE type = 1;
+CREATE INDEX media_genre_idx ON media(type, genre) WHERE type = 1;
+CREATE INDEX media_mtime_idx ON media(type, mtime);
 
 CREATE TABLE media_attic (
-    filename TEXT PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY,
+    filename TEXT UNIQUE NOT NULL,
     content_type TEXT,
     etag TEXT,
     title TEXT,
@@ -335,26 +339,27 @@ CREATE TABLE media_attic (
     latitude DOUBLE,
     longitude DOUBLE,
     has_thumbnail INTEGER,
+    mtime INTEGER,
     type INTEGER   -- 0=Audio, 1=Video
 );
 
-CREATE VIRTUAL TABLE media_fts 
+CREATE VIRTUAL TABLE media_fts
 USING fts4(content='media', title, artist, album, tokenize=mozporter);
 
 CREATE TRIGGER media_bu BEFORE UPDATE ON media BEGIN
-  DELETE FROM media_fts WHERE docid=old.rowid;
+  DELETE FROM media_fts WHERE docid=old.id;
 END;
 
 CREATE TRIGGER media_au AFTER UPDATE ON media BEGIN
-  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
+  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.id, new.title, new.artist, new.album);
 END;
 
 CREATE TRIGGER media_bd BEFORE DELETE ON media BEGIN
-  DELETE FROM media_fts WHERE docid=old.rowid;
+  DELETE FROM media_fts WHERE docid=old.id;
 END;
 
 CREATE TRIGGER media_ai AFTER INSERT ON media BEGIN
-  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.rowid, new.title, new.artist, new.album);
+  INSERT INTO media_fts(docid, title, artist, album) VALUES (new.id, new.title, new.artist, new.album);
 END;
 
 CREATE TABLE broken_files (
@@ -431,7 +436,7 @@ size_t MediaStorePrivate::size() const {
 }
 
 void MediaStorePrivate::insert(const MediaFile &m) const {
-    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    Statement query(db, "INSERT OR REPLACE INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     query.bind(1, m.getFileName());
     query.bind(2, m.getContentType());
     query.bind(3, m.getETag());
@@ -449,7 +454,8 @@ void MediaStorePrivate::insert(const MediaFile &m) const {
     query.bind(15, m.getLatitude());
     query.bind(16, m.getLongitude());
     query.bind(17, (int)m.getHasThumbnail());
-    query.bind(18, (int)m.getType());
+    query.bind(18, (int64_t)m.getModificationTime());
+    query.bind(19, (int)m.getType());
     query.step();
 
     const char *typestr = m.getType() == AudioMedia ? "song" : "video";
@@ -509,7 +515,8 @@ static MediaFile make_media(Statement &query) {
         .setLatitude(query.getDouble(14))
         .setLongitude(query.getDouble(15))
         .setHasThumbnail(query.getInt(16))
-        .setType((MediaType)query.getInt(17));
+        .setModificationTime(query.getInt64(17))
+        .setType((MediaType)query.getInt(18));
 }
 
 static vector<MediaFile> collect_media(Statement &query) {
@@ -522,7 +529,7 @@ static vector<MediaFile> collect_media(Statement &query) {
 
 MediaFile MediaStorePrivate::lookup(const std::string &filename) const {
     Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type
   FROM media
   WHERE filename = ?
 )");
@@ -535,7 +542,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
 
 vector<MediaFile> MediaStorePrivate::query(const std::string &core_term, MediaType type, const Filter &filter) const {
     string qs(R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type
   FROM media
 )");
     if (!core_term.empty()) {
@@ -543,7 +550,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
   JOIN (
     SELECT docid, rank(matchinfo(media_fts), 1.0, 0.5, 0.75) AS rank
       FROM media_fts WHERE media_fts MATCH ?
-    ) AS ranktable ON (media.rowid = ranktable.docid)
+    ) AS ranktable ON (media.id = ranktable.docid)
 )";
     }
     qs += " WHERE type = ?";
@@ -608,7 +615,7 @@ SELECT album, album_artist, first(date) as date, first(genre) as genre, first(fi
 WHERE type = ? AND album <> ''
 )");
     if (!core_term.empty()) {
-        qs += " AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
+        qs += " AND id IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
     qs += " GROUP BY album, album_artist";
     switch (filter.getOrder()) {
@@ -643,7 +650,7 @@ SELECT artist FROM media
 WHERE type = ? AND artist <> ''
 )");
     if (!q.empty()) {
-        qs += "AND rowid IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
+        qs += "AND id IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
     qs += " GROUP BY artist";
     switch (filter.getOrder()) {
@@ -678,7 +685,7 @@ WHERE type = ? AND artist <> ''
 
 vector<MediaFile> MediaStorePrivate::getAlbumSongs(const Album& album) const {
     Statement query(db, R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, type FROM media
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type FROM media
 WHERE album = ? AND album_artist = ? AND type = ?
 ORDER BY disc_number, track_number
 )");
@@ -702,7 +709,7 @@ SELECT etag FROM media WHERE filename = ?
 
 std::vector<MediaFile> MediaStorePrivate::listSongs(const Filter &filter) const {
     std::string qs(R"(
-SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, type
+SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type
   FROM media
   WHERE type = ?
 )");
