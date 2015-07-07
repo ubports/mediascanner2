@@ -40,10 +40,11 @@ TEST_F(MediaStoreDBusTests, mediafile_codec) {
         .setHeight(480)
         .setLatitude(20.42)
         .setLongitude(-30.67)
+        .setModificationTime(4200)
         .setType(mediascanner::AudioMedia);
     message->writer() << media;
 
-    EXPECT_EQ("(sssssssssiiiiiddbi)", message->signature());
+    EXPECT_EQ("(sssssssssiiiiiddbti)", message->signature());
     EXPECT_EQ(core::dbus::helper::TypeMapper<mediascanner::MediaFile>::signature(), message->signature());
 
     mediascanner::MediaFile media2;
