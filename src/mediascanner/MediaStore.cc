@@ -577,6 +577,12 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
             qs += " DESC";
         }
         break;
+    case MediaOrder::Modified:
+        qs += " ORDER BY mtime";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
     }
     qs += " LIMIT ? OFFSET ?";
 
@@ -630,6 +636,8 @@ WHERE type = ? AND album <> ''
         throw std::runtime_error("Can not query albums by rank");
     case MediaOrder::Date:
         throw std::runtime_error("Can not query albums by date");
+    case MediaOrder::Modified:
+        throw std::runtime_error("Can not query albums by modification date");
     }
     qs += " LIMIT ? OFFSET ?";
 
@@ -665,6 +673,8 @@ WHERE type = ? AND artist <> ''
         throw std::runtime_error("Can not query artists by rank");
     case MediaOrder::Date:
         throw std::runtime_error("Can not query artists by date");
+    case MediaOrder::Modified:
+        throw std::runtime_error("Can not query artists by modification date");
     }
     qs += " LIMIT ? OFFSET ?";
 
