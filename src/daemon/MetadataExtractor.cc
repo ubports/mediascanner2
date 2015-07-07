@@ -39,8 +39,6 @@
 #include <algorithm>
 
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 using namespace std;
 
@@ -107,6 +105,7 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
     std::unique_ptr<GFileInfo, void(*)(void *)> info(
         g_file_query_info(
             file.get(),
+            G_FILE_ATTRIBUTE_TIME_MODIFIED ","
             G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE ","
             G_FILE_ATTRIBUTE_ETAG_VALUE,
             G_FILE_QUERY_INFO_NONE, /* cancellable */ nullptr, &error),
@@ -122,6 +121,8 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
         throw runtime_error(msg);
     }
 
+    uint64_t mtime = g_file_info_get_attribute_uint64(
+        info.get(), G_FILE_ATTRIBUTE_TIME_MODIFIED);
     string etag(g_file_info_get_etag(info.get()));
     string content_type(g_file_info_get_attribute_string(
         info.get(), G_FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE));
@@ -140,7 +141,7 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
     } else {
         throw runtime_error(string("File ") + filename + " is not audio or video");
     }
-    return DetectedFile(filename, etag, content_type, type);
+    return DetectedFile(filename, etag, content_type, mtime, type);
 }
 
 static void
@@ -412,20 +413,18 @@ void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBu
         msg += ".";
         throw runtime_error(msg);
     }
+    mfb.setWidth(width);
+    mfb.setHeight(height);
 
-    struct stat info;
-    if(stat(d.filename.c_str(), &info) == 0) {
+    if (d.mtime != 0) {
+        auto t = static_cast<time_t>(d.mtime);
         char buf[1024];
         struct tm ptm;
-        localtime_r(&info.st_mtime, &ptm);
+        localtime_r(&t, &ptm);
         if (strftime(buf, sizeof(buf), iso8601_date_format, &ptm) != 0) {
             mfb.setDate(buf);
         }
     }
-
-
-    mfb.setWidth(width);
-    mfb.setHeight(height);
 }
 
 MediaFile MetadataExtractor::extract(const DetectedFile &d) {
@@ -433,6 +432,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     MediaFileBuilder mfb(d.filename);
     mfb.setETag(d.etag);
     mfb.setContentType(d.content_type);
+    mfb.setModificationTime(d.mtime);
     mfb.setType(d.type);
 
     switch (d.type) {

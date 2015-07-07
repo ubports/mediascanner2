@@ -22,12 +22,15 @@
 
 #include "test_config.h"
 
-#include<algorithm>
-#include<stdexcept>
-#include<cstdio>
-#include<memory>
-#include<string>
-#include<gst/gst.h>
+#include <algorithm>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <gst/gst.h>
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -99,6 +102,10 @@ TEST_F(MetadataExtractorTest, detect_audio) {
     EXPECT_NE(d.etag, "");
     EXPECT_EQ(d.content_type, "audio/ogg");
     EXPECT_EQ(d.type, AudioMedia);
+
+    struct stat st;
+    ASSERT_EQ(0, stat(testfile.c_str(), &st));
+    EXPECT_EQ(st.st_mtime, d.mtime);
 }
 
 TEST_F(MetadataExtractorTest, detect_video) {
@@ -108,6 +115,10 @@ TEST_F(MetadataExtractorTest, detect_video) {
     EXPECT_NE(d.etag, "");
     EXPECT_EQ(d.content_type, "video/ogg");
     EXPECT_EQ(d.type, VideoMedia);
+
+    struct stat st;
+    ASSERT_EQ(0, stat(testfile.c_str(), &st));
+    EXPECT_EQ(st.st_mtime, d.mtime);
 }
 
 TEST_F(MetadataExtractorTest, detect_notmedia) {
@@ -147,6 +158,9 @@ TEST_F(MetadataExtractorTest, extract_mp3) {
     EXPECT_EQ(file.getTrackNumber(), 1);
     EXPECT_EQ(file.getDuration(), 1);
     EXPECT_EQ(file.getGenre(), "Hip-Hop");
+    struct stat st;
+    ASSERT_EQ(0, stat(testfile.c_str(), &st));
+    EXPECT_EQ(st.st_mtime, file.getModificationTime());
 }
 
 TEST_F(MetadataExtractorTest, extract_video) {

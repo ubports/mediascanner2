@@ -20,7 +20,7 @@
 #ifndef MEDIAFILEPRIVATE_HH
 #define MEDIAFILEPRIVATE_HH
 
-#include <ctime>
+#include <cstdint>
 #include <string>
 
 namespace mediascanner {
@@ -44,7 +44,7 @@ struct MediaFilePrivate {
     double latitude = 0.0;  // In degrees, negative for South
     double longitude = 0.0; // In degrees, negative for West
     bool has_thumbnail = false;
-    time_t modification_time = 0;
+    uint64_t modification_time = 0;
 
     MediaType type = UnknownMedia;
 
