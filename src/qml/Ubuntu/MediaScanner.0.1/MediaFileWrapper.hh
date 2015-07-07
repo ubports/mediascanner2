@@ -48,6 +48,7 @@ class MediaFileWrapper : public QObject {
     Q_PROPERTY(double latitude READ latitude CONSTANT)
     Q_PROPERTY(double longitude READ longitude CONSTANT)
     Q_PROPERTY(bool hasThumbnail READ hasThumbnail CONSTANT)
+    Q_PROPERTY(uint64_t modificationTime READ modificationTime CONSTANT)
     Q_PROPERTY(QString art READ art CONSTANT)
 
 public:
@@ -70,6 +71,7 @@ public:
     double latitude() const;
     double longitude() const;
     bool hasThumbnail() const;
+    uint64_t modificationTime() const;
     QString art() const;
 
 private:
