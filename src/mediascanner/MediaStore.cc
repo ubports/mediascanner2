@@ -617,7 +617,7 @@ static vector<Album> collect_albums(Statement &query) {
 
 vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
     string qs(R"(
-SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail, first(mtime) as mtime FROM media
 WHERE type = ? AND album <> ''
 )");
     if (!core_term.empty()) {
@@ -637,7 +637,11 @@ WHERE type = ? AND album <> ''
     case MediaOrder::Date:
         throw std::runtime_error("Can not query albums by date");
     case MediaOrder::Modified:
-        throw std::runtime_error("Can not query albums by modification date");
+        qs += " ORDER BY mtime";
+        if (filter.getReverse()) {
+            qs += " DESC";
+        }
+        break;
     }
     qs += " LIMIT ? OFFSET ?";
 
