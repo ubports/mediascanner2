@@ -57,7 +57,7 @@ TEST_F(MFBTest, basic) {
     int height = 480;
     double latitude = 67.2;
     double longitude = -7.5;
-    time_t mtime = 42;
+    uint64_t mtime = 42;
 
     MediaFileBuilder b(fname);
 
@@ -123,7 +123,7 @@ TEST_F(MFBTest, chaining) {
     int height = 480;
     double latitude = 67.2;
     double longitude = -7.5;
-    time_t mtime = 42;
+    uint64_t mtime = 42;
 
     MediaFile mf = MediaFileBuilder(fname)
         .setType(type)
