@@ -196,6 +196,19 @@ struct MediaStoreInterface {
             return Interface::default_timeout();
         }
     };
+
+    struct HaveMedia {
+        typedef MediaStoreInterface Interface;
+
+        inline static const std::string& name() {
+            static std::string s = "HaveMedia";
+            return s;
+        }
+
+        inline static const std::chrono::milliseconds default_timeout() {
+            return Interface::default_timeout();
+        }
+    };
 };
 
 }

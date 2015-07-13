@@ -105,6 +105,11 @@ struct ServiceSkeleton::Private {
                 &Private::handle_list_genres,
                 this,
                 std::placeholders::_1));
+        object->install_method_handler<MediaStoreInterface::HaveMedia>(
+            std::bind(
+                &Private::handle_have_media,
+                this,
+                std::placeholders::_1));
     }
 
     std::string get_client_apparmor_context(const Message::Ptr &message) {
@@ -373,6 +378,25 @@ struct ServiceSkeleton::Private {
             auto genres = store->listGenres(filter);
             reply = Message::make_method_return(message);
             reply->writer() << genres;
+        } catch (const std::exception &e) {
+            reply = Message::make_error(
+                message, MediaStoreInterface::Errors::Error::name(),
+                e.what());
+        }
+        impl->access_bus()->send(reply);
+    }
+
+    void handle_have_media(const Message::Ptr &message) {
+        int32_t type;
+        message->reader() >> type;
+
+        if (!check_access(message, static_cast<MediaType>(type)))
+            return;
+        Message::Ptr reply;
+        try {
+            bool result = store->haveMedia(static_cast<MediaType>(type));
+            reply = Message::make_method_return(message);
+            reply->writer() << result;
         } catch (const std::exception &e) {
             reply = Message::make_error(
                 message, MediaStoreInterface::Errors::Error::name(),
