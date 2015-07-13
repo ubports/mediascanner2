@@ -107,6 +107,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStoreBase::MediaStoreBase()@Base" 0.101+14.10.20140625
  (c++)"mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::getETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaStore::haveMedia(mediascanner::MediaType) const@Base" 0replaceme
  (c++)"mediascanner::MediaStore::insert_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::MediaStore::insert(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::is_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
@@ -133,6 +134,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"typeinfo name for mediascanner::MediaStoreBase@Base" 0.101+14.10.20140625
  (c++)"virtual thunk to mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0.101+14.10.20140625
  (c++)"virtual thunk to mediascanner::MediaStore::getETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140625
+ (c++)"virtual thunk to mediascanner::MediaStore::haveMedia(mediascanner::MediaType) const@Base" 0replaceme
  (c++)"virtual thunk to mediascanner::MediaStore::listAlbumArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"virtual thunk to mediascanner::MediaStore::listAlbums(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"virtual thunk to mediascanner::MediaStore::listArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
