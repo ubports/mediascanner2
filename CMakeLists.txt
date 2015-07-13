@@ -1,7 +1,7 @@
 project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
-set(MEDIASCANNER_VERSION "0.105")
+set(MEDIASCANNER_VERSION "0.106")
 set(MEDIASCANNER_SOVERSION 3)
 set(MEDIASCANNER_LIBVERSION 3.0.0)
 
