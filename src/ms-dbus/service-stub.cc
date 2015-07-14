@@ -122,8 +122,8 @@ std::vector<string> ServiceStub::listGenres(const Filter &filter) const {
     return result.value();
 }
 
-bool ServiceStub::haveMedia(MediaType type) const {
-    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::HaveMedia, bool>(static_cast<int32_t>(type));
+bool ServiceStub::hasMedia(MediaType type) const {
+    auto result = p->object->invoke_method_synchronously<MediaStoreInterface::HasMedia, bool>(static_cast<int32_t>(type));
     if (result.is_error())
         throw std::runtime_error(result.error().print());
     return result.value();

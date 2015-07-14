@@ -1221,12 +1221,12 @@ TEST_F(MediaStoreTest, listArtists) {
     EXPECT_EQ("Various Artists", artists[2]);
 }
 
-TEST_F(MediaStoreTest, haveMedia) {
+TEST_F(MediaStoreTest, hasMedia) {
     MediaStore store(":memory:", MS_READ_WRITE);
-    EXPECT_FALSE(store.haveMedia(AudioMedia));
-    EXPECT_FALSE(store.haveMedia(VideoMedia));
-    EXPECT_FALSE(store.haveMedia(ImageMedia));
-    EXPECT_FALSE(store.haveMedia(AllMedia));
+    EXPECT_FALSE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_FALSE(store.hasMedia(AllMedia));
 
     MediaFile audio = MediaFileBuilder("/home/username/Music/track1.ogg")
         .setType(AudioMedia)
@@ -1234,10 +1234,10 @@ TEST_F(MediaStoreTest, haveMedia) {
         .setAuthor("Artist")
         .setAlbum("Album");
     store.insert(audio);
-    EXPECT_TRUE(store.haveMedia(AudioMedia));
-    EXPECT_FALSE(store.haveMedia(VideoMedia));
-    EXPECT_FALSE(store.haveMedia(ImageMedia));
-    EXPECT_TRUE(store.haveMedia(AllMedia));
+    EXPECT_TRUE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_TRUE(store.hasMedia(AllMedia));
 }
 
 TEST_F(MediaStoreTest, brokenFiles) {

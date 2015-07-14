@@ -61,7 +61,7 @@ public:
     virtual std::vector<std::string> listArtists(const Filter &filter) const override;
     virtual std::vector<std::string>listAlbumArtists(const Filter &filter) const override;
     virtual std::vector<std::string>listGenres(const Filter &filter) const override;
-    virtual bool haveMedia(MediaType type) const override;
+    virtual bool hasMedia(MediaType type) const override;
 
     size_t size() const;
     void pruneDeleted();

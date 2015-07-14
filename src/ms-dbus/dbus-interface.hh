@@ -197,11 +197,11 @@ struct MediaStoreInterface {
         }
     };
 
-    struct HaveMedia {
+    struct HasMedia {
         typedef MediaStoreInterface Interface;
 
         inline static const std::string& name() {
-            static std::string s = "HaveMedia";
+            static std::string s = "HasMedia";
             return s;
         }
 

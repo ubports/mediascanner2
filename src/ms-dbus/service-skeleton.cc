@@ -105,9 +105,9 @@ struct ServiceSkeleton::Private {
                 &Private::handle_list_genres,
                 this,
                 std::placeholders::_1));
-        object->install_method_handler<MediaStoreInterface::HaveMedia>(
+        object->install_method_handler<MediaStoreInterface::HasMedia>(
             std::bind(
-                &Private::handle_have_media,
+                &Private::handle_has_media,
                 this,
                 std::placeholders::_1));
     }
@@ -386,7 +386,7 @@ struct ServiceSkeleton::Private {
         impl->access_bus()->send(reply);
     }
 
-    void handle_have_media(const Message::Ptr &message) {
+    void handle_has_media(const Message::Ptr &message) {
         int32_t type;
         message->reader() >> type;
 
@@ -394,7 +394,7 @@ struct ServiceSkeleton::Private {
             return;
         Message::Ptr reply;
         try {
-            bool result = store->haveMedia(static_cast<MediaType>(type));
+            bool result = store->hasMedia(static_cast<MediaType>(type));
             reply = Message::make_method_return(message);
             reply->writer() << result;
         } catch (const std::exception &e) {

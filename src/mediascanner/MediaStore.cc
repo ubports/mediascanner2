@@ -70,7 +70,7 @@ struct MediaStorePrivate {
     std::vector<std::string> listArtists(const Filter &filter) const;
     std::vector<std::string> listAlbumArtists(const Filter &filter) const;
     std::vector<std::string> listGenres(const Filter &filter) const;
-    bool haveMedia(MediaType type) const;
+    bool hasMedia(MediaType type) const;
 
     size_t size() const;
     void pruneDeleted();
@@ -879,7 +879,7 @@ SELECT genre FROM media
     return genres;
 }
 
-bool MediaStorePrivate::haveMedia(MediaType type) const {
+bool MediaStorePrivate::hasMedia(MediaType type) const {
     if (type == AllMedia) {
         Statement query(db, R"(
 SELECT id FROM media
@@ -1031,9 +1031,9 @@ std::vector<std::string> MediaStore::listGenres(const Filter &filter) const {
     return p->listGenres(filter);
 }
 
-bool MediaStore::haveMedia(MediaType type) const {
+bool MediaStore::hasMedia(MediaType type) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
-    return p->haveMedia(type);
+    return p->hasMedia(type);
 }
 
 size_t MediaStore::size() const {

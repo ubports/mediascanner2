@@ -50,7 +50,7 @@ public:
     virtual std::vector<std::string> listArtists(const Filter &filter) const = 0;
     virtual std::vector<std::string>listAlbumArtists(const Filter &filter) const = 0;
     virtual std::vector<std::string>listGenres(const Filter &filter) const = 0;
-    virtual bool haveMedia(MediaType type) const = 0;
+    virtual bool hasMedia(MediaType type) const = 0;
 };
 
 }
