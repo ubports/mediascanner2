@@ -16,8 +16,8 @@ set_target_properties(mediascanner PROPERTIES
     LINK_FLAGS "${ldflags} -Wl,--version-script,${symbol_map} ")
 set_target_properties(mediascanner PROPERTIES LINK_DEPENDS ${symbol_map})
 
-add_definitions(${MEDIASCANNER_CFLAGS})
-target_link_libraries(mediascanner ${MEDIASCANNER_LIBRARIES})
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS})
+target_link_libraries(mediascanner ${MEDIASCANNER_DEPS_LDFLAGS})
 
 set_target_properties(mediascanner PROPERTIES
   OUTPUT_NAME "mediascanner-2.0"
