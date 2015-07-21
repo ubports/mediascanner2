@@ -1,3 +1,10 @@
+mediascanner2 (0.105+15.10.20150721-0ubuntu1) wily; urgency=medium
+
+  [ James Henstridge ]
+  * Remove the hard dependency on g++-4.9. (LP: #1452332)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 21 Jul 2015 05:13:08 +0000
+
 mediascanner2 (0.105+15.10.20150604-0ubuntu1) wily; urgency=medium
 
   [ James Henstridge ]
