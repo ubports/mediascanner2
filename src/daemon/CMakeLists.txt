@@ -1,4 +1,4 @@
-add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${UDISKS_CFLAGS}
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${UDISKS_CFLAGS}
 ${PIXBUF_CFLAGS})
 include_directories(..)
 

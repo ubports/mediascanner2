@@ -17,7 +17,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set_target_properties(gtest PROPERTIES COMPILE_FLAGS "-Wno-unused-private-field")
 endif()
 
-add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS} ${DBUSCPP_CFLAGS} -DQT_NO_KEYWORDS)
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${DBUSCPP_CFLAGS} -DQT_NO_KEYWORDS)
 include_directories(../src)
 
 configure_file(test_config.h.in test_config.h)
@@ -36,7 +36,7 @@ target_link_libraries(test_metadataextractor mediascanner scannerstuff gtest)
 add_test(test_metadataextractor test_metadataextractor)
 
 add_executable(test_sqliteutils test_sqliteutils.cc)
-target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_LIBRARIES})
+target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_DEPS_LDFLAGS})
 add_test(test_sqliteutils test_sqliteutils)
 
 add_executable(test_mfbuilder test_mfbuilder.cc)
