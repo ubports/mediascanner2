@@ -5,6 +5,13 @@ mediascanner2 (0.106-0ubuntu1) UNRELEASED; urgency=medium
 
  -- James Henstridge <james.henstridge@canonical.com>  Tue, 07 Jul 2015 17:45:13 +0800
 
+mediascanner2 (0.105+15.10.20150721-0ubuntu2~ppa1) wily; urgency=medium
+
+  * Update symbols file for GCC 5.
+  * Tighten build dependency on libdbus-cpp-dev.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue, 21 Jul 2015 16:07:06 +0200
+
 mediascanner2 (0.105+15.10.20150721-0ubuntu1) wily; urgency=medium
 
   [ James Henstridge ]
