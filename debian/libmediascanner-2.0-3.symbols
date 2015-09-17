@@ -65,8 +65,8 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaFileBuilder::setHeight(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setLatitude(double)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setLongitude(double)@Base" 0.101+14.10.20140613
- (c++|arch=amd64 ppc64el arm64)"mediascanner::MediaFileBuilder::setModificationTime(unsigned long)@Base" 0replaceme
- (c++|arch=i386 powerpc armhf)"mediascanner::MediaFileBuilder::setModificationTime(unsigned long long)@Base" 0replaceme
+ (c++|arch=amd64 ppc64el arm64)"mediascanner::MediaFileBuilder::setModificationTime(unsigned long)@Base" 0.106+15.10.20150917
+ (c++|arch=i386 powerpc armhf)"mediascanner::MediaFileBuilder::setModificationTime(unsigned long long)@Base" 0.106+15.10.20150917
  (c++)"mediascanner::MediaFileBuilder::setTitle(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setTrackNumber(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setType(mediascanner::MediaType)@Base" 0.101+14.10.20140613
@@ -86,7 +86,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaFile::getHeight() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getLatitude() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getLongitude() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getModificationTime() const@Base" 0replaceme
+ (c++)"mediascanner::MediaFile::getModificationTime() const@Base" 0.106+15.10.20150917
  (c++)"mediascanner::MediaFile::getTitle[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getTrackNumber() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getType() const@Base" 0.101+14.10.20140613
@@ -107,7 +107,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStoreBase::MediaStoreBase()@Base" 0.101+14.10.20140625
  (c++)"mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::getETag(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaStore::hasMedia(mediascanner::MediaType) const@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::hasMedia(mediascanner::MediaType) const@Base" 0.106+15.10.20150917
  (c++)"mediascanner::MediaStore::insert_broken_file(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::MediaStore::insert(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::is_broken_file(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
@@ -134,7 +134,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"typeinfo name for mediascanner::MediaStoreBase@Base" 0.101+14.10.20140625
  (c++)"virtual thunk to mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0.101+14.10.20140625
  (c++)"virtual thunk to mediascanner::MediaStore::getETag(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140625
- (c++)"virtual thunk to mediascanner::MediaStore::hasMedia(mediascanner::MediaType) const@Base" 0replaceme
+ (c++)"virtual thunk to mediascanner::MediaStore::hasMedia(mediascanner::MediaType) const@Base" 0.106+15.10.20150917
  (c++)"virtual thunk to mediascanner::MediaStore::listAlbumArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"virtual thunk to mediascanner::MediaStore::listAlbums(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"virtual thunk to mediascanner::MediaStore::listArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
