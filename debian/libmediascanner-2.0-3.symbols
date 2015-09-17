@@ -5,12 +5,12 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::Album::Album(mediascanner::Album const&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::Album(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::Album(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getArtFile() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getArtist() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getArtUri() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getDate() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getGenre() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getTitle() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::Album::getArtFile[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getArtist[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getArtUri[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getDate[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getGenre[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getTitle[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::operator=(mediascanner::Album&&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::operator=(mediascanner::Album const&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::operator==(mediascanner::Album const&) const@Base" 0.101+14.10.20140613
@@ -20,10 +20,10 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::Filter::Filter()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Filter::Filter(mediascanner::Filter&&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Filter::Filter(mediascanner::Filter const&)@Base" 0.101+14.10.20140613
- (c++)"mediascanner::Filter::getAlbumArtist() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::Filter::getAlbum() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::Filter::getArtist() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::Filter::getGenre() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::Filter::getAlbumArtist[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::Filter::getAlbum[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::Filter::getArtist[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::Filter::getGenre[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Filter::getLimit() const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::Filter::getOffset() const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::Filter::getOrder() const@Base" 0.104+14.10.20140825
@@ -71,26 +71,26 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaFileBuilder::setTrackNumber(int)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setType(mediascanner::MediaType)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFileBuilder::setWidth(int)@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getAlbumArtist() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getAlbum() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getArtUri() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::MediaFile::getAuthor() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getContentType() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getDate() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getAlbumArtist[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getAlbum[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getArtUri[abi:cxx11]() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::MediaFile::getAuthor[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getContentType[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getDate[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getDiscNumber() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getDuration() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getETag() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getFileName() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getGenre() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getETag[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getFileName[abi:cxx11]() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getGenre[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getHasThumbnail() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::MediaFile::getHeight() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getLatitude() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getLongitude() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getModificationTime() const@Base" 0replaceme
- (c++)"mediascanner::MediaFile::getTitle() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getTitle[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getTrackNumber() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getType() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaFile::getUri() const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaFile::getUri[abi:cxx11]() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::getWidth() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::~MediaFile()@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaFile::MediaFile()@Base" 0.101+14.10.20140613
@@ -110,10 +110,10 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStore::insert_broken_file(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::MediaStore::insert(mediascanner::MediaFile const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::is_broken_file(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::MediaStore::listAlbumArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
+ (c++)"mediascanner::MediaStore::listAlbumArtists[abi:cxx11](mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::MediaStore::listAlbums(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
- (c++)"mediascanner::MediaStore::listArtists(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
- (c++)"mediascanner::MediaStore::listGenres(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
+ (c++)"mediascanner::MediaStore::listArtists[abi:cxx11](mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
+ (c++)"mediascanner::MediaStore::listGenres[abi:cxx11](mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::MediaStore::listSongs(mediascanner::Filter const&) const@Base" 0.102+14.10.20140730.1
  (c++)"mediascanner::MediaStore::lookup(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::~MediaStore()@Base" 0.101+14.10.20140613
