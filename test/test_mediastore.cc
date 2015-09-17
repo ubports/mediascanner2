@@ -1221,6 +1221,25 @@ TEST_F(MediaStoreTest, listArtists) {
     EXPECT_EQ("Various Artists", artists[2]);
 }
 
+TEST_F(MediaStoreTest, hasMedia) {
+    MediaStore store(":memory:", MS_READ_WRITE);
+    EXPECT_FALSE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_FALSE(store.hasMedia(AllMedia));
+
+    MediaFile audio = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("Title")
+        .setAuthor("Artist")
+        .setAlbum("Album");
+    store.insert(audio);
+    EXPECT_TRUE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_TRUE(store.hasMedia(AllMedia));
+}
+
 TEST_F(MediaStoreTest, brokenFiles) {
     MediaStore store(":memory:", MS_READ_WRITE);
     std::string file = "/foo/bar/baz.mp3";
