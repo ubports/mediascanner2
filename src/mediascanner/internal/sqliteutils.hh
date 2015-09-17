@@ -21,6 +21,7 @@
 #define SCAN_SQLITEUTILS_H
 
 #include <sqlite3.h>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -47,6 +48,12 @@ public:
 
     void bind(int pos, int value) {
         rc = sqlite3_bind_int(statement, pos, value);
+        if (rc != SQLITE_OK)
+            throw std::runtime_error(sqlite3_errstr(rc));
+    }
+
+    void bind(int pos, int64_t value) {
+        rc = sqlite3_bind_int64(statement, pos, value);
         if (rc != SQLITE_OK)
             throw std::runtime_error(sqlite3_errstr(rc));
     }
@@ -105,6 +112,12 @@ public:
         if (rc != SQLITE_ROW)
             throw std::runtime_error("Statement hasn't been executed, or no more results");
         return sqlite3_column_int(statement, column);
+    }
+
+    int64_t getInt64(int column) {
+        if (rc != SQLITE_ROW)
+            throw std::runtime_error("Statement hasn't been executed, or no more results");
+        return sqlite3_column_int64(statement, column);
     }
 
     double getDouble(int column) {

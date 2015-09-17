@@ -12,7 +12,7 @@ target_link_libraries(ms-dbus
   ${DBUSCPP_LDFLAGS}
   ${APPARMOR_LDFLAGS})
 # Compile with -fPIC, since this code is linked into the QML plugin.
-set_target_properties(ms-dbus PROPERTIES COMPILE_FLAGS "-fPIC")
+set_target_properties(ms-dbus PROPERTIES COMPILE_FLAGS "-fPIC ")
 
 add_executable(mediascanner-dbus
   main.cc

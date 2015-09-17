@@ -20,8 +20,9 @@
 #ifndef MEDIAFILE_HH
 #define MEDIAFILE_HH
 
-#include"scannercore.hh"
-#include<string>
+#include "scannercore.hh"
+#include <cstdint>
+#include <string>
 
 namespace mediascanner {
 
@@ -59,6 +60,7 @@ public:
     double getLatitude() const noexcept;
     double getLongitude() const noexcept;
     bool getHasThumbnail() const noexcept;
+    uint64_t getModificationTime() const noexcept;
 
     MediaType getType() const noexcept;
     bool operator==(const MediaFile &other) const;

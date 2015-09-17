@@ -97,6 +97,10 @@ bool MediaFileWrapper::hasThumbnail() const {
     return media.getHasThumbnail();
 }
 
+uint64_t MediaFileWrapper::modificationTime() const {
+    return media.getModificationTime();
+}
+
 QString MediaFileWrapper::art() const {
     return QString::fromStdString(media.getArtUri());
 }

@@ -1,3 +1,10 @@
+mediascanner2 (0.106-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Store the file modification time in the media database so we can 
+    find recently added media.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Tue, 07 Jul 2015 17:45:13 +0800
+
 mediascanner2 (0.105+15.10.20150721-0ubuntu2~ppa1) wily; urgency=medium
 
   * Update symbols file for GCC 5.

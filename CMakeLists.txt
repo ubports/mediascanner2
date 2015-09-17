@@ -1,7 +1,7 @@
 project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
-set(MEDIASCANNER_VERSION "0.105")
+set(MEDIASCANNER_VERSION "0.106")
 set(MEDIASCANNER_SOVERSION 3)
 set(MEDIASCANNER_LIBVERSION 3.0.0)
 
@@ -12,7 +12,7 @@ endif()
 option(full_warnings "All possible compiler warnings." OFF)
 
 include(FindPkgConfig)
-pkg_check_modules(MEDIASCANNER REQUIRED
+pkg_check_modules(MEDIASCANNER_DEPS REQUIRED
   gio-2.0
   sqlite3>=3.8.5
 )
@@ -32,7 +32,7 @@ if(${full_warnings})
 # C does not have any more warning flags.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 endif()
-include(cmake/coverage.cmake)
+include(EnableCoverageReport)
 
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
@@ -55,3 +55,28 @@ install(
   FILES mediascanner-2.0.conf
   DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions
 )
+
+enable_coverage_report(
+  TARGETS
+    mediascanner
+    scannerstuff
+    scannerdaemon
+    ms-dbus
+    mediascanner-dbus
+    mediascanner-qml
+    query
+    mountwatcher
+  FILTER
+    ${CMAKE_SOURCE_DIR}/tests/*
+    ${CMAKE_BINARY_DIR}/*
+  TESTS
+    basic
+    test_mediastore
+    test_metadataextractor
+    test_sqliteutils
+    test_mfbuilder
+    test_dbus
+    test_qml
+    test_util
+)
+
