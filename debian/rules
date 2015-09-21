@@ -14,6 +14,10 @@ export CCACHE_SLOPPINESS=time_macros
 %:
 	dh $@ --parallel --fail-missing
 
+override_dh_auto_clean:
+	/bin/sh $(CURDIR)/debian/gen-debian-files.sh
+	dh_auto_clean
+
 override_dh_auto_test:
 	dh_auto_test --max-parallel=1 -- ARGS="--verbose"
 

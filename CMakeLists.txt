@@ -2,8 +2,17 @@ project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
 set(MEDIASCANNER_VERSION "0.106")
-set(MEDIASCANNER_SOVERSION 3)
-set(MEDIASCANNER_LIBVERSION 3.0.0)
+
+execute_process(
+  COMMAND /bin/sh ${CMAKE_CURRENT_SOURCE_DIR}/get-soversion.sh
+  OUTPUT_VARIABLE MEDIASCANNER_SOVERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE result)
+if(NOT result EQUAL 0)
+  message(FATAL_ERROR "Error running get-soversion.sh script")
+endif()
+
+set(MEDIASCANNER_LIBVERSION "${MEDIASCANNER_SOVERSION}.${MEDIASCANNER_VERSION}")
 
 if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
   message(FATAL_ERROR "In-tree build attempt detected, aborting. Set your build dir outside your source dir, delete CMakeCache.txt from source root and try again.")
