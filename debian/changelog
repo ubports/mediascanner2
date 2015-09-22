@@ -1,8 +1,12 @@
-mediascanner2 (0.107-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.107+15.10.20150922.1-0ubuntu1) wily; urgency=medium
 
+  [ James Henstridge ]
   * Use a single source tree for the gcc 4.x/5.x builds.
 
- -- James Henstridge <james.henstridge@canonical.com>  Mon, 21 Sep 2015 18:25:31 +0800
+  [ CI Train Bot ]
+  * No-change rebuild.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Tue, 22 Sep 2015 12:11:11 +0000
 
 mediascanner2 (0.106+15.10.20150917-0ubuntu1) wily; urgency=medium
 
