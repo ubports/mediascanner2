@@ -5,7 +5,7 @@ set -e
 distro=$(lsb_release -c -s)
 
 case "$distro" in
-    vivd)
+    vivid)
         echo 3
         ;;
     *)
