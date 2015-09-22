@@ -1,3 +1,9 @@
+mediascanner2 (0.107-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Use a single source tree for the gcc 4.x/5.x builds.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Mon, 21 Sep 2015 18:25:31 +0800
+
 mediascanner2 (0.106+15.10.20150917-0ubuntu1) wily; urgency=medium
 
   [ James Henstridge ]
