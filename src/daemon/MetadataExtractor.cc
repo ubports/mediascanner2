@@ -150,7 +150,7 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
     int i, num;
     string tagname(tag);
 
-    if(tagname == GST_TAG_IMAGE) {
+    if(tagname == GST_TAG_IMAGE || tagname == GST_TAG_PREVIEW_IMAGE) {
         mfb->setHasThumbnail(true);
         return;
     }
@@ -179,6 +179,17 @@ extract_tag_info (const GstTagList * list, const gchar * tag, gpointer user_data
                 char *dt_string = gst_date_time_to_iso8601_string(dt);
                 mfb->setDate(dt_string);
                 g_free(dt_string);
+            }
+        } else if (G_VALUE_HOLDS(val, G_TYPE_DATE)) {
+            if (tagname == GST_TAG_DATE) {
+                GDate *dt = static_cast<GDate*>(g_value_get_boxed(val));
+                if (!dt) {
+                    continue;
+                }
+                char buf[100];
+                if (g_date_strftime(buf, sizeof(buf), "%Y-%m-%d", dt) != 0) {
+                    mfb->setDate(buf);
+                }
             }
         } else if (G_VALUE_HOLDS_UINT(val)) {
             if (tagname == GST_TAG_TRACK_NUMBER) {
