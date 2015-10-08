@@ -34,7 +34,7 @@ License: LGPL-3
 
 Files: src/mediascanner/mozilla/fts*
 Copyright: Public Domain
-License:
+License: public-domain
  The author disclaims copyright to this source code.  In place of
  a legal notice, here is a blessing:
  .
