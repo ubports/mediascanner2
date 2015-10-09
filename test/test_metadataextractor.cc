@@ -77,10 +77,8 @@ bool supports_decoder(const std::string& format)
     // GstCaps adopts the GstStructure
     CapsPtr caps(gst_caps_new_full(structure, nullptr), gst_caps_unref);
 
-    printf("Checking support for %s\n", format.c_str());
     for (const auto &other : formats) {
         if (gst_caps_is_always_compatible(caps.get(), other.get())) {
-            printf("Matches caps %s\n", gst_caps_to_string(other.get()));
             return true;
         }
     }
