@@ -28,5 +28,5 @@ target_link_libraries(scannerdaemon
 
 install(
   TARGETS scannerdaemon
-  RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/mediascanner-2.0
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
