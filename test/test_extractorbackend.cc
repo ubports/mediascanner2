@@ -56,7 +56,7 @@ TEST_F(ExtractorBackendTest, init) {
 TEST_F(ExtractorBackendTest, extract_audio) {
     ExtractorBackend e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
-    DetectedFile df(testfile, "etag", "audio/ogg", AudioMedia);
+    DetectedFile df(testfile, "etag", "audio/ogg", 42, AudioMedia);
     MediaFile file = e.extract(df);
 
     EXPECT_EQ(file.getType(), AudioMedia);
@@ -72,21 +72,21 @@ TEST_F(ExtractorBackendTest, extract_video) {
     ExtractorBackend e;
 
     MediaFile file = e.extract(DetectedFile(
-        SOURCE_DIR "/media/testvideo_480p.ogv", "etag", "video/ogg", VideoMedia));
+        SOURCE_DIR "/media/testvideo_480p.ogv", "etag", "video/ogg", 42, VideoMedia));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
     EXPECT_EQ(file.getWidth(), 854);
     EXPECT_EQ(file.getHeight(), 480);
 
     file = e.extract(DetectedFile(
-        SOURCE_DIR "/media/testvideo_720p.ogv", "etag", "video/ogg", VideoMedia));
+        SOURCE_DIR "/media/testvideo_720p.ogv", "etag", "video/ogg", 42, VideoMedia));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
     EXPECT_EQ(file.getWidth(), 1280);
     EXPECT_EQ(file.getHeight(), 720);
 
     file = e.extract(DetectedFile(
-        SOURCE_DIR "/media/testvideo_1080p.ogv", "etag", "video/ogg", VideoMedia));
+        SOURCE_DIR "/media/testvideo_1080p.ogv", "etag", "video/ogg", 42, VideoMedia));
     EXPECT_EQ(file.getType(), VideoMedia);
     EXPECT_EQ(file.getDuration(), 1);
     EXPECT_EQ(file.getWidth(), 1920);
@@ -98,7 +98,7 @@ TEST_F(ExtractorBackendTest, extract_photo) {
 
     // An landscape image that should be rotated to portrait
     MediaFile file = e.extract(DetectedFile(
-        SOURCE_DIR "/media/image1.jpg", "etag", "image/jpeg", ImageMedia));
+        SOURCE_DIR "/media/image1.jpg", "etag", "image/jpeg", 42, ImageMedia));
     EXPECT_EQ(ImageMedia, file.getType());
     EXPECT_EQ(2848, file.getWidth());
     EXPECT_EQ(4272, file.getHeight());
@@ -108,7 +108,7 @@ TEST_F(ExtractorBackendTest, extract_photo) {
 
     // A landscape image without rotation.
     file = e.extract(DetectedFile(
-        SOURCE_DIR "/media/image2.jpg", "etag", "image/jpeg", ImageMedia));
+        SOURCE_DIR "/media/image2.jpg", "etag", "image/jpeg", 42, ImageMedia));
     EXPECT_EQ(ImageMedia, file.getType());
     EXPECT_EQ(4272, file.getWidth());
     EXPECT_EQ(2848, file.getHeight());

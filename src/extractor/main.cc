@@ -54,7 +54,7 @@ private:
     void cancelExitTimer();
 
     static void busNameLostCallback(GDBusConnection *, const char *name, gpointer data);
-    static gboolean handleExtractMetadata(MSExtractor *iface, GDBusMethodInvocation *invocation, const char *filename, const char *etag, const char *content_type, gint32 type, gpointer user_data);
+    static gboolean handleExtractMetadata(MSExtractor *iface, GDBusMethodInvocation *invocation, const char *filename, const char *etag, const char *content_type, guint64 mtime, gint32 type, gpointer user_data);
     static gboolean handleExitTimer(gpointer user_data);
 
     ExtractorBackend extractor;
@@ -130,10 +130,11 @@ gboolean ExtractorDaemon::handleExtractMetadata(MSExtractor *,
                                                 const char *filename,
                                                 const char *etag,
                                                 const char *content_type,
+                                                guint64 mtime,
                                                 gint32 type,
                                                 gpointer user_data) {
     auto d = reinterpret_cast<ExtractorDaemon*>(user_data);
-    DetectedFile file(filename, etag, content_type, static_cast<MediaType>(type));
+    DetectedFile file(filename, etag, content_type, mtime, static_cast<MediaType>(type));
     d->extract(file, invocation);
     return TRUE;
 }

@@ -335,7 +335,7 @@ static void parse_exif_location(ExifData *data, ExifByteOrder order, MediaFileBu
     mfb.setLongitude(longitude);
 }
 
-bool MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuilder &mfb) {
+bool ExtractorBackendPrivate::extract_exif(const DetectedFile &d, MediaFileBuilder &mfb) {
     std::unique_ptr<ExifLoader, void(*)(ExifLoader*)> loader(
         exif_loader_new(), exif_loader_unref);
     exif_loader_write_file(loader.get(), d.filename.c_str());
@@ -356,7 +356,7 @@ bool MetadataExtractorPrivate::extract_exif(const DetectedFile &d, MediaFileBuil
     return true;
 }
 
-void MetadataExtractorPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBuilder &mfb) {
+void ExtractorBackendPrivate::extract_pixbuf(const DetectedFile &d, MediaFileBuilder &mfb) {
     gint width, height;
 
     if(!gdk_pixbuf_get_file_info(d.filename.c_str(), &width, &height)) {

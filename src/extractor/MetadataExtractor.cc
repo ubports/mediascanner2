@@ -130,7 +130,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
     GVariant *res = nullptr;
     gboolean success = ms_extractor_call_extract_metadata_sync(
             p->proxy.get(), d.filename.c_str(), d.etag.c_str(),
-            d.content_type.c_str(), d.type, &res, nullptr, &error);
+            d.content_type.c_str(), d.mtime, d.type, &res, nullptr, &error);
     // If we get a synthesised "no reply" error, the server probably
     // crashed due to a codec bug.  We retry the extraction once more
     // in case the crash was due to bad cleanup from a previous job.
@@ -141,7 +141,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
         fprintf(stderr, "No reply from extractor daemon, retrying once.\n");
         success = ms_extractor_call_extract_metadata_sync(
                 p->proxy.get(), d.filename.c_str(), d.etag.c_str(),
-                d.content_type.c_str(), d.type, &res, nullptr, &error);
+                d.content_type.c_str(), d.mtime, d.type, &res, nullptr, &error);
     }
     if (!success) {
         string errortxt(error->message);

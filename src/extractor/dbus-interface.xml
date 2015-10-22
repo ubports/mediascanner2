@@ -4,8 +4,9 @@
       <arg direction="in" type="s" name="filename" />
       <arg direction="in" type="s" name="etag" />
       <arg direction="in" type="s" name="content_type" />
+      <arg direction="in" type="t" name="mtime" />
       <arg direction="in" type="i" name="type" />
-      <arg direction="out" type="(sssssssssiiiiiddi)" name="metadata" />
+      <arg direction="out" type="(sssssssssiiiiiddbti)" name="metadata" />
     </method>
   </interface>
 </node>

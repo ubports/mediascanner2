@@ -28,7 +28,7 @@ namespace mediascanner {
 GVariant *media_to_variant(const MediaFile &media) {
     GVariantBuilder builder;
 
-    g_variant_builder_init(&builder, G_VARIANT_TYPE("(sssssssssiiiiiddi)"));
+    g_variant_builder_init(&builder, G_VARIANT_TYPE("(sssssssssiiiiiddbti)"));
     g_variant_builder_add(&builder, "s", media.getFileName().c_str());
     g_variant_builder_add(&builder, "s", media.getContentType().c_str());
     g_variant_builder_add(&builder, "s", media.getETag().c_str());
@@ -45,13 +45,15 @@ GVariant *media_to_variant(const MediaFile &media) {
     g_variant_builder_add(&builder, "i", media.getHeight());
     g_variant_builder_add(&builder, "d", media.getLatitude());
     g_variant_builder_add(&builder, "d", media.getLongitude());
+    g_variant_builder_add(&builder, "b", media.getHasThumbnail());
+    g_variant_builder_add(&builder, "t", media.getModificationTime());
     g_variant_builder_add(&builder, "i", static_cast<int>(media.getType()));
 
     return g_variant_builder_end(&builder);
 }
 
 MediaFile media_from_variant(GVariant *variant) {
-    if (!g_variant_is_of_type(variant, G_VARIANT_TYPE("(sssssssssiiiiiddi)"))) {
+    if (!g_variant_is_of_type(variant, G_VARIANT_TYPE("(sssssssssiiiiiddbti)"))) {
         throw std::runtime_error("variant is of wrong type");
     }
 
@@ -61,11 +63,14 @@ MediaFile media_from_variant(GVariant *variant) {
     gint32 disc_number = 0, track_number = 0, duration = 0,
         width = 0, height = 0, type = 0;
     double latitude = 0, longitude = 0;
-    g_variant_get(variant, "(&s&s&s&s&s&s&s&s&siiiiiddi)",
+    gboolean has_thumbnail = false;
+    uint64_t mtime = 0;
+    g_variant_get(variant, "(&s&s&s&s&s&s&s&s&siiiiiddbti)",
                   &filename, &content_type, &etag, &title, &author,
                   &album, &album_artist, &date, &genre, &disc_number,
                   &track_number, &duration, &width, &height,
-                  &latitude, &longitude, &type, nullptr);
+                  &latitude, &longitude, &has_thumbnail, &mtime, &type,
+                  nullptr);
 
     return MediaFileBuilder(filename)
         .setContentType(content_type)
@@ -83,6 +88,8 @@ MediaFile media_from_variant(GVariant *variant) {
         .setHeight(height)
         .setLatitude(latitude)
         .setLongitude(longitude)
+        .setHasThumbnail(has_thumbnail)
+        .setModificationTime(mtime)
         .setType(static_cast<MediaType>(type));
 }
 

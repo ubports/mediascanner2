@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <gst/gst.h>
 #include <gio/gio.h>
 #include <gtest/gtest.h>
 
@@ -169,7 +170,7 @@ TEST_F(MetadataExtractorTest, extract_mp3) {
         printf("MP3 codec not supported\n");
         return;
     }
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/testfile.mp3";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -231,7 +232,7 @@ TEST_F(MetadataExtractorTest, extract_photo) {
 }
 
 TEST_F(MetadataExtractorTest, extract_bad_date) {
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/baddate.ogg";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -247,7 +248,7 @@ TEST_F(MetadataExtractorTest, extract_mp3_bad_date) {
         printf("MP3 codec not supported\n");
         return;
     }
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/baddate.mp3";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -259,7 +260,7 @@ TEST_F(MetadataExtractorTest, extract_mp3_bad_date) {
 }
 
 TEST_F(MetadataExtractorTest, blacklist) {
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/playlist.m3u";
     try {
         e.detect(testfile);
@@ -272,7 +273,7 @@ TEST_F(MetadataExtractorTest, blacklist) {
 
 TEST_F(MetadataExtractorTest, png_file) {
     // PNG files don't have exif entries, so test we work with those, too.
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image3.png"));
 
     EXPECT_EQ(ImageMedia, file.getType());
@@ -296,6 +297,7 @@ TEST_F(MetadataExtractorTest, png_file) {
 }
 
 int main(int argc, char **argv) {
+    gst_init(&argc, &argv);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
