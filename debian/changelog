@@ -1,3 +1,83 @@
+mediascanner2 (0.107+15.10.20150922.1-0ubuntu1) wily; urgency=medium
+
+  [ James Henstridge ]
+  * Use a single source tree for the gcc 4.x/5.x builds.
+
+  [ CI Train Bot ]
+  * No-change rebuild.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Tue, 22 Sep 2015 12:11:11 +0000
+
+mediascanner2 (0.106+15.10.20150917-0ubuntu1) wily; urgency=medium
+
+  [ James Henstridge ]
+  * Store the file modification time in the media database so we can 
+    find recently added media.
+  * Add a hasMedia() method to MediaStore, which returns true if there
+    is any media of the given type.
+
+  [ CI Train Bot ]
+  * debian/libmediascanner-2.0-3.symbols: update to released version.
+  * New rebuild forced.
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 17 Sep 2015 12:03:39 +0000
+
+mediascanner2 (0.105+15.10.20150721-0ubuntu2~ppa1) wily; urgency=medium
+
+  * Update symbols file for GCC 5.
+  * Tighten build dependency on libdbus-cpp-dev.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue, 21 Jul 2015 16:07:06 +0200
+
+mediascanner2 (0.105+15.10.20150721-0ubuntu1) wily; urgency=medium
+
+  [ James Henstridge ]
+  * Remove the hard dependency on g++-4.9. (LP: #1452332)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 21 Jul 2015 05:13:08 +0000
+
+mediascanner2 (0.105+15.10.20150604-0ubuntu1) wily; urgency=medium
+
+  [ James Henstridge ]
+  * Treat invalid dates in MP3s as missing metadata. (LP: #1436110)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Thu, 04 Jun 2015 06:51:43 +0000
+
+mediascanner2 (0.105+15.04.20150128-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Revert use of WAL log and instead try to rerun queries that fail
+    with SQLITE_BUSY. (LP: #1415318)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 28 Jan 2015 12:59:06 +0000
+
+mediascanner2 (0.105+15.04.20150127-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Send invalidations signals during scans that take a long time so the
+    dash gets updated. (LP: #1414566)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 27 Jan 2015 14:28:29 +0000
+
+mediascanner2 (0.105+15.04.20150122-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Add blacklist functionality and use it to block music playlists.
+    (LP: #1384295)
+  * Skip scanning of special directories if they point to user home dir.
+    (LP: #285998)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 22 Jan 2015 10:18:10 +0000
+
+mediascanner2 (0.105+15.04.20150121-0ubuntu1) vivid; urgency=low
+
+  [ Jussi Pakkanen ]
+  * Extract metadata from images that don't have exif entries. (LP:
+    #1378880)
+  * Make Valgrind uninitialised jump warning go away.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 21 Jan 2015 15:21:18 +0000
+
 mediascanner2 (0.105+15.04.20141030.1-0ubuntu1) vivid; urgency=low
 
   [ James Henstridge ]

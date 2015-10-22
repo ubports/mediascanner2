@@ -1,5 +1,5 @@
 
-add_definitions(${MEDIASCANNER_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS})
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${PIXBUF_CFLAGS})
 include_directories(.. ${CMAKE_CURRENT_BINARY_DIR})
 
 # Build stubs/skeletons for D-Bus interface
@@ -33,6 +33,7 @@ target_link_libraries(extractor-backend
   extractor-client
   ${GST_LDFLAGS}
   ${EXIF_LDFLAGS}
+  ${PIXBUF_LDFLAGS}
 )
 
 add_executable(mediascanner-extractor

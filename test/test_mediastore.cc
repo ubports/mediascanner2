@@ -171,6 +171,7 @@ TEST_F(MediaStoreTest, roundtrip) {
         .setTrackNumber(3)
         .setDuration(5)
         .setHasThumbnail(true)
+        .setModificationTime(4200)
         .setType(AudioMedia);
     MediaFile video = MediaFileBuilder("/aaa2")
         .setContentType("type")
@@ -386,19 +387,22 @@ TEST_F(MediaStoreTest, query_order) {
         .setTitle("foo")
         .setDate("2010-01-01")
         .setAuthor("artist")
-        .setAlbum("album");
+        .setAlbum("album")
+        .setModificationTime(2);
     MediaFile audio2 = MediaFileBuilder("/path/foo2.ogg")
         .setType(AudioMedia)
         .setTitle("foo foo")
         .setDate("2010-01-03")
         .setAuthor("artist")
-        .setAlbum("album");
+        .setAlbum("album")
+        .setModificationTime(1);
     MediaFile audio3 = MediaFileBuilder("/path/foo3.ogg")
         .setType(AudioMedia)
         .setTitle("foo foo foo")
         .setDate("2010-01-02")
         .setAuthor("artist")
-        .setAlbum("album");
+        .setAlbum("album")
+        .setModificationTime(3);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -462,6 +466,23 @@ TEST_F(MediaStoreTest, query_order) {
     EXPECT_EQ("/path/foo2.ogg", result[0].getFileName());
     EXPECT_EQ("/path/foo3.ogg", result[1].getFileName());
     EXPECT_EQ("/path/foo1.ogg", result[2].getFileName());
+
+    // Sorting by modification date
+    filter.setReverse(false);
+    filter.setOrder(MediaOrder::Modified);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo2.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo3.ogg", result[2].getFileName());
+
+    // Sorting by modification date, reversed
+    filter.setReverse(true);
+    result = store.query("foo", AudioMedia, filter);
+    ASSERT_EQ(3, result.size());
+    EXPECT_EQ("/path/foo3.ogg", result[0].getFileName());
+    EXPECT_EQ("/path/foo1.ogg", result[1].getFileName());
+    EXPECT_EQ("/path/foo2.ogg", result[2].getFileName());
 }
 
 TEST_F(MediaStoreTest, unmount) {
@@ -509,7 +530,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setDate("2000-01-01")
         .setDiscNumber(1)
         .setTrackNumber(1)
-        .setGenre("GenreOne");
+        .setGenre("GenreOne")
+        .setModificationTime(1);
     MediaFile audio2 = MediaFileBuilder("/home/username/Music/track2.ogg")
         .setType(AudioMedia)
         .setTitle("TitleTwo")
@@ -519,7 +541,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setDate("2000-01-01")
         .setDiscNumber(1)
         .setTrackNumber(2)
-        .setGenre("GenreOne");
+        .setGenre("GenreOne")
+        .setModificationTime(2);
     MediaFile audio3 = MediaFileBuilder("/home/username/Music/track3.ogg")
         .setType(AudioMedia)
         .setTitle("TitleThree")
@@ -529,7 +552,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setDate("2000-01-01")
         .setDiscNumber(2)
         .setTrackNumber(1)
-        .setGenre("GenreOne");
+        .setGenre("GenreOne")
+        .setModificationTime(3);
     MediaFile audio4 = MediaFileBuilder("/home/username/Music/fname.ogg")
         .setType(AudioMedia)
         .setTitle("TitleFour")
@@ -539,7 +563,8 @@ TEST_F(MediaStoreTest, queryAlbums) {
         .setDate("2014-06-01")
         .setTrackNumber(1)
         .setGenre("GenreTwo")
-        .setHasThumbnail(true);
+        .setHasThumbnail(true)
+        .setModificationTime(4);
 
     MediaStore store(":memory:", MS_READ_WRITE);
     store.insert(audio1);
@@ -571,6 +596,14 @@ TEST_F(MediaStoreTest, queryAlbums) {
     ASSERT_EQ(albums.size(), 1);
     EXPECT_EQ(albums[0].getTitle(), "AlbumOne");
     EXPECT_EQ(albums[0].getArtist(), "Various Artists");
+
+    // Sort results by modification time
+    filter.setOrder(MediaOrder::Modified);
+    filter.setReverse(true);
+    albums = store.queryAlbums("", filter);
+    ASSERT_EQ(2, albums.size());
+    EXPECT_EQ("AlbumTwo", albums[0].getTitle());
+    EXPECT_EQ("AlbumOne", albums[1].getTitle());
 }
 
 TEST_F(MediaStoreTest, queryAlbums_limit) {
@@ -1186,6 +1219,25 @@ TEST_F(MediaStoreTest, listArtists) {
     EXPECT_EQ("ArtistOne", artists[0]);
     EXPECT_EQ("ArtistTwo", artists[1]);
     EXPECT_EQ("Various Artists", artists[2]);
+}
+
+TEST_F(MediaStoreTest, hasMedia) {
+    MediaStore store(":memory:", MS_READ_WRITE);
+    EXPECT_FALSE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_FALSE(store.hasMedia(AllMedia));
+
+    MediaFile audio = MediaFileBuilder("/home/username/Music/track1.ogg")
+        .setType(AudioMedia)
+        .setTitle("Title")
+        .setAuthor("Artist")
+        .setAlbum("Album");
+    store.insert(audio);
+    EXPECT_TRUE(store.hasMedia(AudioMedia));
+    EXPECT_FALSE(store.hasMedia(VideoMedia));
+    EXPECT_FALSE(store.hasMedia(ImageMedia));
+    EXPECT_TRUE(store.hasMedia(AllMedia));
 }
 
 TEST_F(MediaStoreTest, brokenFiles) {

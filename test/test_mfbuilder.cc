@@ -57,6 +57,7 @@ TEST_F(MFBTest, basic) {
     int height = 480;
     double latitude = 67.2;
     double longitude = -7.5;
+    uint64_t mtime = 42;
 
     MediaFileBuilder b(fname);
 
@@ -76,6 +77,7 @@ TEST_F(MFBTest, basic) {
     b.setHeight(height);
     b.setLatitude(latitude);
     b.setLongitude(longitude);
+    b.setModificationTime(mtime);
 
     // Now see if data survives a round trip.
     MediaFile mf = b.build();
@@ -96,6 +98,7 @@ TEST_F(MFBTest, basic) {
     EXPECT_EQ(mf.getHeight(), height);
     EXPECT_DOUBLE_EQ(mf.getLatitude(), latitude);
     EXPECT_DOUBLE_EQ(mf.getLongitude(), longitude);
+    EXPECT_EQ(mf.getModificationTime(), mtime);
 
     MediaFileBuilder mfb2(mf);
     MediaFile mf2 = mfb2.build();
@@ -120,6 +123,7 @@ TEST_F(MFBTest, chaining) {
     int height = 480;
     double latitude = 67.2;
     double longitude = -7.5;
+    uint64_t mtime = 42;
 
     MediaFile mf = MediaFileBuilder(fname)
         .setType(type)
@@ -137,7 +141,8 @@ TEST_F(MFBTest, chaining) {
         .setLatitude(latitude)
         .setLongitude(longitude)
         .setETag(etag)
-        .setContentType(content_type);
+        .setContentType(content_type)
+        .setModificationTime(42);
 
     // Now see if data survives a round trip.
     EXPECT_EQ(mf.getType(), type);
@@ -157,6 +162,7 @@ TEST_F(MFBTest, chaining) {
     EXPECT_EQ(mf.getHeight(), height);
     EXPECT_DOUBLE_EQ(mf.getLatitude(), latitude);
     EXPECT_DOUBLE_EQ(mf.getLongitude(), longitude);
+    EXPECT_EQ(mf.getModificationTime(), mtime);
 }
 
 TEST_F(MFBTest, fallback_title) {

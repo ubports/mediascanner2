@@ -244,10 +244,16 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
 
 TEST_F(ScanTest, root_skip) {
     MetadataExtractor e(session_bus.get());
-    string root(SOURCE_DIR);
+    string root(SOURCE_DIR "/media");
     Scanner s(&e, root, AudioMedia);
-    s.next();
-    ASSERT_THROW(s.next(), StopIteration);
+    while (true) {
+        try {
+            auto d = s.next();
+            EXPECT_EQ(std::string::npos, d.filename.find("fake_root")) << d.filename;
+        } catch (const StopIteration &e) {
+            break;
+        }
+    }
 }
 
 TEST_F(ScanTest, scan_files_found_in_new_dir) {

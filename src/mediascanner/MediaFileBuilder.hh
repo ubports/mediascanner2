@@ -21,6 +21,7 @@
 #define MEDIAFILEBUILDER_H_
 
 #include"scannercore.hh"
+#include <cstdint>
 #include<string>
 
 namespace mediascanner {
@@ -64,6 +65,7 @@ public:
     MediaFileBuilder &setLatitude(double l);
     MediaFileBuilder &setLongitude(double l);
     MediaFileBuilder &setHasThumbnail(bool t);
+    MediaFileBuilder &setModificationTime(uint64_t t);
 
 private:
     MediaFilePrivate *p;

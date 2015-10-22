@@ -24,6 +24,8 @@
 #include<map>
 #include<memory>
 
+#include<sys/types.h>
+#include<sys/stat.h>
 #include<glib.h>
 #include<glib-unix.h>
 #include<gio/gio.h>
@@ -41,6 +43,21 @@
 using namespace std;
 
 using namespace mediascanner;
+
+namespace {
+
+bool is_same_directory(const char *dir1, const char *dir2) {
+    struct stat s1, s2;
+    if(stat(dir1, &s1) != 0) {
+        return false;
+    }
+    if(stat(dir2, &s2) != 0) {
+        return false;
+    }
+    return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+}
+
+}
 
 static const char BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
 
@@ -84,15 +101,20 @@ ScannerDaemon::ScannerDaemon() :
     setupMountWatcher();
 
     const char *musicdir = g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
-    if (musicdir)
+    const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
+    const char *picturesdir = g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
+    const char *homedir = g_get_home_dir();
+
+    // According to XDG specification, when one of the special dirs is missing
+    // it falls back to home directory. This would mean scanning the entire home
+    // directory. This is probably not what people want so skip if this is the case.
+    if (musicdir && !is_same_directory(musicdir, homedir))
         addDir(musicdir);
 
-    const char *videodir = g_get_user_special_dir(G_USER_DIRECTORY_VIDEOS);
-    if (videodir)
+    if (videodir && !is_same_directory(videodir, homedir))
         addDir(videodir);
 
-    const char *picturesdir = g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
-    if (picturesdir)
+    if (picturesdir && !is_same_directory(picturesdir, homedir))
         addDir(picturesdir);
 
     // In case someone opened the db file before we could populate it.
@@ -189,9 +211,21 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s(extractor.get(), subdir, type);
+    const int update_interval = 10; // How often to send invalidations.
+    struct timespec previous_update, current_time;
+    clock_gettime(CLOCK_MONOTONIC, &previous_update);
+    previous_update.tv_sec -= update_interval/2; // Send the first update sooner for better visual appeal.
     while(true) {
         try {
             auto d = s.next();
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
+            while(g_main_context_pending(g_main_context_default())) {
+                g_main_context_iteration(g_main_context_default(), FALSE);
+            }
+            if(current_time.tv_sec - previous_update.tv_sec >= update_interval) {
+                invalidator.invalidate();
+                previous_update = current_time;
+            }
             // If the file is broken or unchanged, use fallback.
             if (store.is_broken_file(d.filename, d.etag)) {
                 fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());

@@ -20,6 +20,7 @@
 #ifndef METADATAEXTRACTOR_H
 #define METADATAEXTRACTOR_H
 
+#include <cstdint>
 #include <string>
 #include "../mediascanner/scannercore.hh"
 

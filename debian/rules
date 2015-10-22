@@ -11,13 +11,12 @@ export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 # http://ccache.samba.org/manual.html#_precompiled_headers
 export CCACHE_SLOPPINESS=time_macros
 
-# Explicitly selecting a G{CC,++}-version here to avoid accidental
-# ABI breaks introduced by toolchain updates.
-export CC=$(DEB_HOST_GNU_TYPE)-gcc-4.9
-export CXX=$(DEB_HOST_GNU_TYPE)-g++-4.9
-
 %:
 	dh $@ --parallel --fail-missing
+
+override_dh_auto_clean:
+	/bin/sh $(CURDIR)/debian/gen-debian-files.sh
+	dh_auto_clean
 
 override_dh_auto_test:
 	dh_auto_test --max-parallel=1 -- ARGS="--verbose"

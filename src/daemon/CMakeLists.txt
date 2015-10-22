@@ -1,4 +1,4 @@
-add_definitions(${MEDIASCANNER_CFLAGS} ${UDISKS_CFLAGS})
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${UDISKS_CFLAGS})
 include_directories(..)
 
 add_library(scannerstuff STATIC

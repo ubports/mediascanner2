@@ -124,4 +124,9 @@ MediaFileBuilder & MediaFileBuilder::setHasThumbnail(bool t) {
     return *this;
 }
 
+MediaFileBuilder & MediaFileBuilder::setModificationTime(uint64_t t) {
+    p->modification_time = t;
+    return *this;
+}
+
 }

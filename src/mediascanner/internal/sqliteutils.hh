@@ -21,6 +21,7 @@
 #define SCAN_SQLITEUTILS_H
 
 #include <sqlite3.h>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -51,6 +52,12 @@ public:
             throw std::runtime_error(sqlite3_errstr(rc));
     }
 
+    void bind(int pos, int64_t value) {
+        rc = sqlite3_bind_int64(statement, pos, value);
+        if (rc != SQLITE_OK)
+            throw std::runtime_error(sqlite3_errstr(rc));
+    }
+
     void bind(int pos, double value) {
         rc = sqlite3_bind_double(statement, pos, value);
         if (rc != SQLITE_OK)
@@ -71,7 +78,20 @@ public:
     }
 
     bool step() {
-        rc = sqlite3_step(statement);
+        // Sqlite docs list a few cases where you need to to a rollback
+        // if a calling step fails. We don't match those cases but if
+        // we change queries that may start to happen.
+        // https://sqlite.org/c3ref/step.html
+        //
+        // The proper fix would probably be to move to a WAL log, but
+        // it seems to require write access to the mediastore dir
+        // even for readers, which is problematic for confined apps.
+        int retry_count=0;
+        const int max_retries = 100;
+        do {
+            rc = sqlite3_step(statement);
+            retry_count++;
+        } while(rc == SQLITE_BUSY && retry_count < max_retries);
         switch (rc) {
         case SQLITE_DONE:
             return false;
@@ -92,6 +112,12 @@ public:
         if (rc != SQLITE_ROW)
             throw std::runtime_error("Statement hasn't been executed, or no more results");
         return sqlite3_column_int(statement, column);
+    }
+
+    int64_t getInt64(int column) {
+        if (rc != SQLITE_ROW)
+            throw std::runtime_error("Statement hasn't been executed, or no more results");
+        return sqlite3_column_int64(statement, column);
     }
 
     double getDouble(int column) {

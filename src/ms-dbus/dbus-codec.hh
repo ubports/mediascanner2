@@ -65,7 +65,7 @@ struct TypeMapper<mediascanner::MediaFile> {
         return true;
     }
     static const std::string &signature() {
-        static const std::string s = "(sssssssssiiiiiddbi)";
+        static const std::string s = "(sssssssssiiiiiddbti)";
         return s;
     }
 };

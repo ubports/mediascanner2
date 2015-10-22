@@ -141,6 +141,10 @@ bool MediaFile::getHasThumbnail() const noexcept {
     return p->has_thumbnail;
 }
 
+uint64_t MediaFile::getModificationTime() const noexcept {
+    return p->modification_time;
+}
+
 MediaType MediaFile::getType() const noexcept {
     return p->type;
 }
