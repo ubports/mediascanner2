@@ -37,25 +37,12 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
-#include <array>
-#include <algorithm>
 
 #include <unistd.h>
 
 using namespace std;
 
 namespace {
-// This list was obtained by grepping /usr/share/mime/audio/.
-std::array<const char*, 4> blacklist{{"audio/x-iriver-pla", "audio/x-mpegurl", "audio/x-ms-asx", "audio/x-scpls"}};
-
-void validate_against_blacklist(const std::string &filename, const std::string &content_type) {
-
-    auto result = std::find(blacklist.begin(), blacklist.end(), content_type);
-    if(result != blacklist.end()) {
-        throw runtime_error("File " + filename + " is of blacklisted type " + content_type + ".");
-    }
-}
-
 const char exif_date_template[] = "%Y:%m:%d %H:%M:%S";
 const char iso8601_date_format[] = "%Y-%m-%dT%H:%M:%S";
 const char iso8601_date_with_zone_format[] = "%Y-%m-%dT%H:%M:%S%z";

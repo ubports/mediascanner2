@@ -29,6 +29,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include <algorithm>
+#include <array>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -39,6 +41,18 @@ using namespace std;
 namespace {
 const char BUS_NAME[] = "com.canonical.MediaScanner2.Extractor";
 const char BUS_PATH[] = "/com/canonical/MediaScanner2/Extractor";
+
+// This list was obtained by grepping /usr/share/mime/audio/.
+std::array<const char*, 4> blacklist{{"audio/x-iriver-pla", "audio/x-mpegurl", "audio/x-ms-asx", "audio/x-scpls"}};
+
+void validate_against_blacklist(const std::string &filename, const std::string &content_type) {
+
+    auto result = std::find(blacklist.begin(), blacklist.end(), content_type);
+    if(result != blacklist.end()) {
+        throw runtime_error("File " + filename + " is of blacklisted type " + content_type + ".");
+    }
+}
+
 }
 
 namespace mediascanner {
@@ -110,6 +124,7 @@ DetectedFile MetadataExtractor::detect(const std::string &filename) {
         throw runtime_error("Could not determine content type.");
     }
 
+    validate_against_blacklist(filename, content_type);
     MediaType type;
     if (content_type.find("audio/") == 0) {
         type = AudioMedia;
