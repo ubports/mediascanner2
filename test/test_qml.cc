@@ -4,6 +4,7 @@
 #include <string>
 
 #include <gio/gio.h>
+#include <QGuiApplication>
 #include <QProcess>
 #include <QtQuickTest/quicktest.h>
 
@@ -155,7 +156,11 @@ private:
     QProcess daemon;
 };
 
-MediaStoreData data;
 
+int main(int argc, char** argv)
+{
+    QGuiApplication(argc, argv);
 
-QUICK_TEST_MAIN(Mediascaner)
+    MediaStoreData data;
+    return quick_test_main(argc, argv, "Mediascanner", SOURCE_DIR "/qml");
+}
