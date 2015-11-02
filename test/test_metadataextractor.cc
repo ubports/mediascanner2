@@ -204,7 +204,7 @@ TEST_F(MetadataExtractorTest, extract_m4a) {
         return;
     }
 
-    MetadataExtractor e;
+    MetadataExtractor e(session_bus.get());
     string testfile = SOURCE_DIR "/media/testfile.m4a";
     MediaFile file = e.extract(e.detect(testfile));
 
