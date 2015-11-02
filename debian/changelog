@@ -1,9 +1,13 @@
-mediascanner2 (0.108-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.108+16.04.20151102-0ubuntu1) xenial; urgency=medium
 
   * Rename QML plugin package to qml-module-* and add transitional package
     for upgrades. (LP: #1342031)
+  * Fix the metadata extractor so that it correctly extracts the date
+    and presence of cover art from MPEG 4 audio files. (LP: #1492407)
+  * Remove the id column from media_attic so that we don't get conflicts
+    when copying data between media and media_attic. (LP: #1501990)
 
- -- James Henstridge <james.henstridge@canonical.com>  Thu, 08 Oct 2015 12:18:08 +0800
+ -- James Henstridge <james.henstridge@canonical.com>  Mon, 02 Nov 2015 02:52:43 +0000
 
 mediascanner2 (0.107+15.10.20150922.1-0ubuntu1) wily; urgency=medium
 
