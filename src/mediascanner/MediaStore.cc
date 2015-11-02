@@ -46,7 +46,7 @@ namespace mediascanner {
 
 // Increment this whenever changing db schema.
 // It will cause dbstore to rebuild its tables.
-static const int schemaVersion = 9;
+static const int schemaVersion = 10;
 
 struct MediaStorePrivate {
     sqlite3 *db;
@@ -322,7 +322,6 @@ CREATE INDEX media_genre_idx ON media(type, genre) WHERE type = 1;
 CREATE INDEX media_mtime_idx ON media(type, mtime);
 
 CREATE TABLE media_attic (
-    id INTEGER PRIMARY KEY,
     filename TEXT UNIQUE NOT NULL,
     content_type TEXT,
     etag TEXT,
@@ -918,7 +917,9 @@ void MediaStorePrivate::pruneDeleted() {
 
 void MediaStorePrivate::archiveItems(const std::string &prefix) {
     const char *templ = R"(BEGIN TRANSACTION;
-INSERT INTO media_attic SELECT * FROM media WHERE filename LIKE %s;
+INSERT INTO media_attic (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type)
+  SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type
+    FROM media WHERE filename LIKE %s;
 DELETE FROM media WHERE filename LIKE %s;
 COMMIT;
 )";
@@ -935,7 +936,9 @@ COMMIT;
 
 void MediaStorePrivate::restoreItems(const std::string &prefix) {
     const char *templ = R"(BEGIN TRANSACTION;
-INSERT INTO media SELECT * FROM media_attic WHERE filename LIKE %s;
+INSERT INTO media (filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type)
+  SELECT filename, content_type, etag, title, date, artist, album, album_artist, genre, disc_number, track_number, duration, width, height, latitude, longitude, has_thumbnail, mtime, type
+    FROM media_attic WHERE filename LIKE %s;
 DELETE FROM media_attic WHERE filename LIKE %s;
 COMMIT;
 )";
