@@ -7,7 +7,7 @@ Source: mediascanner2
 Section: libs
 Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Build-Depends: cmake,
                cmake-extras,
                dbus,
@@ -25,7 +25,6 @@ Build-Depends: cmake,
                libsqlite3-dev (>= 3.8.5),
                libudisks2-dev,
                lsb-release,
-               qt5-default,
                qtbase5-dev,
                qtbase5-dev-tools,
                qtdeclarative5-dev,
@@ -57,6 +56,7 @@ Description: Access library for the media scanner's index
 
 Package: mediascanner2.0
 Architecture: any
+Multi-Arch: foreign
 Pre-Depends: ${misc:Pre-Depends},
 Depends: gstreamer1.0-plugins-base,
          gstreamer1.0-plugins-good,
@@ -81,10 +81,26 @@ Description: Development files for libmediascanner
 
 Package: qtdeclarative5-ubuntu-mediascanner0.1
 Architecture: any
+Multi-Arch: same
+Section: oldlibs
+Depends: qml-module-ubuntu-mediascanner0.1,
+         ${misc:Depends},
+Description: transitional dummy package for QML plugin for the Ubuntu Media Scanner
+ This package provides components that allow access to the media
+ scanner index from Qt Quick 2 / QML applications.
+ .
+ This is a transitional dummy package for qml-module-ubuntu-mediascanner0.1
+ which can be safely removed.
+
+Package: qml-module-ubuntu-mediascanner0.1
+Architecture: any
+Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
 Depends: mediascanner2.0 (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends},
+Breaks: qtdeclarative5-ubuntu-mediascanner0.1 (<< 0.108~)
+Replaces: qtdeclarative5-ubuntu-mediascanner0.1 (<< 0.108~)
 Description: QML plugin for the Ubuntu Media Scanner
  This package provides components that allow access to the media
  scanner index from Qt Quick 2 / QML applications.

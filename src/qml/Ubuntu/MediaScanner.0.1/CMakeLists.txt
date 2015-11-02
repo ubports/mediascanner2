@@ -17,7 +17,9 @@ add_library(mediascanner-qml MODULE
   SongsSearchModel.cc
 )
 
-set_target_properties(mediascanner-qml PROPERTIES AUTOMOC TRUE)
+set_target_properties(mediascanner-qml PROPERTIES
+  AUTOMOC TRUE
+  NO_SONAME TRUE)
 qt5_use_modules(mediascanner-qml Qml Concurrent DBus)
 target_link_libraries(mediascanner-qml mediascanner ms-dbus)
 

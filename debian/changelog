@@ -1,3 +1,10 @@
+mediascanner2 (0.108-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Rename QML plugin package to qml-module-* and add transitional package
+    for upgrades. (LP: #1342031)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Thu, 08 Oct 2015 12:18:08 +0800
+
 mediascanner2 (0.107+15.10.20150922.1-0ubuntu1) wily; urgency=medium
 
   [ James Henstridge ]
