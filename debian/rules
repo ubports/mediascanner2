@@ -11,6 +11,8 @@ export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 # http://ccache.samba.org/manual.html#_precompiled_headers
 export CCACHE_SLOPPINESS=time_macros
 
+export QT_SELECT=qt5
+
 %:
 	dh $@ --parallel --fail-missing
 

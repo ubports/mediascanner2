@@ -1,4 +1,4 @@
-usr/bin/*
+usr/bin/mediascanner-service-2.0
 usr/lib/*/mediascanner-2.0/mediascanner-dbus-2.0
 usr/lib/*/mediascanner-2.0/mediascanner-extractor
 usr/share/dbus-1/services/*

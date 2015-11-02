@@ -1,7 +1,7 @@
 project(mediascanner2 CXX C)
 cmake_minimum_required(VERSION 2.8.9)
 
-set(MEDIASCANNER_VERSION "0.107")
+set(MEDIASCANNER_VERSION "0.108")
 
 execute_process(
   COMMAND /bin/sh ${CMAKE_CURRENT_SOURCE_DIR}/get-soversion.sh
@@ -62,8 +62,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mediascanner-2.0.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # Install Upstart user session job
+configure_file(mediascanner-2.0.conf.in mediascanner-2.0.conf)
 install(
-  FILES mediascanner-2.0.conf
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/mediascanner-2.0.conf
   DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions
 )
 

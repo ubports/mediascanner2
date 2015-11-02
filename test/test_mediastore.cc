@@ -24,9 +24,10 @@
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/internal/utils.hh>
 
-#include<stdexcept>
-#include<cstdio>
-#include<string>
+#include <algorithm>
+#include <stdexcept>
+#include <cstdio>
+#include <string>
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -488,7 +489,23 @@ TEST_F(MediaStoreTest, query_order) {
 TEST_F(MediaStoreTest, unmount) {
     MediaFile audio1 = MediaFileBuilder("/media/username/dir/fname.ogg")
         .setType(AudioMedia)
-        .setTitle("bbb bbb");
+        .setETag("etag")
+        .setContentType("audio/ogg")
+        .setTitle("bbb bbb")
+        .setDate("2015-01-01")
+        .setAuthor("artist")
+        .setAlbum("album")
+        .setAlbumArtist("album_artist")
+        .setGenre("genre")
+        .setDiscNumber(5)
+        .setTrackNumber(10)
+        .setDuration(42)
+        .setWidth(640)
+        .setHeight(480)
+        .setLatitude(8.0)
+        .setLongitude(4.0)
+        .setHasThumbnail(true)
+        .setModificationTime(10000);
     MediaFile audio2 = MediaFileBuilder("/home/username/Music/fname.ogg")
         .setType(AudioMedia)
         .setTitle("bbb bbb");
@@ -507,6 +524,12 @@ TEST_F(MediaStoreTest, unmount) {
     store.restoreItems("/media/username");
     result = store.query("bbb", AudioMedia, filter);
     ASSERT_EQ(result.size(), 2);
+    std::sort(result.begin(), result.end(),
+              [](const MediaFile &m1, const MediaFile &m2) -> bool {
+                  return m1.getFileName() < m2.getFileName();
+              });
+    EXPECT_EQ(result[0], audio2);
+    EXPECT_EQ(result[1], audio1);
 }
 
 TEST_F(MediaStoreTest, utils) {
