@@ -40,7 +40,8 @@ namespace {
 
 bool supports_decoder(const std::string& format)
 {
-    static std::set<std::string> formats;
+    typedef std::unique_ptr<GstCaps, decltype(&gst_caps_unref)> CapsPtr;
+    static std::vector<CapsPtr> formats;
 
     if (formats.empty())
     {
@@ -59,19 +60,29 @@ bool supports_decoder(const std::string& format)
                 {
                     continue;
                 }
-
-                std::unique_ptr<GstCaps, decltype(&gst_caps_unref)> caps(gst_static_caps_get(&t->static_caps),
-                                                                         gst_caps_unref);
-                for (unsigned int i = 0; i < gst_caps_get_size(caps.get()); i++)
-                {
-                    const auto structure = gst_caps_get_structure(caps.get(), i);
-                    formats.emplace(gst_structure_get_name(structure));
+                CapsPtr caps(gst_static_caps_get(&t->static_caps),
+                             gst_caps_unref);
+                if (gst_caps_is_any(caps.get())) {
+                    continue;
                 }
+                formats.emplace_back(std::move(caps));
             }
         }
     }
 
-    return formats.find(format) != formats.end();
+    char *end = nullptr;
+    GstStructure *structure = gst_structure_from_string(format.c_str(), &end);
+    assert(structure != nullptr);
+    assert(end == format.c_str() + format.size());
+    // GstCaps adopts the GstStructure
+    CapsPtr caps(gst_caps_new_full(structure, nullptr), gst_caps_unref);
+
+    for (const auto &other : formats) {
+        if (gst_caps_is_always_compatible(caps.get(), other.get())) {
+            return true;
+        }
+    }
+    return false;
 }
 
 }
@@ -142,7 +153,7 @@ TEST_F(MetadataExtractorTest, extract) {
 }
 
 TEST_F(MetadataExtractorTest, extract_mp3) {
-    if (!supports_decoder("audio/mpeg")) {
+    if (!supports_decoder("audio/mpeg, mpegversion=(int)1, layer=(int)3")) {
         printf("MP3 codec not supported\n");
         return;
     }
@@ -158,6 +169,32 @@ TEST_F(MetadataExtractorTest, extract_mp3) {
     EXPECT_EQ(file.getTrackNumber(), 1);
     EXPECT_EQ(file.getDuration(), 1);
     EXPECT_EQ(file.getGenre(), "Hip-Hop");
+    struct stat st;
+    ASSERT_EQ(0, stat(testfile.c_str(), &st));
+    EXPECT_EQ(st.st_mtime, file.getModificationTime());
+}
+
+TEST_F(MetadataExtractorTest, extract_m4a) {
+    if (!supports_decoder("audio/mpeg, mpegversion=(int)4, stream-format=(string)raw")) {
+        printf("M4A codec not supported\n");
+        return;
+    }
+
+    MetadataExtractor e;
+    string testfile = SOURCE_DIR "/media/testfile.m4a";
+    MediaFile file = e.extract(e.detect(testfile));
+
+    EXPECT_EQ(AudioMedia, file.getType());
+    EXPECT_EQ("Title", file.getTitle());
+    EXPECT_EQ("Artist", file.getAuthor());
+    EXPECT_EQ("Album", file.getAlbum());
+    EXPECT_EQ("Album Artist", file.getAlbumArtist());
+    EXPECT_EQ("2015-10-07", file.getDate());
+    EXPECT_EQ(4, file.getTrackNumber());
+    EXPECT_EQ(1, file.getDiscNumber());
+    EXPECT_EQ(1, file.getDuration());
+    EXPECT_EQ("Rock", file.getGenre());
+    EXPECT_EQ(true, file.getHasThumbnail());
     struct stat st;
     ASSERT_EQ(0, stat(testfile.c_str(), &st));
     EXPECT_EQ(st.st_mtime, file.getModificationTime());
@@ -220,7 +257,7 @@ TEST_F(MetadataExtractorTest, extract_bad_date) {
 }
 
 TEST_F(MetadataExtractorTest, extract_mp3_bad_date) {
-    if (!supports_decoder("audio/mpeg")) {
+    if (!supports_decoder("audio/mpeg, mpegversion=(int)1, layer=(int)3")) {
         printf("MP3 codec not supported\n");
         return;
     }
