@@ -94,6 +94,8 @@ Pre-Depends: ${misc:Pre-Depends},
 Depends: mediascanner2.0 (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends},
+Breaks: qtdeclarative5-ubuntu-mediascanner0.1 (<< 0.108~)
+Replaces: qtdeclarative5-ubuntu-mediascanner0.1 (<< 0.108~)
 Description: QML plugin for the Ubuntu Media Scanner
  This package provides components that allow access to the media
  scanner index from Qt Quick 2 / QML applications.
