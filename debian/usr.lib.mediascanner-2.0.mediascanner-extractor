@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/lib/*/mediascanner-2.0/mediascanner-extractor {
+/usr/lib/*/mediascanner-2.0/mediascanner-extractor (attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/audio>
   #include <abstractions/bash>
