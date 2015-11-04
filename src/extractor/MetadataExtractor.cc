@@ -58,30 +58,39 @@ void validate_against_blacklist(const std::string &filename, const std::string &
 namespace mediascanner {
 
 struct MetadataExtractorPrivate {
-    std::unique_ptr<MSExtractor, decltype(&g_object_unref)> proxy;
+    std::unique_ptr<GDBusConnection, decltype(&g_object_unref)> bus;
+    std::unique_ptr<MSExtractor, decltype(&g_object_unref)> proxy {nullptr, g_object_unref};
 
-    MetadataExtractorPrivate() : proxy(nullptr, g_object_unref) {}
+    MetadataExtractorPrivate(GDBusConnection *bus);
+    void create_proxy();
 };
 
-MetadataExtractor::MetadataExtractor(GDBusConnection *bus) {
-    p = new MetadataExtractorPrivate();
+MetadataExtractorPrivate::MetadataExtractorPrivate(GDBusConnection *bus)
+    : bus(reinterpret_cast<GDBusConnection*>(g_object_ref(bus)),
+          g_object_unref) {
+    create_proxy();
+}
 
+void MetadataExtractorPrivate::create_proxy() {
     GError *error = nullptr;
-    p->proxy.reset(ms_extractor_proxy_new_sync(
-            bus, static_cast<GDBusProxyFlags>(
+    proxy.reset(ms_extractor_proxy_new_sync(
+            bus.get(), static_cast<GDBusProxyFlags>(
                 G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
                 G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
                 G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START_AT_CONSTRUCTION),
             BUS_NAME, BUS_PATH, nullptr, &error));
-    if (not p->proxy) {
+    if (not proxy) {
         string errortxt(error->message);
         g_error_free(error);
-        delete p;
 
         string msg = "Failed to create D-Bus proxy: ";
         msg += errortxt;
         throw runtime_error(msg);
     }
+}
+
+MetadataExtractor::MetadataExtractor(GDBusConnection *bus) {
+    p = new MetadataExtractorPrivate(bus);
 }
 
 MetadataExtractor::~MetadataExtractor() {
@@ -154,6 +163,9 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
         g_error_free(error);
         error = nullptr;
         fprintf(stderr, "No reply from extractor daemon, retrying once.\n");
+        // Recreate the proxy, since the old one will have bound to
+        // the old instance's unique name.
+        p->create_proxy();
         success = ms_extractor_call_extract_metadata_sync(
                 p->proxy.get(), d.filename.c_str(), d.etag.c_str(),
                 d.content_type.c_str(), d.mtime, d.type, &res, nullptr, &error);
@@ -162,7 +174,7 @@ MediaFile MetadataExtractor::extract(const DetectedFile &d) {
         string errortxt(error->message);
         g_error_free(error);
 
-        string msg = "Failed to create D-Bus proxy: ";
+        string msg = "ExtractMetadata D-Bus call failed: ";
         msg += errortxt;
         throw runtime_error(msg);
     }
