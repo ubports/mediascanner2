@@ -21,6 +21,7 @@
 #define METADATAEXTRACTOR_H
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include "../mediascanner/scannercore.hh"
 
@@ -47,7 +48,7 @@ public:
     MediaFile fallback_extract(const DetectedFile &d);
 
 private:
-    MetadataExtractorPrivate *p;
+    std::unique_ptr<MetadataExtractorPrivate> p;
 };
 
 }

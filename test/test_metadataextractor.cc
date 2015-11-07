@@ -92,46 +92,55 @@ bool supports_decoder(const std::string& format)
 
 class MetadataExtractorTest : public ::testing::Test {
 protected:
-    MetadataExtractorTest() :
-        test_dbus(nullptr, g_object_unref),
-        session_bus(nullptr, g_object_unref) {
-    }
-
-    virtual ~MetadataExtractorTest() {
-    }
-
-    virtual void SetUp() override{
-        test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
-        g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
-        g_test_dbus_up(test_dbus.get());
-
-        GError *error = nullptr;
-        session_bus.reset(g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error));
-        if (!session_bus) {
-            std::string errortxt(error->message);
-            g_error_free(error);
-            throw std::runtime_error(
-                std::string("Failed to connect to session bus: ") + errortxt);
-        }
+    virtual void SetUp() override {
+        test_dbus_.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
+        g_test_dbus_add_service_dir(test_dbus_.get(), TEST_DIR "/services");
     }
 
     virtual void TearDown() override {
-        session_bus.reset();
-        g_test_dbus_down(test_dbus.get());
-        test_dbus.reset();
+        session_bus_.reset();
+        test_dbus_.reset();
     }
 
-    unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
-    unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus;
+    GDBusConnection *session_bus() {
+        if (!bus_started_) {
+            g_test_dbus_up(test_dbus_.get());
+
+            GError *error = nullptr;
+            char *address = g_dbus_address_get_for_bus_sync(G_BUS_TYPE_SESSION, nullptr, &error);
+            if (!address) {
+                std::string errortxt(error->message);
+                g_error_free(error);
+                throw std::runtime_error(
+                    std::string("Failed to determine session bus address: ") + errortxt);
+            }
+            session_bus_.reset(g_dbus_connection_new_for_address_sync(
+                address, static_cast<GDBusConnectionFlags>(G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT | G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION), nullptr, nullptr, &error));
+            g_free(address);
+            if (!session_bus_) {
+                std::string errortxt(error->message);
+                g_error_free(error);
+                throw std::runtime_error(
+                    std::string("Failed to connect to session bus: ") + errortxt);
+            }
+            bus_started_ = true;
+        }
+        return session_bus_.get();
+    }
+
+private:
+    unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus_ {nullptr, g_object_unref};
+    unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus_ {nullptr, g_object_unref};
+    bool bus_started_ = false;
 };
 
 
 TEST_F(MetadataExtractorTest, init) {
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
 }
 
 TEST_F(MetadataExtractorTest, detect_audio) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -144,7 +153,7 @@ TEST_F(MetadataExtractorTest, detect_audio) {
 }
 
 TEST_F(MetadataExtractorTest, detect_video) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/testvideo_480p.ogv";
     DetectedFile d = e.detect(testfile);
     EXPECT_NE(d.etag, "");
@@ -157,13 +166,13 @@ TEST_F(MetadataExtractorTest, detect_video) {
 }
 
 TEST_F(MetadataExtractorTest, detect_notmedia) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/CMakeLists.txt";
     EXPECT_THROW(e.detect(testfile), runtime_error);
 }
 
 TEST_F(MetadataExtractorTest, extract) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -181,7 +190,7 @@ TEST_F(MetadataExtractorTest, extract_mp3) {
         printf("MP3 codec not supported\n");
         return;
     }
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/testfile.mp3";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -204,7 +213,7 @@ TEST_F(MetadataExtractorTest, extract_m4a) {
         return;
     }
 
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/testfile.m4a";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -225,7 +234,7 @@ TEST_F(MetadataExtractorTest, extract_m4a) {
 }
 
 TEST_F(MetadataExtractorTest, extract_video) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
 
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/testvideo_480p.ogv"));
     EXPECT_EQ(file.getType(), VideoMedia);
@@ -247,7 +256,7 @@ TEST_F(MetadataExtractorTest, extract_video) {
 }
 
 TEST_F(MetadataExtractorTest, extract_photo) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
 
     // An landscape image that should be rotated to portrait
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image1.jpg"));
@@ -269,7 +278,7 @@ TEST_F(MetadataExtractorTest, extract_photo) {
 }
 
 TEST_F(MetadataExtractorTest, extract_bad_date) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/baddate.ogg";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -285,7 +294,7 @@ TEST_F(MetadataExtractorTest, extract_mp3_bad_date) {
         printf("MP3 codec not supported\n");
         return;
     }
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/baddate.mp3";
     MediaFile file = e.extract(e.detect(testfile));
 
@@ -297,7 +306,7 @@ TEST_F(MetadataExtractorTest, extract_mp3_bad_date) {
 }
 
 TEST_F(MetadataExtractorTest, blacklist) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string testfile = SOURCE_DIR "/media/playlist.m3u";
     try {
         e.detect(testfile);
@@ -310,7 +319,7 @@ TEST_F(MetadataExtractorTest, blacklist) {
 
 TEST_F(MetadataExtractorTest, png_file) {
     // PNG files don't have exif entries, so test we work with those, too.
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     MediaFile file = e.extract(e.detect(SOURCE_DIR "/media/image3.png"));
 
     EXPECT_EQ(ImageMedia, file.getType());

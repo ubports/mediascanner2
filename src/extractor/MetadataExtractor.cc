@@ -90,12 +90,10 @@ void MetadataExtractorPrivate::create_proxy() {
 }
 
 MetadataExtractor::MetadataExtractor(GDBusConnection *bus) {
-    p = new MetadataExtractorPrivate(bus);
+    p.reset(new MetadataExtractorPrivate(bus));
 }
 
-MetadataExtractor::~MetadataExtractor() {
-    delete p;
-}
+MetadataExtractor::~MetadataExtractor() = default;
 
 DetectedFile MetadataExtractor::detect(const std::string &filename) {
     std::unique_ptr<GFile, void(*)(void *)> file(

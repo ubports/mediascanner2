@@ -71,6 +71,9 @@ install(
 enable_coverage_report(
   TARGETS
     mediascanner
+    extractor-client
+    extractor-backend
+    mediascanner-extractor
     scannerstuff
     scannerdaemon
     ms-dbus
@@ -85,6 +88,7 @@ enable_coverage_report(
     basic
     test_mediastore
     test_metadataextractor
+    test_extractorbackend
     test_sqliteutils
     test_mfbuilder
     test_dbus
