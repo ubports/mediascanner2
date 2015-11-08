@@ -100,6 +100,7 @@ protected:
     virtual void TearDown() override {
         session_bus_.reset();
         test_dbus_.reset();
+        unsetenv("MEDIASCANNER_EXTRACTOR_CRASH_AFTER");
     }
 
     GDBusConnection *session_bus() {
@@ -340,6 +341,33 @@ TEST_F(MetadataExtractorTest, png_file) {
 
     EXPECT_DOUBLE_EQ(0, file.getLatitude());
     EXPECT_DOUBLE_EQ(0, file.getLongitude());
+}
+
+TEST_F(MetadataExtractorTest, extractor_crash) {
+    setenv("MEDIASCANNER_EXTRACTOR_CRASH_AFTER", "0", true);
+
+    MetadataExtractor e(session_bus());
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+    try {
+        MediaFile file = e.extract(e.detect(testfile));
+        FAIL();
+    } catch (const std::runtime_error &e) {
+        EXPECT_NE(std::string::npos, std::string(e.what()).find("ExtractMetadata D-Bus call failed")) << e.what();
+    }
+}
+
+TEST_F(MetadataExtractorTest, crash_recovery) {
+    setenv("MEDIASCANNER_EXTRACTOR_CRASH_AFTER", "1", true);
+
+    MetadataExtractor e(session_bus());
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+    // First extraction succeeds
+    MediaFile file = e.extract(e.detect(testfile));
+
+    // Second try succeeds, with the extraction daemon being
+    // restarted.
+    file = e.extract(e.detect(testfile));
+    EXPECT_EQ("track1", file.getTitle());
 }
 
 int main(int argc, char **argv) {

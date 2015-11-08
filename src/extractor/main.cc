@@ -64,6 +64,8 @@ private:
     std::unique_ptr<MSExtractor, void(*)(void*)> iface;
     unsigned int handler_id = 0;
     unsigned int timeout_id = 0;
+
+    int crash_after = -1;
 };
 
 }
@@ -72,6 +74,10 @@ ExtractorDaemon::ExtractorDaemon() :
     main_loop(g_main_loop_new(nullptr, FALSE), g_main_loop_unref),
     session_bus(nullptr, g_object_unref),
     iface(ms_extractor_skeleton_new(), g_object_unref) {
+    const char *crash_after_env = getenv("MEDIASCANNER_EXTRACTOR_CRASH_AFTER");
+    if (crash_after_env) {
+        crash_after = std::stoi(crash_after_env);
+    }
     setupBus();
 }
 
@@ -134,6 +140,15 @@ gboolean ExtractorDaemon::handleExtractMetadata(MSExtractor *,
                                                 gint32 type,
                                                 gpointer user_data) {
     auto d = reinterpret_cast<ExtractorDaemon*>(user_data);
+
+    // If the environment variable was set, crash the service after
+    // the requested number of extractions.
+    if (d->crash_after == 0) {
+        abort();
+    } else if (d->crash_after > 0) {
+        d->crash_after--;
+    }
+
     DetectedFile file(filename, etag, content_type, mtime, static_cast<MediaType>(type));
     d->extract(file, invocation);
     return TRUE;
