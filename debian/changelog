@@ -1,3 +1,10 @@
+mediascanner2 (0.108+16.04.20151109-0ubuntu1) xenial; urgency=medium
+
+  * Move the metadata extractor to a separate process to isolate bugs in
+    media codecs. (LP: #1508142)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Mon, 09 Nov 2015 01:56:39 +0000
+
 mediascanner2 (0.108+16.04.20151102-0ubuntu1) xenial; urgency=medium
 
   * Rename QML plugin package to qml-module-* and add transitional package
