@@ -3,10 +3,10 @@
 #include <memory>
 #include <string>
 
+#include <gio/gio.h>
+#include <QGuiApplication>
 #include <QProcess>
 #include <QtQuickTest/quicktest.h>
-
-#include <core/dbus/fixture.h>
 
 #include <mediascanner/MediaStore.hh>
 #include <mediascanner/MediaFile.hh>
@@ -18,7 +18,7 @@ using namespace mediascanner;
 
 class MediaStoreData {
 public:
-    MediaStoreData() {
+    MediaStoreData() : test_dbus(nullptr, g_object_unref) {
         db_path = "./mediascanner-cache.XXXXXX";
         if (mkdtemp(const_cast<char*>(db_path.c_str())) == nullptr) {
             throw std::runtime_error("Could not create temporary directory");
@@ -26,11 +26,9 @@ public:
         setenv("MEDIASCANNER_CACHEDIR", db_path.c_str(), true);
         populate();
 
-        // Start up private bus, and start daemon.
-        dbus_fixture.reset(
-            new core::dbus::Fixture(
-                core::dbus::Fixture::default_session_bus_config_file(),
-                core::dbus::Fixture::default_system_bus_config_file()));
+        test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
+        g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
+        g_test_dbus_up(test_dbus.get());
 
         daemon.setProgram(TEST_DIR "/../src/ms-dbus/mediascanner-dbus-2.0");
         daemon.setProcessChannelMode(QProcess::ForwardedChannels);
@@ -46,7 +44,7 @@ public:
             fprintf(stderr, "Failed to stop mediascanner-dbus-2.0\n");
         }
 
-        dbus_fixture.reset();
+        g_test_dbus_down(test_dbus.get());
 
         if (system("rm -rf \"$MEDIASCANNER_CACHEDIR\"") == -1) {
             throw std::runtime_error("rm -rf failed");
@@ -154,11 +152,15 @@ public:
 
 private:
     std::string db_path;
-    std::unique_ptr<core::dbus::Fixture> dbus_fixture;
+    std::unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
     QProcess daemon;
 };
 
-MediaStoreData data;
 
+int main(int argc, char** argv)
+{
+    QGuiApplication(argc, argv);
 
-QUICK_TEST_MAIN(Mediascaner)
+    MediaStoreData data;
+    return quick_test_main(argc, argv, "Mediascanner", SOURCE_DIR "/qml");
+}

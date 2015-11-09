@@ -18,7 +18,8 @@
  */
 
 #include "Scanner.hh"
-#include "MetadataExtractor.hh"
+#include "../extractor/DetectedFile.hh"
+#include "../extractor/MetadataExtractor.hh"
 #include "../mediascanner/internal/utils.hh"
 #include <dirent.h>
 #include <sys/stat.h>

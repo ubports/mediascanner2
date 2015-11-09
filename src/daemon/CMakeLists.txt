@@ -1,18 +1,15 @@
-add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${UDISKS_CFLAGS}
-${PIXBUF_CFLAGS})
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${UDISKS_CFLAGS})
 include_directories(..)
 
 add_library(scannerstuff STATIC
   InvalidationSender.cc
-  MetadataExtractor.cc
   MountWatcher.cc
   SubtreeWatcher.cc
   Scanner.cc
   ../mediascanner/utils.cc
 )
 
-target_link_libraries(scannerstuff ${GST_LIBRARIES} ${EXIF_LDFLAGS} ${UDISKS_LDFLAGS}
-${PIXBUF_LDFLAGS})
+target_link_libraries(scannerstuff extractor-client ${UDISKS_LDFLAGS})
 
 add_executable(scannerdaemon
   scannerdaemon.cc

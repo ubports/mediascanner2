@@ -29,11 +29,11 @@
 #include<glib.h>
 #include<glib-unix.h>
 #include<gio/gio.h>
-#include<gst/gst.h>
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"
-#include "MetadataExtractor.hh"
+#include "../extractor/DetectedFile.hh"
+#include "../extractor/MetadataExtractor.hh"
 #include "MountWatcher.hh"
 #include "SubtreeWatcher.hh"
 #include "Scanner.hh"
@@ -96,7 +96,7 @@ ScannerDaemon::ScannerDaemon() :
     session_bus(nullptr, g_object_unref) {
     setupBus();
     store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
-    extractor.reset(new MetadataExtractor());
+    extractor.reset(new MetadataExtractor(session_bus.get()));
 
     setupMountWatcher();
 
@@ -309,8 +309,7 @@ static void print_banner() {
     printf("\nMediascanner service starting at %s.\n\n", timestr);
 }
 
-int main(int argc, char **argv) {
-    gst_init (&argc, &argv);
+int main(int /*argc*/, char **/*argv*/) {
     print_banner();
 
     try {

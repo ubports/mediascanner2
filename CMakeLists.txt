@@ -23,6 +23,7 @@ option(full_warnings "All possible compiler warnings." OFF)
 include(FindPkgConfig)
 pkg_check_modules(MEDIASCANNER_DEPS REQUIRED
   gio-2.0
+  gio-unix-2.0
   sqlite3>=3.8.5
 )
 pkg_check_modules(GST gstreamer-1.0 gstreamer-pbutils-1.0 REQUIRED)
@@ -48,6 +49,7 @@ set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 enable_testing()
 
 add_subdirectory(src/mediascanner)
+add_subdirectory(src/extractor)
 add_subdirectory(src/daemon)
 add_subdirectory(src/ms-dbus)
 add_subdirectory(src/qml/Ubuntu/MediaScanner.0.1)
@@ -69,6 +71,9 @@ install(
 enable_coverage_report(
   TARGETS
     mediascanner
+    extractor-client
+    extractor-backend
+    mediascanner-extractor
     scannerstuff
     scannerdaemon
     ms-dbus
@@ -83,6 +88,7 @@ enable_coverage_report(
     basic
     test_mediastore
     test_metadataextractor
+    test_extractorbackend
     test_sqliteutils
     test_mfbuilder
     test_dbus

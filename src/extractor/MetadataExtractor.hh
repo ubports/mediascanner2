@@ -21,33 +21,21 @@
 #define METADATAEXTRACTOR_H
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include "../mediascanner/scannercore.hh"
+
+typedef struct _GDBusConnection GDBusConnection;
 
 namespace mediascanner {
 
 class MediaFile;
+struct DetectedFile;
 struct MetadataExtractorPrivate;
-
-struct DetectedFile {
-    DetectedFile(const std::string &filename,
-                 const std::string &etag,
-                 const std::string &content_type,
-                 uint64_t mtime,
-                 MediaType type)
-        : filename(filename), etag(etag), content_type(content_type)
-        , mtime(mtime), type(type) {}
-
-    std::string filename;
-    std::string etag;
-    std::string content_type;
-    uint64_t mtime;
-    MediaType type;
-};
 
 class MetadataExtractor final {
 public:
-    explicit MetadataExtractor(int seconds=25);
+    explicit MetadataExtractor(GDBusConnection *bus);
     ~MetadataExtractor();
     MetadataExtractor(const MetadataExtractor&) = delete;
     MetadataExtractor& operator=(MetadataExtractor &o) = delete;
@@ -60,7 +48,7 @@ public:
     MediaFile fallback_extract(const DetectedFile &d);
 
 private:
-    MetadataExtractorPrivate *p;
+    std::unique_ptr<MetadataExtractorPrivate> p;
 };
 
 }
