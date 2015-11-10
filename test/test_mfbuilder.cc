@@ -20,7 +20,10 @@
 #include<gtest/gtest.h>
 #include"mediascanner/MediaFile.hh"
 #include"mediascanner/MediaFileBuilder.hh"
+#include"test_config.h"
 #include<stdexcept>
+
+#define STANDALONE_DIR SOURCE_DIR "/media/standalone_art"
 
 using namespace mediascanner;
 
@@ -207,6 +210,17 @@ TEST_F(MFBTest, album_art_uri) {
         .setAuthor("The Artist")
         .setAlbum("The Album");
     EXPECT_EQ("image://thumbnailer/file:///foo/bar/baz.mp4", mf.getArtUri());
+}
+
+TEST_F(MFBTest, standaloneArt) {
+    std::string fname(STANDALONE_DIR "/dummy.mp3");
+    MediaFileBuilder mfb(fname);
+    mfb.setType(AudioMedia);
+    MediaFile m(mfb);
+    std::string expected("image://thumbnailer/file://");
+    expected += STANDALONE_DIR;
+    expected += "/cover.jpg";
+    ASSERT_EQ(expected, m.getArtUri());
 }
 
 int main(int argc, char **argv) {
