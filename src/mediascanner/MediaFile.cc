@@ -20,6 +20,7 @@
 #include "MediaFile.hh"
 #include "MediaFileBuilder.hh"
 #include "internal/MediaFilePrivate.hh"
+#include "internal/FolderArtCache.hh"
 #include "internal/utils.hh"
 #include <stdexcept>
 #include<array>
@@ -29,44 +30,6 @@
 #include<algorithm>
 
 using namespace std;
-
-namespace {
-
-std::string detect_standalone_albumart(const string &absolute_filename) {
-    static const std::array<const char *, 2> suffixes{"png", "jpg"};
-    static const std::array<const char *, 6> namebases{"cover", "album", "albumart", "front", ".folder", "folder"};
-    auto slash = absolute_filename.rfind('/');
-    if (slash == string::npos) {
-        return "";
-    }
-    string dirname = absolute_filename.substr(0, slash);
-    string detected;
-    unique_ptr<DIR, int(*)(DIR*)> dir(opendir(dirname.c_str()), closedir);
-    if(!dir) {
-        return "";
-    }
-    unique_ptr<struct dirent, void(*)(void*)> entry((dirent*)malloc(sizeof(dirent) + NAME_MAX + 1), free);
-    struct dirent *de = nullptr;
-    while(readdir_r(dir.get(), entry.get(), &de) == 0 && de) {
-        const string fname(entry->d_name);
-        auto sufpoint = fname.rfind('.');
-        if(sufpoint == string::npos) {
-            continue;
-        }
-        auto namebase = fname.substr(0, sufpoint);
-        auto suffix = fname.substr(sufpoint+1);
-        transform(namebase.begin(), namebase.end(), namebase.begin(), ::tolower);
-        transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
-        if(find(namebases.begin(), namebases.end(), namebase) != namebases.end() &&
-           find(suffixes.begin(), suffixes.end(), suffix) != suffixes.end()) {
-            detected = dirname + "/" + fname;
-            break;
-        }
-    }
-    return detected;
-}
-
-}
 
 namespace mediascanner {
 
@@ -202,7 +165,7 @@ std::string MediaFile::getArtUri() const {
         if (p->has_thumbnail) {
             return make_thumbnail_uri(getUri());
         }
-        auto standalone = detect_standalone_albumart(p->filename);
+        auto standalone = FolderArtCache::get().get_art_for_file(p->filename);
         if(!standalone.empty()) {
             return make_thumbnail_uri(mediascanner::getUri(standalone));
         }

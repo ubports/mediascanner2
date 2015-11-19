@@ -31,7 +31,7 @@ namespace {
 
 const int CACHE_SIZE = 50;
 
-std::string detect_albumart(const std::string &directory) {
+std::string detect_albumart(std::string directory) {
     static const std::array<const char*, 2> art_basenames = {
         "folder",
         "cover",
@@ -41,9 +41,12 @@ std::string detect_albumart(const std::string &directory) {
         "jpg",
         "png",
     };
+    if (!directory.empty() && directory[directory.size()-1] != '/') {
+        directory += "/";
+    }
     for (const auto &base : art_basenames) {
         for (const auto &ext : art_extensions) {
-            std::string filename = directory + "/" + base + "." + ext;
+            std::string filename = directory + base + "." + ext;
             struct stat s;
             if (stat(filename.c_str(), &s) == 0 && S_ISREG(s.st_mode)) {
                 return filename;
@@ -66,16 +69,13 @@ FolderArtCache& FolderArtCache::get() {
     return cache;
 }
 
-
-std::string FolderArtCache::get_folder_art(const std::string &directory) {
+std::string FolderArtCache::get_art_for_directory(const std::string &directory) {
     struct stat s;
     if (lstat(directory.c_str(), &s) < 0) {
-        std::string message("Could not stat directory: ");
-        message += strerror(errno);
-        throw std::runtime_error(message);
+        return "";
     }
     if (!S_ISDIR(s.st_mode)) {
-        throw std::runtime_error(directory + " is not a directory");
+        return "";
     }
     FolderArtInfo info;
     bool update = false;
@@ -105,6 +105,15 @@ std::string FolderArtCache::get_folder_art(const std::string &directory) {
         }
     }
     return info.art;
+}
+
+std::string FolderArtCache::get_art_for_file(const std::string &filename) {
+    auto slash = filename.rfind('/');
+    if (slash == std::string::npos) {
+        return "";
+    }
+    auto directory = filename.substr(0, slash + 1);
+    return get_art_for_directory(directory);
 }
 
 }

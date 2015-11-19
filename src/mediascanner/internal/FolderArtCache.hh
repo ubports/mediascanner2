@@ -43,7 +43,8 @@ public:
     // Get a singleton instance of the cache
     static FolderArtCache& get();
 
-    std::string get_folder_art(const std::string &directory);
+    std::string get_art_for_directory(const std::string &directory);
+    std::string get_art_for_file(const std::string &filename);
 private:
     std::map<std::string, FolderArtInfo> cache_;
     std::map<std::string, FolderArtInfo> old_cache_;
