@@ -32,8 +32,6 @@
 #include <thread>
 #include <vector>
 
-#define STANDALONE_DIR SOURCE_DIR "/media/standalone_art"
-
 using namespace mediascanner;
 
 class MFBTest : public ::testing::Test {
