@@ -23,11 +23,6 @@
 #include "internal/FolderArtCache.hh"
 #include "internal/utils.hh"
 #include <stdexcept>
-#include<array>
-#include<cstdlib>
-#include<memory>
-#include<dirent.h>
-#include<algorithm>
 
 using namespace std;
 

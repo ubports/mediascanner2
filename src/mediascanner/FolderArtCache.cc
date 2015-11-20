@@ -19,27 +19,34 @@
 
 #include "internal/FolderArtCache.hh"
 
+#include <algorithm>
 #include <array>
+#include <cctype>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
+#include <dirent.h>
+#include <memory>
 #include <stdexcept>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+using namespace std;
+
 namespace {
 
 const int CACHE_SIZE = 50;
 
-std::string detect_albumart(std::string directory) {
-    static const std::array<const char*, 5> art_basenames = {
+string detect_albumart(string directory) {
+    static const array<const char*, 5> art_basenames = {
         "cover",
         "album",
         "albumart",
         ".folder",
         "folder",
     };
-    static const std::array<const char*, 3> art_extensions = {
+    static const array<const char*, 3> art_extensions = {
         "jpeg",
         "jpg",
         "png",
@@ -47,16 +54,55 @@ std::string detect_albumart(std::string directory) {
     if (!directory.empty() && directory[directory.size()-1] != '/') {
         directory += "/";
     }
-    for (const auto &base : art_basenames) {
-        for (const auto &ext : art_extensions) {
-            std::string filename = directory + base + "." + ext;
-            struct stat s;
-            if (stat(filename.c_str(), &s) == 0 && S_ISREG(s.st_mode)) {
-                return filename;
-            }
+    unique_ptr<DIR, decltype(&closedir)> dir(
+        opendir(directory.c_str()), &closedir);
+    if (!dir) {
+        return "";
+    }
+
+    const int dirent_size = sizeof(dirent) + fpathconf(dirfd(dir.get()), _PC_NAME_MAX) + 1;
+    unique_ptr<struct dirent, decltype(&free)> entry(
+        reinterpret_cast<struct dirent*>(malloc(dirent_size)), &free);
+
+    string detected;
+    int best_score = 0;
+    struct dirent *de = nullptr;
+    while (readdir_r(dir.get(), entry.get(), &de) == 0 && de) {
+        const string filename(de->d_name);
+        auto dot = filename.rfind('.');
+        // Ignore files with no extension
+        if (dot == string::npos) {
+            continue;
+        }
+        auto basename = filename.substr(0, dot);
+        auto extension = filename.substr(dot+1);
+
+        // Does the file name match one of the required names when
+        // converted to lower case?
+        transform(basename.begin(), basename.end(),
+                  basename.begin(), ::tolower);
+        transform(extension.begin(), extension.end(),
+                  extension.begin(), ::tolower);
+        auto base_pos = find(art_basenames.begin(), art_basenames.end(), basename);
+        if (base_pos == art_basenames.end()) {
+            continue;
+        }
+        auto ext_pos = find(art_extensions.begin(), art_extensions.end(), extension);
+        if (ext_pos == art_extensions.end()) {
+            continue;
+        }
+
+        int score = (base_pos - art_basenames.begin()) * art_basenames.size() +
+            (ext_pos - art_extensions.begin());
+        if (detected.empty() || score < best_score) {
+            detected = filename;
+            best_score = score;
         }
     }
-    return "";
+    if (detected.empty()) {
+        return detected;
+    }
+    return directory + detected;
 }
 
 }
@@ -72,7 +118,7 @@ FolderArtCache& FolderArtCache::get() {
     return cache;
 }
 
-std::string FolderArtCache::get_art_for_directory(const std::string &directory) {
+string FolderArtCache::get_art_for_directory(const string &directory) {
     struct stat s;
     if (lstat(directory.c_str(), &s) < 0) {
         return "";
@@ -84,12 +130,12 @@ std::string FolderArtCache::get_art_for_directory(const std::string &directory) 
     bool update = false;
     try {
         info = cache_.at(directory);
-    } catch (const std::out_of_range &) {
+    } catch (const out_of_range &) {
         // Fall back to checking the previous iteration of the cache
         try {
             info = old_cache_.at(directory);
             update = true;
-        } catch (const std::out_of_range &) {
+        } catch (const out_of_range &) {
         }
     }
 
@@ -104,16 +150,16 @@ std::string FolderArtCache::get_art_for_directory(const std::string &directory) 
         cache_[directory] = info;
         // Start new cache generation if we've exceeded the size.
         if (cache_.size() > CACHE_SIZE) {
-            old_cache_ = std::move(cache_);
+            old_cache_ = move(cache_);
             cache_.clear();
         }
     }
     return info.art;
 }
 
-std::string FolderArtCache::get_art_for_file(const std::string &filename) {
+string FolderArtCache::get_art_for_file(const string &filename) {
     auto slash = filename.rfind('/');
-    if (slash == std::string::npos) {
+    if (slash == string::npos) {
         return "";
     }
     auto directory = filename.substr(0, slash + 1);
