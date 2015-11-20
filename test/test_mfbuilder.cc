@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <stdexcept>
 #include <thread>
+#include <vector>
 
 #define STANDALONE_DIR SOURCE_DIR "/media/standalone_art"
 
@@ -54,7 +55,7 @@ protected:
 
     void touch(const std::string &fname) {
         // Ensure time stamps change
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         int fd = open(fname.c_str(), O_CREAT, 0600);
         ASSERT_GT(fd, 0);
         ASSERT_EQ(0, close(fd));
@@ -62,7 +63,7 @@ protected:
 
     void remove(const std::string &fname) {
         // Ensure time stamps change
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         ASSERT_EQ(0, unlink(fname.c_str()));
     }
 
@@ -267,7 +268,7 @@ TEST_F(MFBTest, folder_art_case_insensitive) {
 }
 
 TEST_F(MFBTest, folder_art_precedence) {
-   std::string fname = tmpdir + "/dummy.mp3";
+    std::string fname = tmpdir + "/dummy.mp3";
     MediaFile media = MediaFileBuilder(fname)
         .setType(AudioMedia)
         .setTitle("Title")
@@ -302,6 +303,40 @@ TEST_F(MFBTest, folder_art_precedence) {
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.png")) << media.getArtUri();
     remove(tmpdir + "/folder.png");
+}
+
+TEST_F(MFBTest, folder_art_cache_coverage) {
+    std::vector<MediaFile> files;
+    for (int i = 0; i < 100; i++) {
+        std::string directory = tmpdir + "/" + std::to_string(i);
+        ASSERT_EQ(0, mkdir(directory.c_str(), 0700));
+        touch(directory + "/folder.jpg");
+
+        std::string fname = directory + "/dummy.mp3";
+        files.emplace_back(MediaFileBuilder(fname)
+                           .setType(AudioMedia)
+                           .setTitle("Title")
+                           .setAuthor("Artist")
+                           .setAlbum("Album"));
+    }
+
+    // Check art for a number of files smaller than the cache size twice
+    for (int i = 0; i < 10; i++) {
+        const auto &media = files[i];
+        EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
+    }
+    for (int i = 0; i < 10; i++) {
+        const auto &media = files[i];
+        EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
+    }
+
+    // Now check a larger number of files twice
+    for (const auto &media : files) {
+        EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
+    }
+    for (const auto &media : files) {
+        EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
+    }
 }
 
 int main(int argc, char **argv) {
