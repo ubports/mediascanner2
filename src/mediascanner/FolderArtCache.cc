@@ -32,9 +32,12 @@ namespace {
 const int CACHE_SIZE = 50;
 
 std::string detect_albumart(std::string directory) {
-    static const std::array<const char*, 2> art_basenames = {
-        "folder",
+    static const std::array<const char*, 5> art_basenames = {
         "cover",
+        "album",
+        "albumart",
+        ".folder",
+        "folder",
     };
     static const std::array<const char*, 3> art_extensions = {
         "jpeg",
@@ -90,9 +93,10 @@ std::string FolderArtCache::get_art_for_directory(const std::string &directory) 
         }
     }
 
-    if (info.dir_mtime != s.st_mtime) {
+    if (info.dir_mtime.tv_sec != s.st_mtim.tv_sec ||
+        info.dir_mtime.tv_nsec != s.st_mtim.tv_nsec) {
         info.art = detect_albumart(directory);
-        info.dir_mtime = s.st_mtime;
+        info.dir_mtime = s.st_mtim;
         update = true;
     }
 

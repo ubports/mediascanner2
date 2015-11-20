@@ -29,7 +29,7 @@ namespace mediascanner {
 
 struct FolderArtInfo {
     std::string art;
-    time_t dir_mtime = 0;
+    struct timespec dir_mtime {0, 0};
 };
 
 class FolderArtCache final {
