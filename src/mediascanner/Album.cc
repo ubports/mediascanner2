@@ -18,6 +18,7 @@
  */
 
 #include "Album.hh"
+#include "internal/FolderArtCache.hh"
 #include "internal/utils.hh"
 
 using namespace std;
@@ -115,6 +116,10 @@ std::string Album::getArtUri() const {
     if (p->has_thumbnail) {
         return make_thumbnail_uri(getUri(p->filename));
     } else {
+        auto standalone = FolderArtCache::get().get_art_for_file(p->filename);
+        if (!standalone.empty()) {
+            return make_thumbnail_uri(getUri(standalone));
+        }
         return make_album_art_uri(p->artist, p->title);
     }
 }

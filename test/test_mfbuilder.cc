@@ -18,6 +18,7 @@
  */
 
 #include "test_config.h"
+#include "mediascanner/Album.hh"
 #include "mediascanner/MediaFile.hh"
 #include "mediascanner/MediaFileBuilder.hh"
 
@@ -51,17 +52,21 @@ protected:
         }
     }
 
-    void touch(const std::string &fname) {
-        // Ensure time stamps change
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    void touch(const std::string &fname, bool sleep=false) {
+        if (sleep) {
+            // Ensure time stamps change
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
         int fd = open(fname.c_str(), O_CREAT, 0600);
         ASSERT_GT(fd, 0);
         ASSERT_EQ(0, close(fd));
     }
 
-    void remove(const std::string &fname) {
-        // Ensure time stamps change
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    void remove(const std::string &fname, bool sleep=false) {
+        if (sleep) {
+            // Ensure time stamps change
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
         ASSERT_EQ(0, unlink(fname.c_str()));
     }
 
@@ -247,9 +252,9 @@ TEST_F(MFBTest, folder_art) {
         .setAlbum("Album");
 
     EXPECT_EQ("image://albumart/artist=Artist&album=Album", media.getArtUri());
-    touch(tmpdir + "/folder.jpg");
+    touch(tmpdir + "/folder.jpg", true);
     EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
-    remove(tmpdir + "/folder.jpg");
+    remove(tmpdir + "/folder.jpg", true);
     EXPECT_EQ("image://albumart/artist=Artist&album=Album", media.getArtUri());
 }
 
@@ -282,25 +287,24 @@ TEST_F(MFBTest, folder_art_precedence) {
     touch(tmpdir + "/folder.png");
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/cover.jpg")) << media.getArtUri();
-    remove(tmpdir + "/cover.jpg");
+    remove(tmpdir + "/cover.jpg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/album.jpg")) << media.getArtUri();
-    remove(tmpdir + "/album.jpg");
+    remove(tmpdir + "/album.jpg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/albumart.jpg")) << media.getArtUri();
-    remove(tmpdir + "/albumart.jpg");
+    remove(tmpdir + "/albumart.jpg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/.folder.jpg")) << media.getArtUri();
-    remove(tmpdir + "/.folder.jpg");
+    remove(tmpdir + "/.folder.jpg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpeg")) << media.getArtUri();
-    remove(tmpdir + "/folder.jpeg");
+    remove(tmpdir + "/folder.jpeg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
-    remove(tmpdir + "/folder.jpg");
+    remove(tmpdir + "/folder.jpg", true);
 
     EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.png")) << media.getArtUri();
-    remove(tmpdir + "/folder.png");
 }
 
 TEST_F(MFBTest, folder_art_cache_coverage) {
@@ -335,6 +339,22 @@ TEST_F(MFBTest, folder_art_cache_coverage) {
     for (const auto &media : files) {
         EXPECT_NE(std::string::npos, media.getArtUri().find("/folder.jpg")) << media.getArtUri();
     }
+}
+
+TEST_F(MFBTest, album_art) {
+    std::string fname = tmpdir + "/dummy.mp3";
+
+    // File with embedded art
+    Album album("Album", "Artist", "2015-11-23", "Rock", fname, true);
+    EXPECT_NE(std::string::npos, album.getArtUri().find("/dummy.mp3")) << album.getArtUri();
+
+    // No embedded art
+    album = Album("Album", "Artist", "2015-11-23", "Rock", fname, false);
+    EXPECT_EQ("image://albumart/artist=Artist&album=Album", album.getArtUri());
+
+    // No embedded art, but folder art available
+    touch(tmpdir + "/folder.jpg", true);
+    EXPECT_NE(std::string::npos, album.getArtUri().find("/folder.jpg")) << album.getArtUri();
 }
 
 int main(int argc, char **argv) {
