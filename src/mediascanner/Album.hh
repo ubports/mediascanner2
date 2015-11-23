@@ -32,6 +32,9 @@ public:
     Album(const std::string &title, const std::string &artist,
           const std::string &date, const std::string &genre,
           const std::string &filename);
+    Album(const std::string &title, const std::string &artist,
+          const std::string &date, const std::string &genre,
+          const std::string &filename, bool has_thumbnail);
     Album(const Album &other);
     Album(Album &&other);
     ~Album();
