@@ -107,6 +107,10 @@ const std::string& Album::getArtFile() const noexcept {
     return p->filename;
 }
 
+bool Album::getHasThumbnail() const noexcept {
+    return p->has_thumbnail;
+}
+
 std::string Album::getArtUri() const {
     if (p->has_thumbnail) {
         return make_thumbnail_uri(getUri(p->filename));
@@ -120,7 +124,8 @@ bool Album::operator==(const Album &other) const {
         p->artist == other.p->artist &&
         p->date == other.p->date &&
         p->genre == other.p->genre &&
-        p->filename == other.p->filename;
+        p->filename == other.p->filename &&
+        p->has_thumbnail == other.p->has_thumbnail;
 }
 
 bool Album::operator!=(const Album &other) const {

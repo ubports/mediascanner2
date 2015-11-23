@@ -82,7 +82,7 @@ struct TypeMapper<mediascanner::Album> {
         return true;
     }
     static const std::string &signature() {
-        static const std::string s = "(sssss)";
+        static const std::string s = "(sssssb)";
         return s;
     }
 };

@@ -11,6 +11,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::Album::getArtUri() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getDate() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getGenre() const@Base" 0.105+14.10.20140903
+ (c++)"mediascanner::Album::getHasThumbnail() const@Base" 0replaceme
  (c++)"mediascanner::Album::getTitle() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::operator=(mediascanner::Album&&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::operator=(mediascanner::Album const&)@Base" 0.105+14.10.20140903

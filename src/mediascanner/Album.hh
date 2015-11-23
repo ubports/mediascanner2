@@ -47,6 +47,7 @@ public:
     const std::string& getDate() const noexcept;
     const std::string& getGenre() const noexcept;
     const std::string& getArtFile() const noexcept;
+    bool getHasThumbnail() const noexcept;
     std::string getArtUri() const;
     bool operator==(const Album &other) const;
     bool operator!=(const Album &other) const;
