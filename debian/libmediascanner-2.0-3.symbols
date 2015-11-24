@@ -5,13 +5,13 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::Album::Album(mediascanner::Album const&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 0replaceme
+ (c++)"mediascanner::Album::Album(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 0.109+16.04.20151124.1
  (c++)"mediascanner::Album::getArtFile() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getArtist() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getArtUri() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getDate() const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::getGenre() const@Base" 0.105+14.10.20140903
- (c++)"mediascanner::Album::getHasThumbnail() const@Base" 0replaceme
+ (c++)"mediascanner::Album::getHasThumbnail() const@Base" 0.109+16.04.20151124.1
  (c++)"mediascanner::Album::getTitle() const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::Album::operator=(mediascanner::Album&&)@Base" 0.105+14.10.20140903
  (c++)"mediascanner::Album::operator=(mediascanner::Album const&)@Base" 0.105+14.10.20140903

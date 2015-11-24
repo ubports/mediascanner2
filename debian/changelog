@@ -1,11 +1,18 @@
-mediascanner2 (0.109-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.109+16.04.20151124.1-0ubuntu1) xenial; urgency=medium
 
+  [ James Henstridge ]
   * If a folder contains an image file named
     {cover,album,albumart,.folder,folder}.{jpeg,jpg,png} use it as album
     art for songs in preference to online art if the songs do not have
     embedded art. (LP: #1372000)
+  * Disable MountWatcher's callback during destruction so we don't call
+    back into a partially destroyed class. (LP: #1492393)
 
- -- James Henstridge <james.henstridge@canonical.com>  Mon, 23 Nov 2015 11:12:59 +0800
+  [ CI Train Bot ]
+  * debian/libmediascanner-2.0-3.symbols: update to released version.
+  * New rebuild forced.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Tue, 24 Nov 2015 08:56:52 +0000
 
 mediascanner2 (0.108+16.04.20151109-0ubuntu1) xenial; urgency=medium
 
