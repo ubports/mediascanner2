@@ -140,6 +140,9 @@ MountWatcherPrivate::~MountWatcherPrivate() {
     if (interface_removed_id != 0) {
         g_signal_handler_disconnect(manager, interface_removed_id);
     }
+    // Clear the callback so we don't send out any notifications
+    // during destruction.
+    callback = nullptr;
 }
 
 void MountWatcherPrivate::object_added(GDBusObjectManager *, GDBusObject *object, void *user_data) noexcept {
@@ -291,7 +294,9 @@ void DeviceInfo::update_mount_state() {
         mount_point = "";
     }
 
-    p->callback(mount_info);
+    if (p->callback) {
+        p->callback(mount_info);
+    }
 }
 
 void DeviceInfo::mount_point_changed(GObject *, GParamSpec *,
