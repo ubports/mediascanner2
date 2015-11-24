@@ -20,6 +20,7 @@
 #include "MediaFile.hh"
 #include "MediaFileBuilder.hh"
 #include "internal/MediaFilePrivate.hh"
+#include "internal/FolderArtCache.hh"
 #include "internal/utils.hh"
 #include <stdexcept>
 
@@ -155,12 +156,17 @@ std::string MediaFile::getUri() const {
 
 std::string MediaFile::getArtUri() const {
     switch (p->type) {
-    case AudioMedia:
+    case AudioMedia: {
         if (p->has_thumbnail) {
             return make_thumbnail_uri(getUri());
-        } else {
-            return make_album_art_uri(getAuthor(), getAlbum());
         }
+        auto standalone = FolderArtCache::get().get_art_for_file(p->filename);
+        if(!standalone.empty()) {
+            return make_thumbnail_uri(mediascanner::getUri(standalone));
+        }
+        return make_album_art_uri(getAuthor(), getAlbum());
+    }
+
     default:
         return make_thumbnail_uri(getUri());
     }

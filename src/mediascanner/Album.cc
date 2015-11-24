@@ -18,6 +18,7 @@
  */
 
 #include "Album.hh"
+#include "internal/FolderArtCache.hh"
 #include "internal/utils.hh"
 
 using namespace std;
@@ -30,13 +31,14 @@ struct Album::Private {
     string date;
     string genre;
     string filename;
+    bool has_thumbnail;
 
     Private() {}
     Private(const string &title, const string &artist,
             const string &date, const string &genre,
-            const string &filename)
+            const string &filename, bool has_thumbnail)
         : title(title), artist(artist), date(date), genre(genre),
-          filename(filename) {}
+          filename(filename), has_thumbnail(has_thumbnail) {}
     Private(const Private &other) {
         *this = other;
     }
@@ -46,13 +48,19 @@ Album::Album() : p(new Private){
 }
 
 Album::Album(const std::string &title, const std::string &artist)
-    : Album(title, artist, "", "", "") {
+    : Album(title, artist, "", "", "", false) {
 }
 
 Album::Album(const std::string &title, const std::string &artist,
              const std::string &date, const std::string &genre,
              const std::string &filename)
-    : p(new Private(title, artist, date, genre, filename)) {
+    : Album(title, artist, date, genre, filename, !filename.empty()) {
+}
+
+Album::Album(const std::string &title, const std::string &artist,
+             const std::string &date, const std::string &genre,
+             const std::string &filename, bool has_thumbnail)
+    : p(new Private(title, artist, date, genre, filename, has_thumbnail)) {
 }
 
 Album::Album(const Album &other) : p(new Private(*other.p)) {
@@ -100,11 +108,19 @@ const std::string& Album::getArtFile() const noexcept {
     return p->filename;
 }
 
+bool Album::getHasThumbnail() const noexcept {
+    return p->has_thumbnail;
+}
+
 std::string Album::getArtUri() const {
-    if (p->filename.empty()) {
-        return make_album_art_uri(p->artist, p->title);
-    } else {
+    if (p->has_thumbnail) {
         return make_thumbnail_uri(getUri(p->filename));
+    } else {
+        auto standalone = FolderArtCache::get().get_art_for_file(p->filename);
+        if (!standalone.empty()) {
+            return make_thumbnail_uri(getUri(standalone));
+        }
+        return make_album_art_uri(p->artist, p->title);
     }
 }
 
@@ -113,7 +129,8 @@ bool Album::operator==(const Album &other) const {
         p->artist == other.p->artist &&
         p->date == other.p->date &&
         p->genre == other.p->genre &&
-        p->filename == other.p->filename;
+        p->filename == other.p->filename &&
+        p->has_thumbnail == other.p->has_thumbnail;
 }
 
 bool Album::operator!=(const Album &other) const {

@@ -6,6 +6,7 @@ add_library(mediascanner SHARED
   Album.cc
   MediaStore.cc
   MediaStoreBase.cc
+  FolderArtCache.cc
   utils.cc
   mozilla/fts3_porter.c
   mozilla/Normalize.c
