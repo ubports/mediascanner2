@@ -46,10 +46,14 @@ static core::dbus::Bus::Ptr the_session_bus() {
 MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
     : QObject(parent) {
     const char *use_dbus = getenv("MEDIASCANNER_USE_DBUS");
-    if (use_dbus != nullptr && !strcmp(use_dbus, "1")) {
-        store.reset(new mediascanner::dbus::ServiceStub(the_session_bus()));
-    } else {
-        store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
+    try {
+        if (use_dbus != nullptr && !strcmp(use_dbus, "1")) {
+            store.reset(new mediascanner::dbus::ServiceStub(the_session_bus()));
+        } else {
+            store.reset(new mediascanner::MediaStore(MS_READ_ONLY));
+        }
+    } catch (const std::exception &e) {
+        qWarning() << "Could not initialise media store:" << e.what();
     }
 
     QDBusConnection::sessionBus().connect(
@@ -61,6 +65,11 @@ MediaStoreWrapper::MediaStoreWrapper(QObject *parent)
 }
 
 QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
+    if (!store) {
+        qWarning() << "query() called on invalid MediaStore";
+        return QList<QObject*>();
+    }
+
     QList<QObject*> result;
     try {
         for (const auto &media : store->query(q.toStdString(), static_cast<mediascanner::MediaType>(type), mediascanner::Filter())) {
@@ -75,6 +84,11 @@ QList<QObject*> MediaStoreWrapper::query(const QString &q, MediaType type) {
 }
 
 MediaFileWrapper *MediaStoreWrapper::lookup(const QString &filename) {
+    if (!store) {
+        qWarning() << "lookup() called on invalid MediaStore";
+        return nullptr;
+    }
+
     MediaFileWrapper *wrapper;
     try {
         wrapper = new MediaFileWrapper(store->lookup(filename.toStdString()));
