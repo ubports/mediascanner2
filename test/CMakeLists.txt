@@ -78,6 +78,11 @@ set_tests_properties(test_qml_dbus PROPERTIES
   ENVIRONMENT "QT_QPA_PLATFORM=minimal;MEDIASCANNER_USE_DBUS=1"
   TIMEOUT 600)
 
+add_test(test_qml_nodb qmltestrunner -import ${CMAKE_BINARY_DIR}/src/qml -input ${CMAKE_CURRENT_SOURCE_DIR}/test_qml_nodb.qml)
+set_tests_properties(test_qml_nodb PROPERTIES
+  ENVIRONMENT "QT_QPA_PLATFORM=minimal;MEDIASCANNER_CACHEDIR=${CMAKE_CURRENT_BINARY_DIR}/qml-nodb-cachedir;DBUS_SESSION_BUS_ADDRESS="
+  TIMEOUT 600)
+
 
 add_executable(test_util test_util.cc ../src/mediascanner/utils.cc)
 target_link_libraries(test_util gtest ${GLIB_LDFLAGS})
