@@ -281,6 +281,43 @@ TEST_F(ScanTest, scan_files_found_in_new_dir) {
     ASSERT_EQ(store.size(), 1);
 }
 
+TEST_F(ScanTest, watch_move_dir) {
+    string testdir = TEST_DIR "/testdir";
+    string oldsubdir = testdir + "/old";
+    string newsubdir = testdir + "/new";
+    string testfile = SOURCE_DIR "/media/testfile.ogg";
+
+    clear_dir(testdir);
+    ASSERT_EQ(0, mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR));
+    ASSERT_EQ(0, mkdir(oldsubdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR));
+    copy_file(testfile, oldsubdir + "/testfile.ogg");
+
+    MediaStore store(":memory:", MS_READ_WRITE);
+    MetadataExtractor extractor(session_bus.get());
+    InvalidationSender invalidator;
+    SubtreeWatcher watcher(store, extractor, invalidator);
+    watcher.addDir(testdir);
+    EXPECT_EQ(2, watcher.directoryCount());
+    EXPECT_EQ(1, store.size());
+    MediaFile file = store.lookup(oldsubdir + "/testfile.ogg");
+    EXPECT_EQ("track1", file.getTitle());
+
+    ASSERT_EQ(0, rename(oldsubdir.c_str(), newsubdir.c_str()));
+    iterate_main_loop();
+    EXPECT_EQ(2, watcher.directoryCount());
+    EXPECT_EQ(1, store.size());
+
+    file = store.lookup(newsubdir + "/testfile.ogg");
+    EXPECT_EQ("track1", file.getTitle());
+    try {
+        file = store.lookup(oldsubdir + "/testfile.ogg");
+        FAIL();
+    } catch (const std::runtime_error &e) {
+        string msg = e.what();
+        EXPECT_NE(std::string::npos, msg.find("Could not find media")) << msg;
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
