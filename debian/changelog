@@ -1,3 +1,11 @@
+mediascanner2 (0.110-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Fix up handling of directory renames, so old contents is correctly
+    removed from the index and inotify watches for subdirectories are
+    cleaned up. (LP: #1460411)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Wed, 16 Dec 2015 15:04:43 +0800
+
 mediascanner2 (0.109+16.04.20151124.1-0ubuntu1) xenial; urgency=medium
 
   [ James Henstridge ]
