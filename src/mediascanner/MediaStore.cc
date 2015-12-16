@@ -76,6 +76,7 @@ struct MediaStorePrivate {
     void pruneDeleted();
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
+    void removeSubtree(const std::string &directory);
 };
 
 extern "C" void sqlite3Fts3PorterTokenizerModule(
@@ -954,6 +955,28 @@ COMMIT;
 
 }
 
+void MediaStorePrivate::removeSubtree(const std::string &directory) {
+    string escaped = directory;
+    string::size_type pos = 0;
+    // Escape instances of like expression special characters and the escape character.
+    while (true) {
+        pos = escaped.find_first_of("%_!", pos);
+        if (pos == string::npos) {
+            break;
+        }
+        escaped.replace(pos, 0, "!");
+        pos += 2;
+    }
+    if (escaped.empty() || escaped[escaped.size() - 1] != '/') {
+        escaped += '/';
+    }
+    escaped += '%';
+
+    Statement query(db, "DELETE FROM media WHERE filename LIKE ? ESCAPE '!'");
+    query.bind(1, escaped);
+    query.step();
+}
+
 void MediaStore::insert(const MediaFile &m) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     p->insert(m);
@@ -1057,6 +1080,11 @@ void MediaStore::archiveItems(const std::string &prefix) {
 void MediaStore::restoreItems(const std::string &prefix) {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     p->restoreItems(prefix);
+}
+
+void MediaStore::removeSubtree(const std::string &directory) {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->removeSubtree(directory);
 }
 
 }

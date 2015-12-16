@@ -67,6 +67,7 @@ public:
     void pruneDeleted();
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
+    void removeSubtree(const std::string &directory);
 };
 
 }

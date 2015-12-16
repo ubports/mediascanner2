@@ -1288,6 +1288,38 @@ TEST_F(MediaStoreTest, brokenFiles) {
     ASSERT_FALSE(store.is_broken_file(other_file, broken_etag));
 }
 
+TEST_F(MediaStoreTest, removeSubtree) {
+    MediaStore store(":memory:", MS_READ_WRITE);
+
+    // Include some SQL like expression meta characters in the path
+    store.insert(MediaFileBuilder("/hello_%/world.mp3").setType(AudioMedia));
+    store.insert(MediaFileBuilder("/hello_%/a/b/c/world.mp3").setType(AudioMedia));
+    store.insert(MediaFileBuilder("/hello_%sibling.mp3").setType(AudioMedia));
+    store.insert(MediaFileBuilder("/helloxyz.mp3").setType(AudioMedia));
+    EXPECT_EQ(4, store.size());
+
+    store.removeSubtree("/hello_%");
+    EXPECT_EQ(2, store.size());
+
+    store.lookup("/hello_%sibling.mp3");
+    store.lookup("/helloxyz.mp3");
+
+    try {
+        store.lookup("/hello_%/world.mp3");
+        FAIL();
+    } catch (const std::runtime_error &e) {
+        string msg = e.what();
+        EXPECT_NE(string::npos, msg.find("Could not find media"));
+    }
+    try {
+        store.lookup("/hello_%/a/b/c/world.mp3");
+        FAIL();
+    } catch (const std::runtime_error &e) {
+        string msg = e.what();
+        EXPECT_NE(string::npos, msg.find("Could not find media"));
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
