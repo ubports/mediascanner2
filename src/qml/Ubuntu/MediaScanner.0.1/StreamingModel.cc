@@ -104,7 +104,7 @@ StreamingModel::~StreamingModel() {
 }
 
 void StreamingModel::updateModel() {
-    if (store.isNull()) {
+    if (store.isNull() || !store->store) {
         query_future = QFuture<void>();
         setStatus(Ready);
         return;
