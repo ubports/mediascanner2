@@ -41,42 +41,58 @@ using namespace mediascanner;
 
 class ScanTest : public ::testing::Test {
 protected:
-    ScanTest() :
-        test_dbus(nullptr, g_object_unref),
-        session_bus(nullptr, g_object_unref) {
+    ScanTest() {
     }
 
     virtual ~ScanTest() {
     }
 
     virtual void SetUp() override{
-        test_dbus.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
-        g_test_dbus_add_service_dir(test_dbus.get(), TEST_DIR "/services");
-        g_test_dbus_up(test_dbus.get());
-
-        GError *error = nullptr;
-        session_bus.reset(g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error));
-        if (!session_bus) {
-            std::string errortxt(error->message);
-            g_error_free(error);
-            throw std::runtime_error(
-                std::string("Failed to connect to session bus: ") + errortxt);
-        }
+        test_dbus_.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
+        g_test_dbus_add_service_dir(test_dbus_.get(), TEST_DIR "/services");
     }
 
     virtual void TearDown() override {
-        session_bus.reset();
-        g_test_dbus_down(test_dbus.get());
-        test_dbus.reset();
+        session_bus_.reset();
+        test_dbus_.reset();
     }
 
-    unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus;
-    unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus;
+    GDBusConnection *session_bus() {
+        if (!bus_started_) {
+            g_test_dbus_up(test_dbus_.get());
+
+            GError *error = nullptr;
+            char *address = g_dbus_address_get_for_bus_sync(G_BUS_TYPE_SESSION, nullptr, &error);
+            if (!address) {
+                std::string errortxt(error->message);
+                g_error_free(error);
+                throw std::runtime_error(
+                    std::string("Failed to determine session bus address: ") + errortxt);
+            }
+            session_bus_.reset(g_dbus_connection_new_for_address_sync(
+                address, static_cast<GDBusConnectionFlags>(G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT | G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION), nullptr, nullptr, &error));
+            g_free(address);
+            if (!session_bus_) {
+                std::string errortxt(error->message);
+                g_error_free(error);
+                throw std::runtime_error(
+                    std::string("Failed to connect to session bus: ") + errortxt);
+            }
+            bus_started_ = true;
+        }
+        return session_bus_.get();
+    }
+
+private:
+
+    unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus_ {nullptr, g_object_unref};
+    unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus_ {nullptr, g_object_unref};
+    bool bus_started_ = false;
 };
 
 TEST_F(ScanTest, init) {
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
 }
@@ -118,7 +134,7 @@ TEST_F(ScanTest, index) {
     clear_dir(subdir);
     ASSERT_GE(mkdir(subdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(subdir);
@@ -140,7 +156,7 @@ TEST_F(ScanTest, subdir) {
     clear_dir(testdir);
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     ASSERT_EQ(watcher.directoryCount(), 0);
@@ -197,7 +213,7 @@ TEST_F(ScanTest, scan) {
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
     copy_file(testfile, outfile);
     MediaStore *store = new MediaStore(dbname, MS_READ_WRITE);
-    scanFiles(session_bus.get(), *store, testdir, AudioMedia);
+    scanFiles(session_bus(), *store, testdir, AudioMedia);
     ASSERT_EQ(store->size(), 1);
 
     delete store;
@@ -217,7 +233,7 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     copy_file(testfile, outfile);
 
     MediaStore store(":memory:", MS_READ_WRITE);
-    scanFiles(session_bus.get(), store, testdir, AudioMedia);
+    scanFiles(session_bus(), store, testdir, AudioMedia);
     ASSERT_EQ(store.size(), 1);
 
     /* Modify the metadata for this file in the database */
@@ -229,7 +245,7 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     store.insert(mfb.build());
 
     /* Scan again, and note that the data hasn't been updated */
-    scanFiles(session_bus.get(), store, testdir, AudioMedia);
+    scanFiles(session_bus(), store, testdir, AudioMedia);
     media = store.lookup(outfile);
     EXPECT_EQ(media.getTitle(), "something else");
 
@@ -237,13 +253,13 @@ TEST_F(ScanTest, scan_skips_unchanged_files) {
     MediaFileBuilder mfb2(media);
     mfb2.setETag("old-etag");
     store.insert(mfb2.build());
-    scanFiles(session_bus.get(), store, testdir, AudioMedia);
+    scanFiles(session_bus(), store, testdir, AudioMedia);
     media = store.lookup(outfile);
     EXPECT_EQ(media.getTitle(), "track1");
 }
 
 TEST_F(ScanTest, root_skip) {
-    MetadataExtractor e(session_bus.get());
+    MetadataExtractor e(session_bus());
     string root(SOURCE_DIR "/media");
     Scanner s(&e, root, AudioMedia);
     while (true) {
@@ -265,7 +281,7 @@ TEST_F(ScanTest, scan_files_found_in_new_dir) {
     ASSERT_GE(mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR), 0);
 
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(testdir);
@@ -293,7 +309,7 @@ TEST_F(ScanTest, watch_move_dir) {
     copy_file(testfile, oldsubdir + "/testfile.ogg");
 
     MediaStore store(":memory:", MS_READ_WRITE);
-    MetadataExtractor extractor(session_bus.get());
+    MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(testdir);

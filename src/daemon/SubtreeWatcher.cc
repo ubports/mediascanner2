@@ -153,6 +153,7 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
             (long)p->wd2str.size());
     if(p->wd2str.empty())
         p->keep_going = false;
+    p->store.removeSubtree(abspath);
     return true;
 }
 
