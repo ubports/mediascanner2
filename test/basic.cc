@@ -84,7 +84,6 @@ protected:
     }
 
 private:
-
     unique_ptr<GTestDBus,decltype(&g_object_unref)> test_dbus_ {nullptr, g_object_unref};
     unique_ptr<GDBusConnection,decltype(&g_object_unref)> session_bus_ {nullptr, g_object_unref};
     bool bus_started_ = false;
@@ -304,29 +303,44 @@ TEST_F(ScanTest, watch_move_dir) {
     string testfile = SOURCE_DIR "/media/testfile.ogg";
 
     clear_dir(testdir);
-    ASSERT_EQ(0, mkdir(testdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR));
-    ASSERT_EQ(0, mkdir(oldsubdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR));
-    copy_file(testfile, oldsubdir + "/testfile.ogg");
+    ASSERT_EQ(0, mkdir(testdir.c_str(), S_IRWXU));
+    ASSERT_EQ(0, mkdir(oldsubdir.c_str(), S_IRWXU));
+    ASSERT_EQ(0, mkdir((oldsubdir + "/subdir").c_str(), S_IRWXU));
+    copy_file(testfile, oldsubdir + "/subdir/testfile.ogg");
 
     MediaStore store(":memory:", MS_READ_WRITE);
     MetadataExtractor extractor(session_bus());
     InvalidationSender invalidator;
     SubtreeWatcher watcher(store, extractor, invalidator);
     watcher.addDir(testdir);
-    EXPECT_EQ(2, watcher.directoryCount());
+    EXPECT_EQ(3, watcher.directoryCount());
     EXPECT_EQ(1, store.size());
-    MediaFile file = store.lookup(oldsubdir + "/testfile.ogg");
+    MediaFile file = store.lookup(oldsubdir + "/subdir/testfile.ogg");
     EXPECT_EQ("track1", file.getTitle());
 
     ASSERT_EQ(0, rename(oldsubdir.c_str(), newsubdir.c_str()));
     iterate_main_loop();
-    EXPECT_EQ(2, watcher.directoryCount());
+    EXPECT_EQ(3, watcher.directoryCount());
     EXPECT_EQ(1, store.size());
 
-    file = store.lookup(newsubdir + "/testfile.ogg");
+    file = store.lookup(newsubdir + "/subdir/testfile.ogg");
     EXPECT_EQ("track1", file.getTitle());
     try {
-        file = store.lookup(oldsubdir + "/testfile.ogg");
+        file = store.lookup(oldsubdir + "/subdir/testfile.ogg");
+        FAIL();
+    } catch (const std::runtime_error &e) {
+        string msg = e.what();
+        EXPECT_NE(std::string::npos, msg.find("Could not find media")) << msg;
+    }
+
+    ASSERT_EQ(0, rename(newsubdir.c_str(), oldsubdir.c_str()));
+    iterate_main_loop();
+    EXPECT_EQ(3, watcher.directoryCount());
+
+    file = store.lookup(oldsubdir + "/subdir/testfile.ogg");
+    EXPECT_EQ("track1", file.getTitle());
+    try {
+        file = store.lookup(newsubdir + "/subdir/testfile.ogg");
         FAIL();
     } catch (const std::runtime_error &e) {
         string msg = e.what();
