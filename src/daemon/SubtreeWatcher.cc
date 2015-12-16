@@ -143,16 +143,28 @@ void SubtreeWatcher::addDir(const string &root) {
 }
 
 bool SubtreeWatcher::removeDir(const string &abspath) {
-    if(p->str2wd.find(abspath) == p->str2wd.end())
+    auto it = p->str2wd.find(abspath);
+    if (it == p->str2wd.end()) {
         return false;
-    int wd = p->str2wd[abspath];
-    inotify_rm_watch(p->inotifyid, wd);
-    p->wd2str.erase(wd);
-    p->str2wd.erase(abspath);
-    printf("Stopped watching %s, %ld directories remain.\n", abspath.c_str(),
-            (long)p->wd2str.size());
+    }
+    while (it != p->str2wd.end()) {
+        // Stop if we're no longer dealing with subdirectories of abspath
+        if (it->first.compare(0, abspath.size(), abspath) != 0) {
+            break;
+        }
+        if (it->first.size() != abspath.size() && it->first[abspath.size()] != '/') {
+            break;
+        }
+        int wd = it->second;
+        inotify_rm_watch(p->inotifyid, wd);
+        p->wd2str.erase(wd);
+        printf("Stopped watching %s, %ld directories remain.\n",
+               it->first.c_str(), (long)p->wd2str.size());
+        it = p->str2wd.erase(it);
+    }
     if(p->wd2str.empty())
         p->keep_going = false;
+    p->store.removeSubtree(abspath);
     return true;
 }
 

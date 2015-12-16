@@ -128,6 +128,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStore::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mediascanner::MediaType, mediascanner::Filter const&) const@Base" 0.104+14.10.20140825
  (c++)"mediascanner::MediaStore::remove_broken_file(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.105+14.10.20140903
  (c++)"mediascanner::MediaStore::remove(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
+ (c++)"mediascanner::MediaStore::removeSubtree(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"mediascanner::MediaStore::restoreItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::size() const@Base" 0.101+14.10.20140613
  (c++)"typeinfo for mediascanner::MediaStore@Base" 0.101+14.10.20140625
