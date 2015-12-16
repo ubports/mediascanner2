@@ -1,10 +1,19 @@
-mediascanner2 (0.110-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.110+16.04.20151216-0ubuntu1) xenial; urgency=medium
 
+  [ James Henstridge ]
   * Fix up handling of directory renames, so old contents is correctly
     removed from the index and inotify watches for subdirectories are
     cleaned up. (LP: #1460411)
+  * If the mediascanner index can not be opened, catch the exception in
+    the QML plugin and act as if the database is empty.  A warning is
+    printed via Qt's logging framework.  This prevents QML apps using
+    mediascanner from terminating if there is a problem opening the
+    media index. (LP: #1514517)
 
- -- James Henstridge <james.henstridge@canonical.com>  Wed, 16 Dec 2015 15:04:43 +0800
+  [ CI Train Bot ]
+  * debian/libmediascanner-2.0-3.symbols: update to released version.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Wed, 16 Dec 2015 08:04:43 +0000
 
 mediascanner2 (0.109+16.04.20151124.1-0ubuntu1) xenial; urgency=medium
 
