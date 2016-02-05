@@ -18,28 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTRACTOR_IMAGEEXTRACTOR_H
-#define EXTRACTOR_IMAGEEXTRACTOR_H
+#ifndef EXTRACTOR_GSTREAMEREXTRACTOR_H
+#define EXTRACTOR_GSTREAMEREXTRACTOR_H
 
-#include <string>
+#include <memory>
+
+typedef struct _GstDiscoverer GstDiscoverer;
 
 namespace mediascanner {
 
 class MediaFileBuilder;
 struct DetectedFile;
 
-class ImageExtractor final {
+class GStreamerExtractor final {
 public:
-    ImageExtractor() = default;
-    ~ImageExtractor() = default;
-    ImageExtractor(const ImageExtractor&) = delete;
-    ImageExtractor& operator=(ImageExtractor &o) = delete;
+    explicit GStreamerExtractor(int seconds);
+    ~GStreamerExtractor();
+    GStreamerExtractor(const GStreamerExtractor&) = delete;
+    GStreamerExtractor& operator=(GStreamerExtractor &o) = delete;
 
     void extract(const DetectedFile &d, MediaFileBuilder &builder);
 
 private:
-    bool extract_exif(const DetectedFile &d, MediaFileBuilder &builder);
-    void extract_pixbuf(const DetectedFile &d, MediaFileBuilder &builder);
+    std::unique_ptr<GstDiscoverer, void(*)(void*)> discoverer;
 };
 
 }

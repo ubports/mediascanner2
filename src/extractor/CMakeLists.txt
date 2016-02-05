@@ -32,6 +32,7 @@ target_link_libraries(extractor-client
 # The backend code for the extractor daemon, as a library for use by tests
 add_library(extractor-backend STATIC
   ExtractorBackend.cc
+  GStreamerExtractor.cc
   ImageExtractor.cc
 )
 target_link_libraries(extractor-backend

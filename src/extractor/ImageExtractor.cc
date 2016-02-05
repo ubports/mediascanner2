@@ -22,12 +22,10 @@
 #include "DetectedFile.hh"
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
-#include "../mediascanner/internal/utils.hh"
 
 #include <exif-loader.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include <cstdio>
 #include <ctime>
 #include <memory>
 #include <string>
@@ -233,11 +231,11 @@ void ImageExtractor::extract_pixbuf(const DetectedFile &d, MediaFileBuilder &bui
     }
 }
 
-bool ImageExtractor::extract(const DetectedFile &d, MediaFileBuilder &builder) {
+void ImageExtractor::extract(const DetectedFile &d, MediaFileBuilder &builder) {
     if (!extract_exif(d, builder)) {
         extract_pixbuf(d, builder);
     }
-    return true;
+    return;
 }
 
 }
