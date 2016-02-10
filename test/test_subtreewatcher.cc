@@ -87,6 +87,7 @@ protected:
 
         test_dbus_.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
         g_test_dbus_add_service_dir(test_dbus_.get(), TEST_DIR "/services");
+        g_test_dbus_up(test_dbus_.get());
         session_bus_ = make_connection();
 
         g_dbus_connection_signal_subscribe(
