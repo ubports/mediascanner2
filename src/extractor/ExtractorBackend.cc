@@ -22,6 +22,7 @@
 #include "DetectedFile.hh"
 #include "GStreamerExtractor.hh"
 #include "ImageExtractor.hh"
+#include "TaglibExtractor.hh"
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaFileBuilder.hh"
 
@@ -37,6 +38,7 @@ struct ExtractorBackendPrivate {
 
     GStreamerExtractor gstreamer;
     ImageExtractor image;
+    TaglibExtractor taglib;
 };
 
 ExtractorBackend::ExtractorBackend(int seconds)
@@ -59,6 +61,10 @@ MediaFile ExtractorBackend::extract(const DetectedFile &d) {
     case ImageMedia:
         p->image.extract(d, mfb);
         break;
+    case AudioMedia:
+        if (!p->taglib.extract(d, mfb)) {
+            p->gstreamer.extract(d, mfb);
+        }
     default:
         p->gstreamer.extract(d, mfb);
         break;
