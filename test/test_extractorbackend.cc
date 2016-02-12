@@ -19,8 +19,11 @@
  */
 
 #include <mediascanner/MediaFile.hh>
+#include <mediascanner/MediaFileBuilder.hh>
 #include <extractor/DetectedFile.hh>
 #include <extractor/ExtractorBackend.hh>
+#include <extractor/GStreamerExtractor.hh>
+#include <extractor/TaglibExtractor.hh>
 
 #include "test_config.h"
 
@@ -116,6 +119,26 @@ TEST_F(ExtractorBackendTest, extract_photo) {
     EXPECT_DOUBLE_EQ(-28.259611, file.getLatitude());
     EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
 }
+
+void compare_taglib_gst(const DetectedFile d) {
+    GStreamerExtractor gst(5);
+    MediaFileBuilder builder_gst(d.filename);
+    gst.extract(d, builder_gst);
+
+    TaglibExtractor taglib;
+    MediaFileBuilder builder_taglib(d.filename);
+    ASSERT_TRUE(taglib.extract(d, builder_taglib));
+
+    MediaFile media_gst(builder_gst);
+    MediaFile media_taglib(builder_taglib);
+    ASSERT_EQ(media_gst, media_taglib);
+}
+
+TEST_F(ExtractorBackendTest, check_taglib_vorbis) {
+    DetectedFile d(SOURCE_DIR "/media/testfile.ogg", "etag", "audio/ogg", 42, AudioMedia);
+    compare_taglib_gst(d);
+}
+
 
 int main(int argc, char **argv) {
     gst_init(&argc, &argv);
