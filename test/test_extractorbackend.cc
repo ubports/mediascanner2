@@ -107,7 +107,7 @@ TEST_F(ExtractorBackendTest, init) {
     ExtractorBackend extractor;
 }
 
-TEST_F(ExtractorBackendTest, extract_audio) {
+TEST_F(ExtractorBackendTest, extract_vorbis) {
     ExtractorBackend e;
     string testfile = SOURCE_DIR "/media/testfile.ogg";
     DetectedFile df(testfile, "etag", "audio/ogg", 42, AudioMedia);
@@ -120,6 +120,38 @@ TEST_F(ExtractorBackendTest, extract_audio) {
     EXPECT_EQ(file.getDate(), "2013");
     EXPECT_EQ(file.getTrackNumber(), 1);
     EXPECT_EQ(file.getDuration(), 5);
+}
+
+TEST_F(ExtractorBackendTest, extract_mp3) {
+    ExtractorBackend e;
+    string testfile = SOURCE_DIR "/media/testfile.mp3";
+    DetectedFile df(testfile, "etag", "audio/mpeg", 42, AudioMedia);
+    MediaFile file = e.extract(df);
+
+    EXPECT_EQ(file.getType(), AudioMedia);
+    EXPECT_EQ(file.getTitle(), "track1");
+    EXPECT_EQ(file.getAuthor(), "artist1");
+    EXPECT_EQ(file.getAlbum(), "album1");
+    EXPECT_EQ(file.getGenre(), "Hip-Hop");
+    EXPECT_EQ(file.getDate(), "2013-06-03");
+    EXPECT_EQ(file.getTrackNumber(), 1);
+    EXPECT_EQ(file.getDuration(), 1);
+}
+
+TEST_F(ExtractorBackendTest, extract_m4a) {
+    ExtractorBackend e;
+    string testfile = SOURCE_DIR "/media/testfile.m4a";
+    DetectedFile df(testfile, "etag", "audio/mpeg4", 42, AudioMedia);
+    MediaFile file = e.extract(df);
+
+    EXPECT_EQ(file.getType(), AudioMedia);
+    EXPECT_EQ(file.getTitle(), "Title");
+    EXPECT_EQ(file.getAuthor(), "Artist");
+    EXPECT_EQ(file.getAlbum(), "Album");
+    EXPECT_EQ(file.getGenre(), "Rock");
+    EXPECT_EQ(file.getDate(), "2015-10-07");
+    EXPECT_EQ(file.getTrackNumber(), 4);
+    EXPECT_EQ(file.getDuration(), 1);
 }
 
 TEST_F(ExtractorBackendTest, extract_video) {
