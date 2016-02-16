@@ -36,6 +36,57 @@
 using namespace std;
 using namespace mediascanner;
 
+namespace {
+
+bool supports_decoder(const std::string& format)
+{
+    typedef std::unique_ptr<GstCaps, decltype(&gst_caps_unref)> CapsPtr;
+    static std::vector<CapsPtr> formats;
+
+    if (formats.empty())
+    {
+        std::unique_ptr<GList, decltype(&gst_plugin_feature_list_free)> decoders(
+            gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_NONE),
+            gst_plugin_feature_list_free);
+        for (const GList* l = decoders.get(); l != nullptr; l = l->next)
+        {
+            const auto factory = static_cast<GstElementFactory*>(l->data);
+
+            const GList* templates = gst_element_factory_get_static_pad_templates(factory);
+            for (const GList* l = templates; l != nullptr; l = l->next)
+            {
+                const auto t = static_cast<GstStaticPadTemplate*>(l->data);
+                if (t->direction != GST_PAD_SINK)
+                {
+                    continue;
+                }
+                CapsPtr caps(gst_static_caps_get(&t->static_caps),
+                             gst_caps_unref);
+                if (gst_caps_is_any(caps.get())) {
+                    continue;
+                }
+                formats.emplace_back(std::move(caps));
+            }
+        }
+    }
+
+    char *end = nullptr;
+    GstStructure *structure = gst_structure_from_string(format.c_str(), &end);
+    assert(structure != nullptr);
+    assert(end == format.c_str() + format.size());
+    // GstCaps adopts the GstStructure
+    CapsPtr caps(gst_caps_new_full(structure, nullptr), gst_caps_unref);
+
+    for (const auto &other : formats) {
+        if (gst_caps_is_always_compatible(caps.get(), other.get())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+}
+
 class ExtractorBackendTest : public ::testing::Test {
 protected:
     ExtractorBackendTest() {
@@ -131,11 +182,41 @@ void compare_taglib_gst(const DetectedFile d) {
 
     MediaFile media_gst(builder_gst);
     MediaFile media_taglib(builder_taglib);
-    ASSERT_EQ(media_gst, media_taglib);
+    EXPECT_EQ(media_gst, media_taglib);
+
+    // And check individual keys to improve error handling:
+    EXPECT_EQ(media_gst.getTitle(), media_taglib.getTitle());
+    EXPECT_EQ(media_gst.getAuthor(), media_taglib.getAuthor());
+    EXPECT_EQ(media_gst.getAlbum(), media_taglib.getAlbum());
+    EXPECT_EQ(media_gst.getAlbumArtist(), media_taglib.getAlbumArtist());
+    EXPECT_EQ(media_gst.getDate(), media_taglib.getDate());
+    EXPECT_EQ(media_gst.getGenre(), media_taglib.getGenre());
+    EXPECT_EQ(media_gst.getDiscNumber(), media_taglib.getDiscNumber());
+    EXPECT_EQ(media_gst.getTrackNumber(), media_taglib.getTrackNumber());
+    EXPECT_EQ(media_gst.getDuration(), media_taglib.getDuration());
+    EXPECT_EQ(media_gst.getHasThumbnail(), media_taglib.getHasThumbnail());
 }
 
-TEST_F(ExtractorBackendTest, check_taglib_vorbis) {
+TEST_F(ExtractorBackendTest, check_taglib_gst_vorbis) {
     DetectedFile d(SOURCE_DIR "/media/testfile.ogg", "etag", "audio/ogg", 42, AudioMedia);
+    compare_taglib_gst(d);
+}
+
+TEST_F(ExtractorBackendTest, check_taglib_gst_mp3) {
+    if (!supports_decoder("audio/mpeg, mpegversion=(int)1, layer=(int)3")) {
+        printf("MP3 codec not supported\n");
+        return;
+    }
+    DetectedFile d(SOURCE_DIR "/media/testfile.mp3", "etag", "audio/mpeg", 42, AudioMedia);
+    compare_taglib_gst(d);
+}
+
+TEST_F(ExtractorBackendTest, check_taglib_gst_m4a) {
+    if (!supports_decoder("audio/mpeg, mpegversion=(int)4, stream-format=(string)raw")) {
+        printf("M4A codec not supported\n");
+        return;
+    }
+    DetectedFile d(SOURCE_DIR "/media/testfile.m4a", "etag", "audio/mp4", 42, AudioMedia);
     compare_taglib_gst(d);
 }
 

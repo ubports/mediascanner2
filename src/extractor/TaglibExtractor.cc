@@ -35,6 +35,7 @@
 #include <taglib/oggflacfile.h>
 #include <taglib/opusfile.h>
 #include <taglib/tfilestream.h>
+#include <taglib/unknownframe.h>
 #include <taglib/vorbisfile.h>
 
 #include <cassert>
@@ -69,12 +70,15 @@ string get_content_type(const string &filename) {
     return g_file_info_get_content_type(info.get());
 }
 
-string check_date(const string &date_string) {
-    // Parse and reserialise the date using GstDateTime to check its
-    // consistency.
-    unique_ptr<GstDateTime, decltype(&gst_date_time_unref)> dt(
+typedef unique_ptr<GstDateTime, decltype(&gst_date_time_unref)> DatePtr;
+
+DatePtr parse_iso_date(const string &date_string) {
+    return DatePtr(
         gst_date_time_new_from_iso8601_string(date_string.c_str()),
         gst_date_time_unref);
+}
+
+string format_iso_date(const DatePtr &dt) {
     if (!dt) {
         return string();
     }
@@ -85,6 +89,12 @@ string check_date(const string &date_string) {
     string result(iso);
     g_free(iso);
     return result;
+}
+
+string check_date(const string &date_string) {
+    // Parse and reserialise the date using GstDateTime to check its
+    // consistency.
+    return format_iso_date(parse_iso_date(date_string));
 }
 
 void parse_common(const TagLib::File &file, MediaFileBuilder &builder) {
@@ -112,16 +122,11 @@ void parse_common(const TagLib::File &file, MediaFileBuilder &builder) {
         builder.setGenre(s.to8Bit(true));
     }
     unsigned int year = tag->year();
-    if (year > 0 && year < 0xffff) {
-        GDate date;
-        g_date_clear(&date, 1);
-        g_date_set_dmy(&date, 1, G_DATE_JANUARY, year);
-        if (g_date_valid(&date)) {
-            char buf[100] = { 0, };
-            g_date_strftime(buf, sizeof(buf), "%Y", &date);
-            builder.setDate(buf);
-        }
+    if (year > 0 && year <= 9999) {
+        DatePtr dt(gst_date_time_new_y(year), gst_date_time_unref);
+        builder.setDate(format_iso_date(dt));
     }
+
     unsigned int track = tag->track();
     if (track != 0) {
         builder.setTrackNumber(track);
@@ -152,26 +157,33 @@ void parse_id3v2(const TagLib::ID3v2::Tag *tag, MediaFileBuilder &builder) {
     const auto& frames = tag->frameListMap();
 
     if (!frames["TDRC"].isEmpty()) {
-        // ID3v2.4
-        builder.setDate(check_date(frames["TDRC"].front()->toString().to8Bit(true)));
-    } else if (!frames["TYER"].isEmpty()) {
-        // ID3v2.3 and below
-        int year = frames["TYER"].front()->toString().toInt();
-        GDate date;
-        g_date_clear(&date, 1);
-        if (year > 0 && year < 0xffff) {
-            g_date_set_year(&date, year);
+        DatePtr dt = parse_iso_date(frames["TDRC"].front()->toString().to8Bit(true));
+        // Taglib automatically renames the old TYER frame to TDRC,
+        // but doesn't migrate over the day and month from TDAT.
+        if (!gst_date_time_has_month(dt.get()) && !frames["TDAT"].isEmpty()) {
+            const TagLib::ID3v2::Frame *frame = frames["TDAT"].front();
+            // TagLib converts TDAT to an "UnknownFrame" type frame,
+            // since it believes it should be ignored.  Create a text
+            // frame so we can get at the data.
+            TagLib::String data;
+            auto *unknown = dynamic_cast<const TagLib::ID3v2::UnknownFrame*>(frame);
+            if (unknown) {
+                // Text information frames consist of one byte for the
+                // encoding, followed the string data.
+                auto encoding = static_cast<TagLib::String::Type>(unknown->data()[0]);
+                data = TagLib::String(unknown->data().mid(1), encoding);
+            } else {
+                data = frame->toString();
+            }
+            int ddmm = data.toInt();
+            int day = ddmm / 100;
+            int month = ddmm % 100;
+            dt.reset(gst_date_time_new_ymd(
+                         gst_date_time_get_year(dt.get()),
+                         g_date_valid_month(static_cast<GDateMonth>(month)) ? month : -1,
+                         g_date_valid_day(day) ? day : -1));
         }
-        if (!frames["TDAT"].isEmpty()) {
-            int ddmm = frames["TDAT"].front()->toString().toInt();
-            g_date_set_month(&date, static_cast<GDateMonth>(ddmm % 100));
-            g_date_set_day(&date, ddmm / 100);
-        }
-        if (g_date_valid(&date)) {
-            char buf[100] = { 0, };
-            g_date_strftime(buf, sizeof(buf), "%Y", &date);
-            builder.setDate(buf);
-        }
+        builder.setDate(format_iso_date(dt));
     }
 
     if (!frames["TPE2"].isEmpty()) {
@@ -189,6 +201,11 @@ void parse_id3v2(const TagLib::ID3v2::Tag *tag, MediaFileBuilder &builder) {
 
 void parse_mp4(const TagLib::MP4::Tag *tag, MediaFileBuilder &builder) {
     const auto& items = const_cast<TagLib::MP4::Tag*>(tag)->itemListMap();
+
+    if (items.contains("\251day")) {
+        builder.setDate(check_date(items["\251day"].toStringList().front().to8Bit(true)));
+    }
+
     if (items.contains("aART")) {
         builder.setAlbumArtist(items["aART"].toStringList().front().to8Bit(true));
     }
