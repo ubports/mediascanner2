@@ -65,6 +65,7 @@ MediaFile ExtractorBackend::extract(const DetectedFile &d) {
         if (!p->taglib.extract(d, mfb)) {
             p->gstreamer.extract(d, mfb);
         }
+        break;
     default:
         p->gstreamer.extract(d, mfb);
         break;
