@@ -77,6 +77,10 @@ struct MediaStorePrivate {
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
     void removeSubtree(const std::string &directory);
+
+    void begin();
+    void commit();
+    void rollback();
 };
 
 extern "C" void sqlite3Fts3PorterTokenizerModule(
@@ -977,6 +981,21 @@ void MediaStorePrivate::removeSubtree(const std::string &directory) {
     query.step();
 }
 
+void MediaStorePrivate::begin() {
+    Statement query(db, "BEGIN TRANSACTION");
+    query.step();
+}
+
+void MediaStorePrivate::commit() {
+    Statement query(db, "COMMIT TRANSACTION");
+    query.step();
+}
+
+void MediaStorePrivate::rollback() {
+    Statement query(db, "ROLLBACK TRANSACTION");
+    query.step();
+}
+
 void MediaStore::insert(const MediaFile &m) const {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     p->insert(m);
@@ -1085,6 +1104,44 @@ void MediaStore::restoreItems(const std::string &prefix) {
 void MediaStore::removeSubtree(const std::string &directory) {
     std::lock_guard<std::mutex> lock(p->dbMutex);
     p->removeSubtree(directory);
+}
+
+MediaStoreTransaction MediaStore::beginTransaction() {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->begin();
+    return MediaStoreTransaction(p);
+}
+
+MediaStoreTransaction::MediaStoreTransaction(MediaStorePrivate *p)
+    : p(p) {
+}
+
+MediaStoreTransaction::MediaStoreTransaction(MediaStoreTransaction &&other) {
+    *this = std::move(other);
+}
+
+MediaStoreTransaction::~MediaStoreTransaction() {
+    if (!p) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    try {
+        p->rollback();
+    } catch (const std::exception &e) {
+        fprintf(stderr, "MediaStoreTransaction: error rolling back in destructor: %s\n", e.what());
+    }
+}
+
+MediaStoreTransaction& MediaStoreTransaction::operator=(MediaStoreTransaction &&other) {
+    p = other.p;
+    other.p = nullptr;
+    return *this;
+}
+
+void MediaStoreTransaction::commit() {
+    std::lock_guard<std::mutex> lock(p->dbMutex);
+    p->commit();
+    p->begin();
 }
 
 }

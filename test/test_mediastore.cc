@@ -1320,6 +1320,31 @@ TEST_F(MediaStoreTest, removeSubtree) {
     }
 }
 
+TEST_F(MediaStoreTest, transaction) {
+    MediaStore store(":memory:", MS_READ_WRITE);
+
+    // Run a transaction without committing: file not added.
+    {
+        MediaStoreTransaction tx = store.beginTransaction();
+        store.insert(MediaFileBuilder("/one.mp3").setType(AudioMedia));
+    }
+    EXPECT_EQ(0, store.size());
+    EXPECT_THROW(store.lookup("/one.mp3"), std::runtime_error);
+
+    // Run a transaction, add two files, commit, then add a third.
+    {
+        MediaStoreTransaction tx = store.beginTransaction();
+        store.insert(MediaFileBuilder("/one.mp3").setType(AudioMedia));
+        store.insert(MediaFileBuilder("/two.mp3").setType(AudioMedia));
+        tx.commit();
+        store.insert(MediaFileBuilder("/three.mp3").setType(AudioMedia));
+    }
+    EXPECT_EQ(2, store.size());
+    store.lookup("/one.mp3");
+    store.lookup("/two.mp3");
+    EXPECT_THROW(store.lookup("/three.mp3"), std::runtime_error);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

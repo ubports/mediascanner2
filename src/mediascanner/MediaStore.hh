@@ -31,6 +31,9 @@ enum OpenType {
     MS_READ_WRITE
 };
 
+struct MediaStorePrivate;
+class MediaStoreTransaction;
+
 class MediaStore final : public virtual MediaStoreBase {
 private:
     MediaStorePrivate *p;
@@ -68,6 +71,25 @@ public:
     void archiveItems(const std::string &prefix);
     void restoreItems(const std::string &prefix);
     void removeSubtree(const std::string &directory);
+    MediaStoreTransaction beginTransaction();
+};
+
+class MediaStoreTransaction final {
+    friend MediaStore;
+public:
+    MediaStoreTransaction(MediaStoreTransaction &&other);
+    ~MediaStoreTransaction();
+    
+    MediaStoreTransaction(const MediaStoreTransaction &other) = delete;
+    MediaStoreTransaction& operator=(const MediaStoreTransaction &other) = delete;
+
+    MediaStoreTransaction& operator=(MediaStoreTransaction &&other);
+
+    void commit();
+private:
+    MediaStoreTransaction(MediaStorePrivate *p);
+
+    MediaStorePrivate *p;
 };
 
 }

@@ -26,7 +26,6 @@
 
 namespace mediascanner {
 
-struct MediaStorePrivate;
 class MediaFile;
 class Album;
 class Filter;
