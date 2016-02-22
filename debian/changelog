@@ -1,3 +1,12 @@
+mediascanner2 (0.111-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Batch index updates during the initial scan in 10 second intervals 
+    (the same rate as invalidation notifications go out).  This greatly 
+    reduces the IO overhead on initial startup, and is fairly safe now 
+    we have out of process metadata extraction.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Mon, 22 Feb 2016 12:47:10 +0800
+
 mediascanner2 (0.110+16.04.20151216-0ubuntu1) xenial; urgency=medium
 
   [ James Henstridge ]
