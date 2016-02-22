@@ -1325,24 +1325,28 @@ TEST_F(MediaStoreTest, transaction) {
 
     // Run a transaction without committing: file not added.
     {
-        MediaStoreTransaction tx = store.beginTransaction();
+        MediaStoreTransaction txn = store.beginTransaction();
         store.insert(MediaFileBuilder("/one.mp3").setType(AudioMedia));
     }
     EXPECT_EQ(0, store.size());
     EXPECT_THROW(store.lookup("/one.mp3"), std::runtime_error);
 
-    // Run a transaction, add two files, commit, then add a third.
+    // Commit two files in a transaction, then one file in a second
+    // transaction, and leave the last uncommitted.
     {
-        MediaStoreTransaction tx = store.beginTransaction();
+        MediaStoreTransaction txn = store.beginTransaction();
         store.insert(MediaFileBuilder("/one.mp3").setType(AudioMedia));
         store.insert(MediaFileBuilder("/two.mp3").setType(AudioMedia));
-        tx.commit();
+        txn.commit();
         store.insert(MediaFileBuilder("/three.mp3").setType(AudioMedia));
+        txn.commit();
+        store.insert(MediaFileBuilder("/four.mp3").setType(AudioMedia));
     }
-    EXPECT_EQ(2, store.size());
+    EXPECT_EQ(3, store.size());
     store.lookup("/one.mp3");
     store.lookup("/two.mp3");
-    EXPECT_THROW(store.lookup("/three.mp3"), std::runtime_error);
+    store.lookup("/three.mp3");
+    EXPECT_THROW(store.lookup("/four.mp3"), std::runtime_error);
 }
 
 int main(int argc, char **argv) {
