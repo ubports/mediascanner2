@@ -211,6 +211,7 @@ void ScannerDaemon::removeDir(const string &dir) {
 
 void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
     Scanner s(extractor.get(), subdir, type);
+    MediaStoreTransaction txn = store.beginTransaction();
     const int update_interval = 10; // How often to send invalidations.
     struct timespec previous_update, current_time;
     clock_gettime(CLOCK_MONOTONIC, &previous_update);
@@ -223,6 +224,7 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
                 g_main_context_iteration(g_main_context_default(), FALSE);
             }
             if(current_time.tv_sec - previous_update.tv_sec >= update_interval) {
+                txn.commit();
                 invalidator.invalidate();
                 previous_update = current_time;
             }
@@ -244,9 +246,10 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
                 fprintf(stderr, "Error when indexing: %s\n", e.what());
             }
         } catch(const StopIteration &stop) {
-            return;
+            break;
         }
     }
+    txn.commit();
 }
 
 int ScannerDaemon::run() {
