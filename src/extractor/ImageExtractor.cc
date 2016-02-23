@@ -44,9 +44,9 @@ const char iso8601_date_with_zone_format[] = "%Y-%m-%dT%H:%M:%S%z";
 
 void parse_exif_date(ExifData *data, ExifByteOrder order, MediaFileBuilder &mfb) {
     static const std::vector<ExifTag> date_tags{
-        EXIF_TAG_DATE_TIME,
         EXIF_TAG_DATE_TIME_ORIGINAL,
-        EXIF_TAG_DATE_TIME_DIGITIZED
+        EXIF_TAG_DATE_TIME_DIGITIZED,
+        EXIF_TAG_DATE_TIME,
     };
     struct tm timeinfo;
     bool have_date = false;
