@@ -53,16 +53,20 @@ void extract_tag_info (const GstTagList *list, const gchar *tag, void *user_data
 
         val = gst_tag_list_get_value_index (list, tag, i);
         if (G_VALUE_HOLDS_STRING(val)) {
+            const char *value = g_value_get_string(val);
+            if (!value) {
+                continue;
+            }
             if (tagname == GST_TAG_ARTIST)
-                mfb->setAuthor(g_value_get_string(val));
+                mfb->setAuthor(value);
             else if (tagname == GST_TAG_TITLE)
-                mfb->setTitle(g_value_get_string(val));
+                mfb->setTitle(value);
             else if (tagname == GST_TAG_ALBUM)
-                mfb->setAlbum(g_value_get_string(val));
+                mfb->setAlbum(value);
             else if (tagname == GST_TAG_ALBUM_ARTIST)
-                mfb->setAlbumArtist(g_value_get_string(val));
+                mfb->setAlbumArtist(value);
             else if (tagname == GST_TAG_GENRE)
-                mfb->setGenre(g_value_get_string(val));
+                mfb->setGenre(value);
         } else if (G_VALUE_HOLDS(val, GST_TYPE_DATE_TIME)) {
             if (tagname == GST_TAG_DATE_TIME) {
                 GstDateTime *dt = static_cast<GstDateTime*>(g_value_get_boxed(val));
