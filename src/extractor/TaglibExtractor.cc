@@ -267,6 +267,9 @@ bool TaglibExtractor::extract(const DetectedFile &d, MediaFileBuilder &builder) 
         if (file.hasXiphComment()) {
             parse_xiph_comment(file.xiphComment(), builder);
         }
+        if (!file.pictureList().isEmpty()) {
+            builder.setHasThumbnail(true);
+        }
     } else if (content_type == "audio/mpeg") {
         TagLib::MPEG::File file(fs.get(), TagLib::ID3v2::FrameFactory::instance());
         if (!file.isValid()) {
