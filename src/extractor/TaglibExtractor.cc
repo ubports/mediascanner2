@@ -236,18 +236,30 @@ bool TaglibExtractor::extract(const DetectedFile &d, MediaFileBuilder &builder) 
 
     if (content_type == "audio/x-vorbis+ogg") {
         TagLib::Ogg::Vorbis::File file(fs.get());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         parse_xiph_comment(file.tag(), builder);
     } else if (content_type == "audio/x-opus+ogg") {
         TagLib::Ogg::Opus::File file(fs.get());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         parse_xiph_comment(file.tag(), builder);
     } else if (content_type == "audio/x-flac+ogg") {
         TagLib::Ogg::FLAC::File file(fs.get());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         parse_xiph_comment(file.tag(), builder);
     } else if (content_type == "audio/flac") {
         TagLib::FLAC::File file(fs.get(), TagLib::ID3v2::FrameFactory::instance());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         if (file.hasID3v2Tag()) {
             parse_id3v2(file.ID3v2Tag(), builder);
@@ -257,12 +269,18 @@ bool TaglibExtractor::extract(const DetectedFile &d, MediaFileBuilder &builder) 
         }
     } else if (content_type == "audio/mpeg") {
         TagLib::MPEG::File file(fs.get(), TagLib::ID3v2::FrameFactory::instance());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         if (file.hasID3v2Tag()) {
             parse_id3v2(file.ID3v2Tag(), builder);
         }
     } else if (content_type == "audio/mp4") {
         TagLib::MP4::File file(fs.get());
+        if (!file.isValid()) {
+            return false;
+        }
         parse_common(file, builder);
         parse_mp4(file.tag(), builder);
     } else {
