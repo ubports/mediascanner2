@@ -1,5 +1,5 @@
 
-add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${PIXBUF_CFLAGS})
+add_definitions(${MEDIASCANNER_DEPS_CFLAGS} ${GST_CFLAGS} ${EXIF_CFLAGS} ${PIXBUF_CFLAGS} ${TAGLIB_CFLAGS})
 include_directories(.. ${CMAKE_CURRENT_BINARY_DIR})
 
 # Build stubs/skeletons for D-Bus interface
@@ -32,12 +32,16 @@ target_link_libraries(extractor-client
 # The backend code for the extractor daemon, as a library for use by tests
 add_library(extractor-backend STATIC
   ExtractorBackend.cc
+  GStreamerExtractor.cc
+  ImageExtractor.cc
+  TaglibExtractor.cc
 )
 target_link_libraries(extractor-backend
   extractor-client
   ${GST_LDFLAGS}
   ${EXIF_LDFLAGS}
   ${PIXBUF_LDFLAGS}
+  ${TAGLIB_LDFLAGS}
 )
 
 add_executable(mediascanner-extractor

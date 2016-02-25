@@ -1,0 +1,22 @@
+Building the code
+-----------------
+
+The list of packages required to build mediascanner can be found in
+the Build-Depends stanza of the debian/control.in file.  In addition
+to those packages, you should install "qt5-default" to ensure that the
+Qt 5.x versions of build tools are used in preference to the Qt 4.x
+versions.
+
+The software can then be built with the following commands:
+
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
+
+The tests can then be run using:
+
+    $ make test
+
+Note that "make test" will not trigger a rebuild, so it is necessary
+to rerun "make" first if any code has been changed.
