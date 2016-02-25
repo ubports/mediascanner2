@@ -107,7 +107,7 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStore::archiveItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStoreBase::~MediaStoreBase()@Base" 0.101+14.10.20140625
  (c++)"mediascanner::MediaStoreBase::MediaStoreBase()@Base" 0.101+14.10.20140625
- (c++)"mediascanner::MediaStore::beginTransaction()@Base" 0replaceme
+ (c++)"mediascanner::MediaStore::beginTransaction()@Base" 0.111+16.04.20160225
  (c++)"mediascanner::MediaStore::getAlbumSongs(mediascanner::Album const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::getETag(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::hasMedia(mediascanner::MediaType) const@Base" 0.106+15.04.20150915
@@ -132,14 +132,14 @@ libmediascanner-2.0.so.3 libmediascanner-2.0-3 #MINVER#
  (c++)"mediascanner::MediaStore::removeSubtree(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.110+16.04.20151216
  (c++)"mediascanner::MediaStore::restoreItems(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.101+14.10.20140613
  (c++)"mediascanner::MediaStore::size() const@Base" 0.101+14.10.20140613
- (c++)"mediascanner::MediaStoreTransaction::commit()@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::~MediaStoreTransaction()@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::~MediaStoreTransaction()@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStorePrivate*)@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStorePrivate*)@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStoreTransaction&&)@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStoreTransaction&&)@Base" 0replaceme
- (c++)"mediascanner::MediaStoreTransaction::operator=(mediascanner::MediaStoreTransaction&&)@Base" 0replaceme
+ (c++)"mediascanner::MediaStoreTransaction::commit()@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::~MediaStoreTransaction()@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::~MediaStoreTransaction()@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStorePrivate*)@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStorePrivate*)@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStoreTransaction&&)@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::MediaStoreTransaction(mediascanner::MediaStoreTransaction&&)@Base" 0.111+16.04.20160225
+ (c++)"mediascanner::MediaStoreTransaction::operator=(mediascanner::MediaStoreTransaction&&)@Base" 0.111+16.04.20160225
  (c++)"typeinfo for mediascanner::MediaStore@Base" 0.101+14.10.20140625
  (c++)"typeinfo for mediascanner::MediaStoreBase@Base" 0.101+14.10.20140625
  (c++)"typeinfo name for mediascanner::MediaStore@Base" 0.101+14.10.20140625

@@ -1,11 +1,22 @@
-mediascanner2 (0.111-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.111+16.04.20160225-0ubuntu1) xenial; urgency=medium
 
+  [ James Henstridge ]
   * Batch index updates during the initial scan in 10 second intervals 
     (the same rate as invalidation notifications go out).  This greatly 
     reduces the IO overhead on initial startup, and is fairly safe now 
     we have out of process metadata extraction.
+  * Don't emit the InvalidateResults signal if a file was opened for
+    writing and then closed, but not actually modified (LP: #1542175)
+  * Favour the EXIF DateTimeOriginal tag over DateTime when extracting
+    metadata from photos. (LP: #1468585)
+  * Use taglib to extract metadata from Vorbis, Opus, Flac, MP3 and MP4
+    audio files.  Other formats will fall back to the existing GStreamer
+    code path. (LP: #1536832)
 
- -- James Henstridge <james.henstridge@canonical.com>  Mon, 22 Feb 2016 12:47:10 +0800
+  [ CI Train Bot ]
+  * debian/libmediascanner-2.0-3.symbols: update to released version.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Thu, 25 Feb 2016 01:53:33 +0000
 
 mediascanner2 (0.110+16.04.20151216-0ubuntu1) xenial; urgency=medium
 
