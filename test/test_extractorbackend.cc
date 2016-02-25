@@ -203,6 +203,15 @@ TEST_F(ExtractorBackendTest, extract_photo) {
     EXPECT_DOUBLE_EQ(153.1727346, file.getLongitude());
 }
 
+TEST_F(ExtractorBackendTest, extract_photo_date_original) {
+    ExtractorBackend e;
+
+    MediaFile file = e.extract(DetectedFile(
+        SOURCE_DIR "/media/krillin.jpg", "etag", "image/jpeg", 42, ImageMedia));
+    EXPECT_EQ(ImageMedia, file.getType());
+    EXPECT_EQ("2016-01-22T18:28:42", file.getDate());
+}
+
 void compare_taglib_gst(const DetectedFile d) {
     GStreamerExtractor gst(5);
     MediaFileBuilder builder_gst(d.filename);
