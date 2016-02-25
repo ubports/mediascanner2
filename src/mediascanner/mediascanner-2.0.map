@@ -9,6 +9,7 @@ global:
         mediascanner::MediaFileBuilder::*;
         mediascanner::MediaStore::*;
         mediascanner::MediaStoreBase::*;
+        mediascanner::MediaStoreTransaction::*;
         mediascanner::Filter::*;
 
         typeinfo?for?mediascanner::*;
