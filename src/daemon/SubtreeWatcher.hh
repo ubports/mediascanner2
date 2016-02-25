@@ -35,7 +35,7 @@ class SubtreeWatcher final {
 private:
 
     SubtreeWatcherPrivate *p;
-    void fileAdded(const std::string &abspath);
+    bool fileAdded(const std::string &abspath);
     void fileDeleted(const std::string &abspath);
     void dirAdded(const std::string &abspath);
     void dirRemoved(const std::string &abspath);

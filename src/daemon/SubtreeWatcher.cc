@@ -168,7 +168,8 @@ bool SubtreeWatcher::removeDir(const string &abspath) {
     return true;
 }
 
-void SubtreeWatcher::fileAdded(const string &abspath) {
+bool SubtreeWatcher::fileAdded(const string &abspath) {
+    bool changed = false;
     printf("New file was created: %s.\n", abspath.c_str());
     try {
         DetectedFile d = p->extractor.detect(abspath);
@@ -182,10 +183,12 @@ void SubtreeWatcher::fileAdded(const string &abspath) {
             // and the next time this file is encountered, it is skipped.
             // Insert cleans broken status of the file.
             p->store.insert(p->extractor.extract(d));
+            changed = true;
         }
     } catch(const exception &e) {
         fprintf(stderr, "Error when adding new file: %s\n", e.what());
     }
+    return changed;
 }
 
 void SubtreeWatcher::fileDeleted(const string &abspath) {
@@ -250,8 +253,7 @@ void SubtreeWatcher::processEvents() {
                 changed = true;
             }
             if(is_file) {
-                fileAdded(abspath);
-                changed = true;
+                changed = fileAdded(abspath);
             }
         } else if((event->mask & IN_DELETE) || (event->mask & IN_MOVED_FROM)) {
             if(p->str2wd.find(abspath) != p->str2wd.end()) {

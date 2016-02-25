@@ -92,6 +92,7 @@ enable_coverage_report(
     test_extractorbackend
     test_sqliteutils
     test_mfbuilder
+    test_subtreewatcher
     test_dbus
     test_qml
     test_util
