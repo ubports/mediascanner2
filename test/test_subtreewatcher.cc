@@ -40,6 +40,8 @@ using namespace mediascanner;
 
 namespace {
 
+const char CRASH_AFTER_ENV[] = "MEDIASCANNER_EXTRACTOR_CRASH_AFTER";
+
 typedef std::unique_ptr<GDBusConnection, decltype(&g_object_unref)> GDBusConnectionPtr;
 
 void copy_file(const string &src, const string &dst) {
@@ -75,7 +77,9 @@ protected:
 
         tmpdir_ = TEST_DIR "/subtreewatcher-test.XXXXXX";
         ASSERT_NE(nullptr, mkdtemp(&tmpdir_[0]));
+    }
 
+    void setup_watcher() {
         test_dbus_.reset(g_test_dbus_new(G_TEST_DBUS_NONE));
         g_test_dbus_add_service_dir(test_dbus_.get(), TEST_DIR "/services");
         g_test_dbus_up(test_dbus_.get());
@@ -108,6 +112,7 @@ protected:
             string cmd = "rm -rf " + tmpdir_;
             ASSERT_EQ(0, system(cmd.c_str()));
         }
+        unsetenv(CRASH_AFTER_ENV);
     }
 
     GDBusConnectionPtr make_connection() {
@@ -189,6 +194,7 @@ private:
 
 TEST_F(SubtreeWatcherTest, open_for_write_without_change)
 {
+    setup_watcher();
     watcher_->addDir(tmpdir_);
     iterate_main_loop();
 
@@ -213,6 +219,26 @@ TEST_F(SubtreeWatcherTest, open_for_write_without_change)
     // File changed, so invalidation count increases.
     EXPECT_TRUE(wait_for_invalidate(3));
     EXPECT_EQ(2, invalidate_count_);
+}
+
+TEST_F(SubtreeWatcherTest, fallback_added_for_failed_extraction) {
+    setenv(CRASH_AFTER_ENV, "0", true);
+    setup_watcher();
+    watcher_->addDir(tmpdir_);
+    iterate_main_loop();
+
+    string testfile = tmpdir_ + "/testfile.ogg";
+    copy_file(SOURCE_DIR "/media/testfile.ogg", testfile);
+    EXPECT_TRUE(wait_for_invalidate(10));
+    ASSERT_EQ(store_->size(), 1);
+
+    // Failed extraction exists in database with its title set based
+    // on the file name, but other metadata absent.
+    MediaFile media = store_->lookup(testfile);
+    EXPECT_EQ("testfile", media.getTitle());
+    EXPECT_EQ("", media.getAuthor());
+    EXPECT_EQ("", media.getAlbum());
+    EXPECT_EQ(0, media.getDuration());
 }
 
 int main(int argc, char **argv) {
