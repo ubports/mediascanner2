@@ -60,6 +60,8 @@ bool is_same_directory(const char *dir1, const char *dir2) {
 }
 
 static const char BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
+static const unsigned int INVALIDATE_DELAY = 1;
+
 
 class ScannerDaemon final {
 public:
@@ -156,6 +158,7 @@ void ScannerDaemon::setupBus() {
         throw runtime_error(msg);
     }
     invalidator.setBus(session_bus.get());
+    invalidator.setDelay(INVALIDATE_DELAY);
 
     bus_name_id = g_bus_own_name_on_connection(
         session_bus.get(), BUS_NAME, static_cast<GBusNameOwnerFlags>(

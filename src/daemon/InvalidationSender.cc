@@ -27,14 +27,12 @@
 using namespace std;
 
 // timer delay in seconds
-const unsigned int DELAY = 1;
-
 static const char SCOPES_DBUS_IFACE[] = "com.canonical.unity.scopes";
 static const char SCOPES_DBUS_PATH[] = "/com/canonical/unity/scopes";
 static const char SCOPES_INVALIDATE_RESULTS[] = "InvalidateResults";
 
 InvalidationSender::InvalidationSender() :
-    bus(nullptr, g_object_unref), timeout_id(0) {
+    bus(nullptr, g_object_unref) {
 }
 
 InvalidationSender::~InvalidationSender() {
@@ -47,6 +45,10 @@ void InvalidationSender::setBus(GDBusConnection *bus) {
     this->bus.reset(static_cast<GDBusConnection*>(g_object_ref(bus)));
 }
 
+void InvalidationSender::setDelay(int delay) {
+    this->delay = delay;
+}
+
 void InvalidationSender::invalidate() {
     if (!bus) {
         return;
@@ -54,7 +56,11 @@ void InvalidationSender::invalidate() {
     if (timeout_id != 0) {
         return;
     }
-    timeout_id = g_timeout_add_seconds(DELAY, &InvalidationSender::callback, static_cast<void*>(this));
+    if (delay > 0) {
+        timeout_id = g_timeout_add_seconds(delay, &InvalidationSender::callback, static_cast<void*>(this));
+    } else {
+        InvalidationSender::callback(this);
+    }
 }
 
 int InvalidationSender::callback(void *data) {
