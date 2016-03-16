@@ -182,7 +182,15 @@ bool SubtreeWatcher::fileAdded(const string &abspath) {
             // If detection dies, insertion into broken files persists
             // and the next time this file is encountered, it is skipped.
             // Insert cleans broken status of the file.
-            p->store.insert(p->extractor.extract(d));
+            MediaFile media;
+            try {
+                media = p->extractor.extract(d);
+            } catch (const std::runtime_error &e) {
+                fprintf(stderr, "Error extracting from '%s': %s\n",
+                        d.filename.c_str(), e.what());
+                media = p->extractor.fallback_extract(d);
+            }
+            p->store.insert(media);
             changed = true;
         }
     } catch(const exception &e) {
