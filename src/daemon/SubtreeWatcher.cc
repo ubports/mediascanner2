@@ -190,7 +190,7 @@ bool SubtreeWatcher::fileAdded(const string &abspath) {
                         d.filename.c_str(), e.what());
                 media = p->extractor.fallback_extract(d);
             }
-            p->store.insert(media);
+            p->store.insert(std::move(media));
             changed = true;
         }
     } catch(const exception &e) {
