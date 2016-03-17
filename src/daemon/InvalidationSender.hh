@@ -38,12 +38,14 @@ public:
 
     void invalidate();
     void setBus(GDBusConnection *bus);
+    void setDelay(int delay);
 
 private:
     static int callback(void *data);
 
     std::unique_ptr<GDBusConnection, void(*)(void*)> bus;
-    unsigned int timeout_id;
+    unsigned int timeout_id = 0;
+    int delay = 0;
 };
 
 #endif

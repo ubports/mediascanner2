@@ -60,6 +60,8 @@ bool is_same_directory(const char *dir1, const char *dir2) {
 }
 
 static const char BUS_NAME[] = "com.canonical.MediaScanner2.Daemon";
+static const unsigned int INVALIDATE_DELAY = 1;
+
 
 class ScannerDaemon final {
 public:
@@ -156,6 +158,7 @@ void ScannerDaemon::setupBus() {
         throw runtime_error(msg);
     }
     invalidator.setBus(session_bus.get());
+    invalidator.setDelay(INVALIDATE_DELAY);
 
     bus_name_id = g_bus_own_name_on_connection(
         session_bus.get(), BUS_NAME, static_cast<GBusNameOwnerFlags>(
@@ -239,9 +242,15 @@ void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const Med
 
             try {
                 store.insert_broken_file(d.filename, d.etag);
-                store.insert(extractor->extract(d));
-                // If the above line crashes, then brokenness of this file
-                // persists in the db.
+                MediaFile media;
+                try {
+                    media = extractor->extract(d);
+                } catch (const runtime_error &e) {
+                    fprintf(stderr, "Error extracting from '%s': %s\n",
+                            d.filename.c_str(), e.what());
+                    media = extractor->fallback_extract(d);
+                }
+                store.insert(std::move(media));
             } catch(const exception &e) {
                 fprintf(stderr, "Error when indexing: %s\n", e.what());
             }
