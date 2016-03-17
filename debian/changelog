@@ -1,3 +1,11 @@
+mediascanner2 (0.111+16.04.20160317-0ubuntu1) xenial; urgency=medium
+
+  * If a file is unscannable, insert a fallback MediaFile into the index
+    immediately, rather than relying on it being added by the
+    broken_files logic on next startup.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Thu, 17 Mar 2016 03:24:55 +0000
+
 mediascanner2 (0.111+16.04.20160225-0ubuntu1) xenial; urgency=medium
 
   [ James Henstridge ]
