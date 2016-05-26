@@ -2,9 +2,9 @@
 
 set -e
 
-distro=$(lsb_release -c -s)
+[ -n "$SERIES" ] || SERIES=$(lsb_release -c -s)
 
-case "$distro" in
+case "$SERIES" in
     vivid)
         echo 3
         ;;

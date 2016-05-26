@@ -17,7 +17,7 @@ export QT_SELECT=qt5
 	dh $@ --parallel --fail-missing
 
 override_dh_auto_clean:
-	/bin/sh $(CURDIR)/debian/gen-debian-files.sh
+	/bin/sh $(CURDIR)/debian/bileto_pre_release_hook
 	dh_auto_clean
 
 override_dh_auto_test:
