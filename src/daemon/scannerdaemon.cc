@@ -191,19 +191,14 @@ void ScannerDaemon::setupMountWatcher() {
 }
 
 void ScannerDaemon::mountEvent(const MountWatcher::Info& info) {
-    bool changed = false;
     if (info.is_mounted) {
         printf("Volume %s was mounted.\n", info.mount_point.c_str());
         if (info.mount_point.substr(0, 6) == "/media") {
             volumes->queueAddVolume(info.mount_point);
-            changed = true;
         }
     } else {
         printf("Volume %s was unmounted.\n", info.mount_point.c_str());
-        changed = volumes->queueRemoveVolume(info.mount_point);
-    }
-    if (changed) {
-        invalidator.invalidate();
+        volumes->queueRemoveVolume(info.mount_point);
     }
 }
 

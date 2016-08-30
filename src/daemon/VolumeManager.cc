@@ -31,8 +31,9 @@
 #include <glib.h>
 
 #include <cassert>
+#include <cstdio>
 #include <map>
-#include <vector>
+#include <deque>
 
 using namespace std;
 
@@ -44,8 +45,11 @@ enum class VolumeEventType {
 };
 
 struct VolumeEvent {
-    VolumeEventType event;
+    VolumeEventType type;
     string path;
+
+    VolumeEvent(VolumeEventType type, const string& path)
+        : type(type), path(path) {}
 };
 
 }
@@ -58,7 +62,7 @@ struct VolumeManagerPrivate {
     InvalidationSender& invalidator;
 
     map<string, unique_ptr<SubtreeWatcher>> volumes;
-    vector<VolumeEvent> pending;
+    deque<VolumeEvent> pending;
     unsigned int idle_id = 0;
 
     VolumeManagerPrivate(MediaStore& store, MetadataExtractor& extractor,
@@ -66,13 +70,14 @@ struct VolumeManagerPrivate {
     ~VolumeManagerPrivate();
 
     void queueAddVolume(const string& path);
-    bool queueRemoveVolume(const string& path);
+    void queueRemoveVolume(const string& path);
+
+    void queueUpdate(VolumeEventType type, const string& path);
+    static gboolean processEvent(void *user_data) noexcept;
 
     void addVolume(const string& path);
     bool removeVolume(const string& path);
     void readFiles(const string& subdir, const MediaType type);
-
-    static gboolean processNext(void *user_data);
 };
 
 VolumeManager::VolumeManager(MediaStore& store, MetadataExtractor& extractor,
@@ -86,8 +91,8 @@ void VolumeManager::queueAddVolume(const string& path) {
     p->queueAddVolume(path);
 }
 
-bool VolumeManager::queueRemoveVolume(const string& path) {
-    return p->queueRemoveVolume(path);
+void VolumeManager::queueRemoveVolume(const string& path) {
+    p->queueRemoveVolume(path);
 }
 
 VolumeManagerPrivate::VolumeManagerPrivate(MediaStore& store,
@@ -104,11 +109,46 @@ VolumeManagerPrivate::~VolumeManagerPrivate()
 }
 
 void VolumeManagerPrivate::queueAddVolume(const string& path) {
-    addVolume(path);
+    queueUpdate(VolumeEventType::added, path);
 }
 
-bool VolumeManagerPrivate::queueRemoveVolume(const string& path) {
-    return removeVolume(path);
+void VolumeManagerPrivate::queueRemoveVolume(const string& path) {
+    queueUpdate(VolumeEventType::removed, path);
+}
+
+void VolumeManagerPrivate::queueUpdate(VolumeEventType type,
+                                       const string& path) {
+    for (auto it = pending.begin(); it != pending.end();) {
+        if (it->path == path) {
+            it = pending.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    pending.emplace_back(type, path);
+    if (idle_id == 0) {
+        idle_id = g_idle_add(&VolumeManagerPrivate::processEvent, this);
+    }
+}
+
+gboolean VolumeManagerPrivate::processEvent(void *user_data) noexcept {
+    auto *p = reinterpret_cast<VolumeManagerPrivate*>(user_data);
+
+    while (!p->pending.empty()) {
+        auto event = p->pending.front();
+        p->pending.pop_front();
+
+        switch (event.type) {
+        case VolumeEventType::added:
+            p->addVolume(event.path);
+            break;
+        case VolumeEventType::removed:
+            p->removeVolume(event.path);
+            break;
+        }
+    }
+    p->idle_id = 0;
+    return G_SOURCE_REMOVE;
 }
 
 void VolumeManagerPrivate::addVolume(const string& path) {
