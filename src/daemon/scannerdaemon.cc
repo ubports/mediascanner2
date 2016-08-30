@@ -106,13 +106,13 @@ ScannerDaemon::ScannerDaemon() :
     // it falls back to home directory. This would mean scanning the entire home
     // directory. This is probably not what people want so skip if this is the case.
     if (musicdir && !is_same_directory(musicdir, homedir))
-        volumes->addVolume(musicdir);
+        volumes->queueAddVolume(musicdir);
 
     if (videodir && !is_same_directory(videodir, homedir))
-        volumes->addVolume(videodir);
+        volumes->queueAddVolume(videodir);
 
     if (picturesdir && !is_same_directory(picturesdir, homedir))
-        volumes->addVolume(picturesdir);
+        volumes->queueAddVolume(picturesdir);
 
     // In case someone opened the db file before we could populate it.
     invalidator.invalidate();
@@ -195,12 +195,12 @@ void ScannerDaemon::mountEvent(const MountWatcher::Info& info) {
     if (info.is_mounted) {
         printf("Volume %s was mounted.\n", info.mount_point.c_str());
         if (info.mount_point.substr(0, 6) == "/media") {
-            volumes->addVolume(info.mount_point);
+            volumes->queueAddVolume(info.mount_point);
             changed = true;
         }
     } else {
         printf("Volume %s was unmounted.\n", info.mount_point.c_str());
-        changed = volumes->removeVolume(info.mount_point);
+        changed = volumes->queueRemoveVolume(info.mount_point);
     }
     if (changed) {
         invalidator.invalidate();

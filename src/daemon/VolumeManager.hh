@@ -37,8 +37,8 @@ public:
     VolumeManager(const VolumeManager&) = delete;
     VolumeManager& operator=(const VolumeManager&) = delete;
 
-    void addVolume(const std::string& path);
-    bool removeVolume(const std::string& path);
+    void queueAddVolume(const std::string& path);
+    bool queueRemoveVolume(const std::string& path);
 
 private:
     std::unique_ptr<VolumeManagerPrivate> p;

@@ -32,8 +32,23 @@
 
 #include <cassert>
 #include <map>
+#include <vector>
 
 using namespace std;
+
+namespace {
+
+enum class VolumeEventType {
+    added,
+    removed,
+};
+
+struct VolumeEvent {
+    VolumeEventType event;
+    string path;
+};
+
+}
 
 namespace mediascanner {
 
@@ -43,13 +58,21 @@ struct VolumeManagerPrivate {
     InvalidationSender& invalidator;
 
     map<string, unique_ptr<SubtreeWatcher>> volumes;
+    vector<VolumeEvent> pending;
+    unsigned int idle_id = 0;
 
     VolumeManagerPrivate(MediaStore& store, MetadataExtractor& extractor,
-                         InvalidationSender& invalidator)
-        : store(store), extractor(extractor), invalidator(invalidator) {
-    }
+                         InvalidationSender& invalidator);
+    ~VolumeManagerPrivate();
 
-    void readFiles(const string &subdir, const MediaType type);
+    void queueAddVolume(const string& path);
+    bool queueRemoveVolume(const string& path);
+
+    void addVolume(const string& path);
+    bool removeVolume(const string& path);
+    void readFiles(const string& subdir, const MediaType type);
+
+    static gboolean processNext(void *user_data);
 };
 
 VolumeManager::VolumeManager(MediaStore& store, MetadataExtractor& extractor,
@@ -59,9 +82,38 @@ VolumeManager::VolumeManager(MediaStore& store, MetadataExtractor& extractor,
 
 VolumeManager::~VolumeManager() = default;
 
-void VolumeManager::addVolume(const std::string& path) {
+void VolumeManager::queueAddVolume(const string& path) {
+    p->queueAddVolume(path);
+}
+
+bool VolumeManager::queueRemoveVolume(const string& path) {
+    return p->queueRemoveVolume(path);
+}
+
+VolumeManagerPrivate::VolumeManagerPrivate(MediaStore& store,
+                                           MetadataExtractor& extractor,
+                                           InvalidationSender& invalidator)
+    : store(store), extractor(extractor), invalidator(invalidator) {
+}
+
+VolumeManagerPrivate::~VolumeManagerPrivate()
+{
+    if (idle_id != 0) {
+        g_source_remove(idle_id);
+    }
+}
+
+void VolumeManagerPrivate::queueAddVolume(const string& path) {
+    addVolume(path);
+}
+
+bool VolumeManagerPrivate::queueRemoveVolume(const string& path) {
+    return removeVolume(path);
+}
+
+void VolumeManagerPrivate::addVolume(const string& path) {
     assert(path[0] == '/');
-    if(p->volumes.find(path) != p->volumes.end()) {
+    if(volumes.find(path) != volumes.end()) {
         return;
     }
     if(is_rootlike(path)) {
@@ -77,20 +129,20 @@ void VolumeManager::addVolume(const std::string& path) {
         fprintf(stderr, "Directory %s has a scan block file, skipping it.\n", path.c_str());
         return;
     }
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(p->store, p->extractor, p->invalidator));
-    p->store.restoreItems(path);
-    p->store.pruneDeleted();
-    p->readFiles(path, AllMedia);
+    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(store, extractor, invalidator));
+    store.restoreItems(path);
+    store.pruneDeleted();
+    readFiles(path, AllMedia);
     sw->addDir(path);
-    p->volumes[path] = move(sw);
+    volumes[path] = move(sw);
 }
 
-bool VolumeManager::removeVolume(const std::string& path) {
+bool VolumeManagerPrivate::removeVolume(const string& path) {
     assert(path[0] == '/');
-    if(p->volumes.find(path) == p->volumes.end())
+    if(volumes.find(path) == volumes.end())
         return false;
-    p->store.archiveItems(path);
-    p->volumes.erase(path);
+    store.archiveItems(path);
+    volumes.erase(path);
     return true;
 }
 
