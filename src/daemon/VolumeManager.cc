@@ -135,7 +135,7 @@ gboolean VolumeManagerPrivate::processEvent(void *user_data) noexcept {
     auto *p = reinterpret_cast<VolumeManagerPrivate*>(user_data);
 
     while (!p->pending.empty()) {
-        auto event = p->pending.front();
+        auto event = move(p->pending.front());
         p->pending.pop_front();
 
         switch (event.type) {
