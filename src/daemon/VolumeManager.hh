@@ -40,6 +40,8 @@ public:
     void queueAddVolume(const std::string& path);
     void queueRemoveVolume(const std::string& path);
 
+    bool idle() const;
+
 private:
     std::unique_ptr<VolumeManagerPrivate> p;
 };

@@ -69,9 +69,6 @@ struct VolumeManagerPrivate {
                          InvalidationSender& invalidator);
     ~VolumeManagerPrivate();
 
-    void queueAddVolume(const string& path);
-    void queueRemoveVolume(const string& path);
-
     void queueUpdate(VolumeEventType type, const string& path);
     static gboolean processEvent(void *user_data) noexcept;
 
@@ -88,11 +85,16 @@ VolumeManager::VolumeManager(MediaStore& store, MetadataExtractor& extractor,
 VolumeManager::~VolumeManager() = default;
 
 void VolumeManager::queueAddVolume(const string& path) {
-    p->queueAddVolume(path);
+    p->queueUpdate(VolumeEventType::added, path);
 }
 
 void VolumeManager::queueRemoveVolume(const string& path) {
-    p->queueRemoveVolume(path);
+    p->queueUpdate(VolumeEventType::removed, path);
+}
+
+bool VolumeManager::idle() const {
+    // idle_id will only be reset once the scanning job has completed.
+    return p->idle_id == 0;
 }
 
 VolumeManagerPrivate::VolumeManagerPrivate(MediaStore& store,
@@ -106,14 +108,6 @@ VolumeManagerPrivate::~VolumeManagerPrivate()
     if (idle_id != 0) {
         g_source_remove(idle_id);
     }
-}
-
-void VolumeManagerPrivate::queueAddVolume(const string& path) {
-    queueUpdate(VolumeEventType::added, path);
-}
-
-void VolumeManagerPrivate::queueRemoveVolume(const string& path) {
-    queueUpdate(VolumeEventType::removed, path);
 }
 
 void VolumeManagerPrivate::queueUpdate(VolumeEventType type,
