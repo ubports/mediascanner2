@@ -4,6 +4,7 @@ include_directories(..)
 add_library(scannerstuff STATIC
   InvalidationSender.cc
   MountWatcher.cc
+  VolumeManager.cc
   SubtreeWatcher.cc
   Scanner.cc
   ../mediascanner/utils.cc
