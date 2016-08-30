@@ -31,6 +31,8 @@ static const char SCOPES_DBUS_IFACE[] = "com.canonical.unity.scopes";
 static const char SCOPES_DBUS_PATH[] = "/com/canonical/unity/scopes";
 static const char SCOPES_INVALIDATE_RESULTS[] = "InvalidateResults";
 
+namespace mediascanner {
+
 InvalidationSender::InvalidationSender() :
     bus(nullptr, g_object_unref) {
 }
@@ -86,4 +88,6 @@ int InvalidationSender::callback(void *data) {
 
     invalidator->timeout_id = 0;
     return G_SOURCE_REMOVE;
+}
+
 }

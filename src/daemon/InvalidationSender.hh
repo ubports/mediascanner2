@@ -24,6 +24,8 @@
 
 typedef struct _GDBusConnection GDBusConnection;
 
+namespace mediascanner {
+
 /**
  * A class that sends a broadcast signal that the state of media
  * files has changed.
@@ -47,5 +49,7 @@ private:
     unsigned int timeout_id = 0;
     int delay = 0;
 };
+
+}
 
 #endif
