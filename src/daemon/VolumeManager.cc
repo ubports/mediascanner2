@@ -73,7 +73,7 @@ struct VolumeManagerPrivate {
     static gboolean processEvent(void *user_data) noexcept;
 
     void addVolume(const string& path);
-    bool removeVolume(const string& path);
+    void removeVolume(const string& path);
     void readFiles(const string& subdir, const MediaType type);
 };
 
@@ -141,6 +141,7 @@ gboolean VolumeManagerPrivate::processEvent(void *user_data) noexcept {
             break;
         }
     }
+    p->invalidator.invalidate();
     p->idle_id = 0;
     return G_SOURCE_REMOVE;
 }
@@ -171,13 +172,12 @@ void VolumeManagerPrivate::addVolume(const string& path) {
     volumes[path] = move(sw);
 }
 
-bool VolumeManagerPrivate::removeVolume(const string& path) {
+void VolumeManagerPrivate::removeVolume(const string& path) {
     assert(path[0] == '/');
     if(volumes.find(path) == volumes.end())
-        return false;
+        return;
     store.archiveItems(path);
     volumes.erase(path);
-    return true;
 }
 
 void VolumeManagerPrivate::readFiles(const string &subdir, const MediaType type) {
