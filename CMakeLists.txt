@@ -1,7 +1,7 @@
+cmake_minimum_required(VERSION 3.0.2)
 project(mediascanner2 CXX C)
-cmake_minimum_required(VERSION 2.8.9)
 
-set(MEDIASCANNER_VERSION "0.111")
+set(MEDIASCANNER_VERSION "0.112")
 
 execute_process(
   COMMAND /bin/sh ${CMAKE_CURRENT_SOURCE_DIR}/get-soversion.sh

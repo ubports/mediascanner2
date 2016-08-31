@@ -1,3 +1,11 @@
+mediascanner2 (0.112-0ubuntu1) UNRELEASED; urgency=medium
+
+  * When multiple volumes are mounted in quick succession, scan them
+    serially to avoid reentrancy problems in the initial scan. (LP:
+    #1489656)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Wed, 31 Aug 2016 11:26:18 +0800
+
 mediascanner2 (0.111+16.10.20160526-0ubuntu1) yakkety; urgency=medium
 
   [ Alex Tu ]
