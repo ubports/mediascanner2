@@ -93,6 +93,7 @@ enable_coverage_report(
     test_sqliteutils
     test_mfbuilder
     test_subtreewatcher
+    test_volumemanager
     test_dbus
     test_qml
     test_util

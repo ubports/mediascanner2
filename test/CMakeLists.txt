@@ -60,6 +60,13 @@ add_test(test_subtreewatcher test_subtreewatcher)
 set_tests_properties(test_subtreewatcher PROPERTIES
   ENVIRONMENT "GIO_MODULE_DIR=${CMAKE_CURRENT_BINARY_DIR}/modules")
 
+add_executable(test_volumemanager test_volumemanager.cc)
+target_link_libraries(test_volumemanager mediascanner scannerstuff gtest)
+add_test(test_volumemanager test_volumemanager)
+# The gvfs modules interfere with the private D-Bus test fixtures
+set_tests_properties(test_volumemanager PROPERTIES
+  ENVIRONMENT "GIO_MODULE_DIR=${CMAKE_CURRENT_BINARY_DIR}/modules")
+
 add_executable(test_sqliteutils test_sqliteutils.cc)
 target_link_libraries(test_sqliteutils gtest ${MEDIASCANNER_DEPS_LDFLAGS})
 add_test(test_sqliteutils test_sqliteutils)
