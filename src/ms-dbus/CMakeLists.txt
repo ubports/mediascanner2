@@ -5,7 +5,12 @@ add_library(ms-dbus STATIC
   dbus-codec.cc
   service-skeleton.cc
   service-stub.cc
-)
+  )
+
+# gcc 6 is miscompiling something in dbus-cpp, and disabling
+# optimisation makes the problem go away.
+#  https://bugs.launchpad.net/ubuntu/+source/mediascanner2/+bug/1621002
+set_source_files_properties(dbus-codec.cc PROPERTIES COMPILE_FLAGS "-O0")
 
 target_link_libraries(ms-dbus
   mediascanner
