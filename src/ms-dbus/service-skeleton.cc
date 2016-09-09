@@ -5,6 +5,7 @@
 #include <core/dbus/message.h>
 #include <core/dbus/object.h>
 #include <core/dbus/types/object_path.h>
+#include <core/dbus/types/variant.h>
 #include <sys/apparmor.h>
 
 #include <mediascanner/Album.hh>
@@ -16,21 +17,23 @@
 #include "dbus-codec.hh"
 
 using core::dbus::Message;
+using core::dbus::types::ObjectPath;
+using core::dbus::types::Variant;
 
 namespace mediascanner {
 namespace dbus {
 
-struct Apparmor {
+struct BusDaemon {
     static const std::string &name() {
         static std::string s = "org.freedesktop.DBus";
         return s;
     }
 
-    struct GetConnectionAppArmorSecurityContext {
-        typedef Apparmor Interface;
+    struct GetConnectionCredentials {
+        typedef BusDaemon Interface;
 
         static const std::string &name() {
-            static std::string s = "GetConnectionAppArmorSecurityContext";
+            static std::string s = "GetConnectionCredentials";
             return s;
         }
 
@@ -119,20 +122,33 @@ struct ServiceSkeleton::Private {
         auto service = core::dbus::Service::use_service(
             impl->access_bus(), "org.freedesktop.DBus");
         auto obj = service->object_for_path(
-            core::dbus::types::ObjectPath("/org/freedesktop/DBus"));
+            ObjectPath("/org/freedesktop/DBus"));
 
-        core::dbus::Result<std::string> result;
+        core::dbus::Result<std::map<std::string,Variant>> result;
         try {
-            result = obj->invoke_method_synchronously<Apparmor::GetConnectionAppArmorSecurityContext, std::string>(message->sender());
-        } catch (const std::runtime_error &e) {
-            fprintf(stderr, "Error getting apparmor context: %s\n", e.what());
+            result = obj->invoke_method_synchronously<BusDaemon::GetConnectionCredentials,std::map<std::string,Variant>>(message->sender());
+        } catch (const std::exception &e) {
+            fprintf(stderr, "Error getting connection credentials: %s\n", e.what());
             return std::string();
         }
         if (result.is_error()) {
-            fprintf(stderr, "Error getting apparmor context: %s\n", result.error().print().c_str());
+            fprintf(stderr, "Error getting connection credentials: %s\n", result.error().print().c_str());
             return std::string();
         }
-        return result.value();
+        const auto& creds = result.value();
+        auto it = creds.find("LinuxSecurityLabel");
+        if (it == creds.end()) {
+            fprintf(stderr, "Connection credentials don't include security label");
+            return std::string();
+        }
+        std::vector<int8_t> label;
+        try {
+            label = it->second.as<std::vector<int8_t>>();
+        } catch (const std::exception &e) {
+            fprintf(stderr, "Could not convert security label to byte array");
+            return std::string();
+        }
+        return std::string(aa_splitcon(reinterpret_cast<char*>(&label[0]), nullptr));
     }
 
     bool does_client_have_access(const std::string &context, MediaType type) {
