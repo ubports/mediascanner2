@@ -1,10 +1,22 @@
-mediascanner2 (0.112-0ubuntu1) UNRELEASED; urgency=medium
+mediascanner2 (0.112+16.10.20160909-0ubuntu1) yakkety; urgency=medium
 
+  [ James Henstridge ]
   * When multiple volumes are mounted in quick succession, scan them
     serially to avoid reentrancy problems in the initial scan. (LP:
     #1489656)
+  * Add apparmor-easyprof hardware directories to package so AppArmor
+    profile can compile when apparmor-easyprof-ubuntu isn't installed.
+    (LP: #1443693)
+  * Disable optimisation when compiling dbus-codec.cc to avoid gcc 6
+    compilation bug. (LP: #1621002)
+  * Replace deprecated use of GetConnectionAppArmorSecurityContext
+    method with GetConnectionCredentials. (LP: #1489489)
 
- -- James Henstridge <james.henstridge@canonical.com>  Wed, 31 Aug 2016 11:26:18 +0800
+  [ You-Sheng Yang ]
+  * Update mediascanner-extractor apparmor profile to cover Android
+    library locations on 64-bit systems.
+
+ -- James Henstridge <james.henstridge@canonical.com>  Fri, 09 Sep 2016 13:46:43 +0000
 
 mediascanner2 (0.111+16.10.20160526-0ubuntu1) yakkety; urgency=medium
 
