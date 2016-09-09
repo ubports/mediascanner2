@@ -20,8 +20,14 @@ override_dh_auto_clean:
 	/bin/sh $(CURDIR)/debian/bileto_pre_release_hook
 	dh_auto_clean
 
+ifneq (,$(filter powerpc,$(DEB_HOST_ARCH)))
+  test_arg = || :
+else
+  test_arg =
+endif
+
 override_dh_auto_test:
-	dh_auto_test --max-parallel=1 -- ARGS="--verbose"
+	dh_auto_test --max-parallel=1 -- ARGS="--verbose" $(test_arg)
 
 override_dh_installdeb:
 	dh_apparmor --profile-name=usr.bin.mediascanner-service-2.0 -pmediascanner2.0
