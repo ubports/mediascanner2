@@ -53,18 +53,18 @@
   /usr/lib/@{multiarch}/libhybris/*.so mr,
   /{,android/}system/build.prop r,
   # These libraries can be in any of:
-  #  /vendor/lib
-  #  /system/lib
-  #  /system/vendor/lib
-  #  /android/vendor/lib
-  #  /android/system/lib
-  #  /android/system/vendor/lib
-  /{,android/}vendor/lib/**           r,
-  /{,android/}vendor/lib/**.so        m,
-  /{,android/}system/lib/**           r,
-  /{,android/}system/lib/**.so        m,
-  /{,android/}system/vendor/lib/**    r,
-  /{,android/}system/vendor/lib/**.so m,
+  #  /vendor/lib{,64}
+  #  /system/lib{,64}
+  #  /system/vendor/lib{,64}
+  #  /android/vendor/lib{,64}
+  #  /android/system/lib{,64}
+  #  /android/system/vendor/lib{,64}
+  /{,android/}vendor/lib{,64}/**           r,
+  /{,android/}vendor/lib{,64}/**.so        m,
+  /{,android/}system/lib{,64}/**           r,
+  /{,android/}system/lib{,64}/**.so        m,
+  /{,android/}system/vendor/lib{,64}/**    r,
+  /{,android/}system/vendor/lib{,64}/**.so m,
 
   # attach_disconnected path
   /dev/socket/property_service rw,
