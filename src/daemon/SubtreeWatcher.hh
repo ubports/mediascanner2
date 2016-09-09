@@ -22,10 +22,9 @@
 
 #include<string>
 
-class InvalidationSender;
-
 namespace mediascanner {
 
+class InvalidationSender;
 class MediaStore;
 class MetadataExtractor;
 

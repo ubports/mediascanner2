@@ -32,13 +32,10 @@
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"
-#include "../extractor/DetectedFile.hh"
 #include "../extractor/MetadataExtractor.hh"
 #include "MountWatcher.hh"
-#include "SubtreeWatcher.hh"
-#include "Scanner.hh"
 #include "InvalidationSender.hh"
-#include "../mediascanner/internal/utils.hh"
+#include "VolumeManager.hh"
 
 using namespace std;
 
@@ -74,9 +71,6 @@ private:
     void setupBus();
     void setupSignals();
     void setupMountWatcher();
-    void readFiles(MediaStore &store, const string &subdir, const MediaType type);
-    void addDir(const string &dir);
-    void removeDir(const string &dir);
     static gboolean signalCallback(gpointer data);
     static void busNameLostCallback(GDBusConnection *connection, const char *name, gpointer data);
     void mountEvent(const MountWatcher::Info &info);
@@ -86,8 +80,8 @@ private:
     string cachedir;
     unique_ptr<MediaStore> store;
     unique_ptr<MetadataExtractor> extractor;
-    map<string, unique_ptr<SubtreeWatcher>> subtrees;
     InvalidationSender invalidator;
+    unique_ptr<VolumeManager> volumes;
     unique_ptr<GMainLoop,void(*)(GMainLoop*)> main_loop;
     unique_ptr<GDBusConnection,void(*)(void*)> session_bus;
     unsigned int bus_name_id = 0;
@@ -99,6 +93,7 @@ ScannerDaemon::ScannerDaemon() :
     setupBus();
     store.reset(new MediaStore(MS_READ_WRITE, "/media/"));
     extractor.reset(new MetadataExtractor(session_bus.get()));
+    volumes.reset(new VolumeManager(*store, *extractor, invalidator));
 
     setupMountWatcher();
 
@@ -111,13 +106,13 @@ ScannerDaemon::ScannerDaemon() :
     // it falls back to home directory. This would mean scanning the entire home
     // directory. This is probably not what people want so skip if this is the case.
     if (musicdir && !is_same_directory(musicdir, homedir))
-        addDir(musicdir);
+        volumes->queueAddVolume(musicdir);
 
     if (videodir && !is_same_directory(videodir, homedir))
-        addDir(videodir);
+        volumes->queueAddVolume(videodir);
 
     if (picturesdir && !is_same_directory(picturesdir, homedir))
-        addDir(picturesdir);
+        volumes->queueAddVolume(picturesdir);
 
     // In case someone opened the db file before we could populate it.
     invalidator.invalidate();
@@ -178,89 +173,6 @@ void ScannerDaemon::setupSignals() {
     sigterm_id = g_unix_signal_add(SIGTERM, &ScannerDaemon::signalCallback, this);
 }
 
-void ScannerDaemon::addDir(const string &dir) {
-    assert(dir[0] == '/');
-    if(subtrees.find(dir) != subtrees.end()) {
-        return;
-    }
-    if(is_rootlike(dir)) {
-        fprintf(stderr, "Directory %s looks like a top level root directory, skipping it (%s).\n",
-                dir.c_str(), __PRETTY_FUNCTION__);
-        return;
-    }
-    if(is_optical_disc(dir)) {
-        fprintf(stderr, "Directory %s looks like an optical disc, skipping it.\n", dir.c_str());
-        return;
-    }
-    if(has_scanblock(dir)) {
-        fprintf(stderr, "Directory %s has a scan block file, skipping it.\n", dir.c_str());
-        return;
-    }
-    unique_ptr<SubtreeWatcher> sw(new SubtreeWatcher(*store.get(), *extractor.get(), invalidator));
-    store->restoreItems(dir);
-    store->pruneDeleted();
-    readFiles(*store.get(), dir, AllMedia);
-    sw->addDir(dir);
-    subtrees[dir] = move(sw);
-}
-
-void ScannerDaemon::removeDir(const string &dir) {
-    assert(dir[0] == '/');
-    if(subtrees.find(dir) == subtrees.end())
-        return;
-    store->archiveItems(dir);
-    subtrees.erase(dir);
-}
-
-void ScannerDaemon::readFiles(MediaStore &store, const string &subdir, const MediaType type) {
-    Scanner s(extractor.get(), subdir, type);
-    MediaStoreTransaction txn = store.beginTransaction();
-    const int update_interval = 10; // How often to send invalidations.
-    struct timespec previous_update, current_time;
-    clock_gettime(CLOCK_MONOTONIC, &previous_update);
-    previous_update.tv_sec -= update_interval/2; // Send the first update sooner for better visual appeal.
-    while(true) {
-        try {
-            auto d = s.next();
-            clock_gettime(CLOCK_MONOTONIC, &current_time);
-            while(g_main_context_pending(g_main_context_default())) {
-                g_main_context_iteration(g_main_context_default(), FALSE);
-            }
-            if(current_time.tv_sec - previous_update.tv_sec >= update_interval) {
-                txn.commit();
-                invalidator.invalidate();
-                previous_update = current_time;
-            }
-            // If the file is broken or unchanged, use fallback.
-            if (store.is_broken_file(d.filename, d.etag)) {
-                fprintf(stderr, "Using fallback data for unscannable file %s.\n", d.filename.c_str());
-                store.insert(extractor->fallback_extract(d));
-                continue;
-            }
-            if(d.etag == store.getETag(d.filename))
-                continue;
-
-            try {
-                store.insert_broken_file(d.filename, d.etag);
-                MediaFile media;
-                try {
-                    media = extractor->extract(d);
-                } catch (const runtime_error &e) {
-                    fprintf(stderr, "Error extracting from '%s': %s\n",
-                            d.filename.c_str(), e.what());
-                    media = extractor->fallback_extract(d);
-                }
-                store.insert(std::move(media));
-            } catch(const exception &e) {
-                fprintf(stderr, "Error when indexing: %s\n", e.what());
-            }
-        } catch(const StopIteration &stop) {
-            break;
-        }
-    }
-    txn.commit();
-}
-
 int ScannerDaemon::run() {
     g_main_loop_run(main_loop.get());
     return 99;
@@ -279,25 +191,14 @@ void ScannerDaemon::setupMountWatcher() {
 }
 
 void ScannerDaemon::mountEvent(const MountWatcher::Info& info) {
-    bool changed = false;
     if (info.is_mounted) {
         printf("Volume %s was mounted.\n", info.mount_point.c_str());
         if (info.mount_point.substr(0, 6) == "/media") {
-            addDir(info.mount_point);
-            changed = true;
+            volumes->queueAddVolume(info.mount_point);
         }
     } else {
         printf("Volume %s was unmounted.\n", info.mount_point.c_str());
-        if (subtrees.find(info.mount_point) != subtrees.end()) {
-            removeDir(info.mount_point);
-            changed = true;
-        } else {
-            // This volume was not tracked because it looked rootlike.
-            // Thus we don't need to do anything.
-        }
-    }
-    if (changed) {
-        invalidator.invalidate();
+        volumes->queueRemoveVolume(info.mount_point);
     }
 }
 
