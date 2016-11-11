@@ -4,4 +4,4 @@ author "James Henstridge <james.henstridge@canonical.com>"
 start on started dbus
 
 respawn
-exec @CMAKE_INSTALL_FULL_BINDIR@/mediascanner-service-2.0
+exec $SNAP@CMAKE_INSTALL_FULL_BINDIR@/mediascanner-service-2.0
