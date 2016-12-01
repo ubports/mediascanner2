@@ -1,3 +1,14 @@
+mediascanner2 (0.112+17.04.20161201-0ubuntu1) zesty; urgency=medium
+
+  [ James Henstridge ]
+  * Correctly detect embedded art in Vorbis files with TagLib 1.11.
+
+  [ Michael Terry ]
+  * Handle running inside of a snap by respecting the $SNAP variable.
+    (LP: #1629009)
+
+ -- James Henstridge <james.henstridge@canonical.com>  Thu, 01 Dec 2016 09:07:15 +0000
+
 mediascanner2 (0.112+16.10.20160909-0ubuntu1) yakkety; urgency=medium
 
   [ James Henstridge ]
