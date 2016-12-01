@@ -133,7 +133,7 @@ void parse_common(const TagLib::File &file, MediaFileBuilder &builder) {
     }
 }
 
-void parse_xiph_comment(const TagLib::Ogg::XiphComment *tag, MediaFileBuilder &builder) {
+void parse_xiph_comment(TagLib::Ogg::XiphComment *tag, MediaFileBuilder &builder) {
     const auto& fields = tag->fieldListMap();
 
     if (!fields["DATE"].isEmpty()) {
@@ -151,6 +151,11 @@ void parse_xiph_comment(const TagLib::Ogg::XiphComment *tag, MediaFileBuilder &b
     if (!fields["COVERART"].isEmpty() || !fields["METADATA_BLOCK_PICTURE"].isEmpty()) {
         builder.setHasThumbnail(true);
     }
+#if TAGLIB_MAJOR_VERSION > 1 || (TAGLIB_MAJOR_VERSION == 1 && TAGLIB_MINOR_VERSION >= 11)
+    if (!tag->pictureList().isEmpty()) {
+        builder.setHasThumbnail(true);
+    }
+#endif
 }
 
 void parse_id3v2(const TagLib::ID3v2::Tag *tag, MediaFileBuilder &builder) {
