@@ -132,6 +132,15 @@ TEST_F(MetadataExtractorTest, extract) {
     EXPECT_EQ(file.getDate(), "2013");
     EXPECT_EQ(file.getTrackNumber(), 1);
     EXPECT_EQ(file.getDuration(), 5);
+    EXPECT_EQ(file.getHasThumbnail(), false);
+}
+
+TEST_F(MetadataExtractorTest, extract_vorbis_art) {
+    MetadataExtractor e(session_bus());
+    string testfile = SOURCE_DIR "/media/embedded-art.ogg";
+    MediaFile file = e.extract(e.detect(testfile));
+
+    EXPECT_EQ(file.getHasThumbnail(), true);
 }
 
 TEST_F(MetadataExtractorTest, extract_mp3) {
