@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Standards-Version: 3.9.6
 Build-Depends: cmake,
-               cmake-extras,
+               cmake-extras (>= 0.10),
                dbus,
                debhelper (>= 9),
                libapparmor-dev,
