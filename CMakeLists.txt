@@ -69,6 +69,19 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions
 )
 
+# Install SystemD user unit
+configure_file(mediascanner-2.0.service.in mediascanner-2.0.service)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/mediascanner-2.0.service
+  DESTINATION lib/systemd/user
+)
+
+# Install upstart-systemd override
+install(
+  FILES mediascanner-2.0.override
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/systemd-session/upstart
+)
+
 enable_coverage_report(
   TARGETS
     mediascanner
