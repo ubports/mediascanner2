@@ -43,7 +43,7 @@ if(${full_warnings})
 # C does not have any more warning flags.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 endif()
-include(EnableCoverageReport)
+find_package(CoverageReport)
 
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
