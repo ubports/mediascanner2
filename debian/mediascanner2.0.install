@@ -1,7 +1,8 @@
 usr/bin/mediascanner-service-2.0
 usr/lib/*/mediascanner-2.0/mediascanner-dbus-2.0
 usr/lib/*/mediascanner-2.0/mediascanner-extractor
+usr/lib/systemd
 usr/share/dbus-1/services/*
-usr/share/upstart/sessions/*
+usr/share/upstart
 debian/usr.bin.mediascanner-service-2.0 etc/apparmor.d
 debian/usr.lib.mediascanner-2.0.mediascanner-extractor etc/apparmor.d

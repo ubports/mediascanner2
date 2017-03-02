@@ -1,0 +1,9 @@
+[Unit]
+Description=Media Scanner
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=com.canonical.MediaScanner2.Daemon
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/mediascanner-service-2.0
+Restart=on-failure
