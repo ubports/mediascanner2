@@ -1,3 +1,10 @@
+mediascanner2 (0.112+17.04.20170302-0ubuntu1) zesty; urgency=medium
+
+  * Compatibility with unversioned cmake-extras modules (LP: #1563573)
+  * Add SystemD session files
+
+ -- Pete Woods <pete.woods@canonical.com>  Thu, 02 Mar 2017 10:42:36 +0000
+
 mediascanner2 (0.112+17.04.20161201-0ubuntu1) zesty; urgency=medium
 
   [ James Henstridge ]
