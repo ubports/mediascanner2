@@ -1,3 +1,9 @@
+mediascanner2 (0.112+17.04.20170322-0ubuntu1) zesty; urgency=medium
+
+  * Only run mediascanner in unity8.
+
+ -- Michael Terry <michael.terry@canonical.com>  Wed, 22 Mar 2017 15:23:21 +0000
+
 mediascanner2 (0.112+17.04.20170302-0ubuntu1) zesty; urgency=medium
 
   * Compatibility with unversioned cmake-extras modules (LP: #1563573)
