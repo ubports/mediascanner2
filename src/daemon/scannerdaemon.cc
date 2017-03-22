@@ -202,6 +202,30 @@ void ScannerDaemon::mountEvent(const MountWatcher::Info& info) {
     }
 }
 
+static void validate_desktop() {
+    // Only set manually
+    const gchar *ms_run_env = g_getenv("MEDIASCANNER_RUN");
+    if (g_strcmp0(ms_run_env, "1") == 0)
+        return;
+
+    // Only set properly in 17.04 and onward
+    const gchar *desktop_env = g_getenv("XDG_CURRENT_DESKTOP");
+    if (g_regex_match_simple("(^|:)Unity8(:|$)", desktop_env,
+                             (GRegexCompileFlags)0, (GRegexMatchFlags)0))
+        return;
+
+    // Shouldn't rely on this, but we only need to use it for 16.04 - 17.04
+    const gchar *session_env = g_getenv("XDG_SESSION_DESKTOP");
+    if (g_strcmp0("unity8", session_env) == 0)
+        return;
+
+    // We shouldn't run if we weren't asked for; we can confuse some desktops
+    // (like unity7) with our scanning of mounted drives and the like.
+    printf("Mediascanner service not starting due to unsupported desktop environment.\n");
+    printf("Set MEDIASCANNER_RUN=1 to override this.\n");
+    exit(0);
+}
+
 static void print_banner() {
     char timestr[200];
     time_t t;
@@ -223,6 +247,7 @@ static void print_banner() {
 }
 
 int main(int /*argc*/, char **/*argv*/) {
+    validate_desktop();
     print_banner();
 
     try {
