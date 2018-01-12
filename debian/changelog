@@ -1,3 +1,9 @@
+mediascanner2 (0.113+ubports) xenial; urgency=medium
+
+  * Imported to UBports
+
+ -- UBports auto importer <infra@ubports.com>  Fri, 12 Jan 2018 12:57:53 +0000
+
 mediascanner2 (0.112+17.04.20170322-0ubuntu1) zesty; urgency=medium
 
   * Only run mediascanner in unity8.
