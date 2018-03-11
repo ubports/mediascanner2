@@ -219,6 +219,10 @@ static void validate_desktop() {
     if (g_strcmp0("unity8", session_env) == 0)
         return;
 
+    // We should also start on Ubuntu touch!
+    if (g_strcmp0("ubuntu-touch", session_env) == 0)
+        return;
+
     // We shouldn't run if we weren't asked for; we can confuse some desktops
     // (like unity7) with our scanning of mounted drives and the like.
     printf("Mediascanner service not starting due to unsupported desktop environment.\n");
