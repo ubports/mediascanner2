@@ -28,6 +28,7 @@
 #include <fcntl.h>
 #include <algorithm>
 #include <cstdio>
+#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
