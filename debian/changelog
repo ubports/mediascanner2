@@ -1,3 +1,9 @@
+mediascanner2 (0.114+0ubports0) xenial; urgency=medium
+
+  * Remove Bileto pre-release hook
+
+ -- Dalton Durst <dalton@ubports.com>  Wed, 21 Aug 2019 17:19:22 -0500
+
 mediascanner2 (0.113+ubports) xenial; urgency=medium
 
   * Imported to UBports
