@@ -3,14 +3,7 @@ project(mediascanner2 CXX C)
 
 set(MEDIASCANNER_VERSION "0.112")
 
-execute_process(
-  COMMAND /bin/sh ${CMAKE_CURRENT_SOURCE_DIR}/get-soversion.sh
-  OUTPUT_VARIABLE MEDIASCANNER_SOVERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE result)
-if(NOT result EQUAL 0)
-  message(FATAL_ERROR "Error running get-soversion.sh script")
-endif()
+set(MEDIASCANNER_SOVERSION "4")
 
 set(MEDIASCANNER_LIBVERSION "${MEDIASCANNER_SOVERSION}.${MEDIASCANNER_VERSION}")
 
@@ -111,4 +104,3 @@ enable_coverage_report(
     test_qml
     test_util
 )
-

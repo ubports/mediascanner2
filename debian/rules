@@ -16,10 +16,6 @@ export QT_SELECT=qt5
 %:
 	dh $@ --parallel --fail-missing
 
-override_dh_auto_clean:
-	/bin/sh $(CURDIR)/debian/bileto_pre_release_hook
-	dh_auto_clean
-
 ifneq (,$(filter powerpc,$(DEB_HOST_ARCH)))
   test_arg = || :
 else
