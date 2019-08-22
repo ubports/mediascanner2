@@ -84,17 +84,17 @@ qt5_use_modules(test_qml QuickTest)
 target_link_libraries(test_qml mediascanner)
 add_test(test_qml test_qml -import ${CMAKE_BINARY_DIR}/src/qml)
 set_tests_properties(test_qml PROPERTIES
-  ENVIRONMENT "QT_QPA_PLATFORM=minimal"
+  ENVIRONMENT "QT_QPA_PLATFORM=minimal;QT_SELECT=qt5"
   TIMEOUT 600)
 
 add_test(test_qml_dbus test_qml -import ${CMAKE_BINARY_DIR}/src/qml)
 set_tests_properties(test_qml_dbus PROPERTIES
-  ENVIRONMENT "QT_QPA_PLATFORM=minimal;MEDIASCANNER_USE_DBUS=1"
+  ENVIRONMENT "QT_QPA_PLATFORM=minimal;MEDIASCANNER_USE_DBUS=1;QT_SELECT=qt5"
   TIMEOUT 600)
 
 add_test(test_qml_nodb qmltestrunner -import ${CMAKE_BINARY_DIR}/src/qml -input ${CMAKE_CURRENT_SOURCE_DIR}/test_qml_nodb.qml)
 set_tests_properties(test_qml_nodb PROPERTIES
-  ENVIRONMENT "QT_QPA_PLATFORM=minimal;MEDIASCANNER_CACHEDIR=${CMAKE_CURRENT_BINARY_DIR}/qml-nodb-cachedir;DBUS_SESSION_BUS_ADDRESS="
+  ENVIRONMENT "QT_QPA_PLATFORM=minimal;QT_SELECT=qt5;MEDIASCANNER_CACHEDIR=${CMAKE_CURRENT_BINARY_DIR}/qml-nodb-cachedir;DBUS_SESSION_BUS_ADDRESS="
   TIMEOUT 600)
 
 
