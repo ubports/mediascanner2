@@ -32,13 +32,16 @@ struct Album::Private {
     string genre;
     string filename;
     bool has_thumbnail;
+    int artist_count;
 
     Private() {}
     Private(const string &title, const string &artist,
             const string &date, const string &genre,
-            const string &filename, bool has_thumbnail)
+            const string &filename, bool has_thumbnail,
+            int artist_count)
         : title(title), artist(artist), date(date), genre(genre),
-          filename(filename), has_thumbnail(has_thumbnail) {}
+          filename(filename), has_thumbnail(has_thumbnail),
+          artist_count(artist_count) {}
     Private(const Private &other) {
         *this = other;
     }
@@ -48,19 +51,19 @@ Album::Album() : p(new Private){
 }
 
 Album::Album(const std::string &title, const std::string &artist)
-    : Album(title, artist, "", "", "", false) {
+    : Album(title, artist, "", "", "", false, 1) {
 }
 
 Album::Album(const std::string &title, const std::string &artist,
              const std::string &date, const std::string &genre,
              const std::string &filename)
-    : Album(title, artist, date, genre, filename, !filename.empty()) {
+    : Album(title, artist, date, genre, filename, !filename.empty(), 1) {
 }
 
 Album::Album(const std::string &title, const std::string &artist,
              const std::string &date, const std::string &genre,
-             const std::string &filename, bool has_thumbnail)
-    : p(new Private(title, artist, date, genre, filename, has_thumbnail)) {
+             const std::string &filename, bool has_thumbnail, int artist_count)
+    : p(new Private(title, artist, date, genre, filename, has_thumbnail, artist_count)) {
 }
 
 Album::Album(const Album &other) : p(new Private(*other.p)) {
@@ -110,6 +113,10 @@ const std::string& Album::getArtFile() const noexcept {
 
 bool Album::getHasThumbnail() const noexcept {
     return p->has_thumbnail;
+}
+
+int Album::getArtistCount() const noexcept {
+    return p->artist_count;
 }
 
 std::string Album::getArtUri() const {

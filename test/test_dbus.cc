@@ -53,7 +53,7 @@ TEST_F(MediaStoreDBusTests, mediafile_codec) {
 }
 
 TEST_F(MediaStoreDBusTests, album_codec) {
-    mediascanner::Album album("title", "artist", "date", "genre", "art_file", true);
+    mediascanner::Album album("title", "artist", "date", "genre", "art_file", true, 1);
     message->writer() << album;
 
     EXPECT_EQ("(sssssb)", message->signature());

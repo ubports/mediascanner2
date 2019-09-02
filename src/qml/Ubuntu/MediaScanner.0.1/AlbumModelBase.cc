@@ -43,6 +43,10 @@ QVariant AlbumModelBase::data(const QModelIndex &index, int role) const {
     case RoleTitle:
         return QString::fromStdString(album.getTitle());
     case RoleArtist:
+        if (album.getArtistCount() > 1) {
+            return QStringLiteral("Various"); // This gets translated in the client apps
+        }
+
         return QString::fromStdString(album.getArtist());
     case RoleDate:
         return QString::fromStdString(album.getDate());

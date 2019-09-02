@@ -345,11 +345,11 @@ TEST_F(MFBTest, album_art) {
     std::string fname = tmpdir + "/dummy.mp3";
 
     // File with embedded art
-    Album album("Album", "Artist", "2015-11-23", "Rock", fname, true);
+    Album album("Album", "Artist", "2015-11-23", "Rock", fname, true, 1);
     EXPECT_NE(std::string::npos, album.getArtUri().find("/dummy.mp3")) << album.getArtUri();
 
     // No embedded art
-    album = Album("Album", "Artist", "2015-11-23", "Rock", fname, false);
+    album = Album("Album", "Artist", "2015-11-23", "Rock", fname, false, 1);
     EXPECT_EQ("image://albumart/artist=Artist&album=Album", album.getArtUri());
 
     // No embedded art, but folder art available

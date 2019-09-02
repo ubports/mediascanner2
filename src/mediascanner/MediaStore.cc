@@ -127,7 +127,7 @@ static void rankfunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal) {
         **   (<hit count> / <global hit count>) * <column weight>
         **
         ** aPhraseinfo[] points to the start of the data for phrase iPhrase. So
-        ** the hit count and global hit counts for each column are found in 
+        ** the hit count and global hit counts for each column are found in
         ** aPhraseinfo[iCol*3] and aPhraseinfo[iCol*3+1], respectively.
         */
         const int32_t *aPhraseinfo = &aMatchinfo[2 + iPhrase*nCol*3];
@@ -609,7 +609,8 @@ static Album make_album(Statement &query) {
     const string genre = query.getText(3);
     const string filename = query.getText(4);
     const bool has_thumbnail = query.getInt(5);
-    return Album(album, album_artist, date, genre, filename, has_thumbnail);
+    const int artist_count = query.getInt(6);
+    return Album(album, album_artist, date, genre, filename, has_thumbnail, artist_count);
 }
 
 static vector<Album> collect_albums(Statement &query) {
@@ -622,13 +623,13 @@ static vector<Album> collect_albums(Statement &query) {
 
 vector<Album> MediaStorePrivate::queryAlbums(const std::string &core_term, const Filter &filter) const {
     string qs(R"(
-SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail, first(mtime) as mtime FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail, count(distinct album_artist) as artist_count, first(mtime) as mtime FROM media
 WHERE type = ? AND album <> ''
 )");
     if (!core_term.empty()) {
         qs += " AND id IN (SELECT docid FROM media_fts WHERE media_fts MATCH ?)";
     }
-    qs += " GROUP BY album, album_artist";
+    qs += " GROUP BY album";
     switch (filter.getOrder()) {
     case MediaOrder::Default:
     case MediaOrder::Title:
@@ -771,7 +772,7 @@ LIMIT ? OFFSET ?
 
 std::vector<Album> MediaStorePrivate::listAlbums(const Filter &filter) const {
     std::string qs(R"(
-SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail FROM media
+SELECT album, album_artist, first(date) as date, first(genre) as genre, first(filename) as filename, first(has_thumbnail) as has_thumbnail, count(distinct album_artist) as artist_count FROM media
   WHERE type = ?
 )");
     if (filter.hasArtist()) {
@@ -784,8 +785,8 @@ SELECT album, album_artist, first(date) as date, first(genre) as genre, first(fi
         qs += "AND genre = ?";
     }
     qs += R"(
-GROUP BY album, album_artist
-ORDER BY album_artist, album
+GROUP BY album
+ORDER BY album
 LIMIT ? OFFSET ?
 )";
     Statement query(db, qs.c_str());
