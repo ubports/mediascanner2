@@ -62,6 +62,12 @@ Album::Album(const std::string &title, const std::string &artist,
 
 Album::Album(const std::string &title, const std::string &artist,
              const std::string &date, const std::string &genre,
+             const std::string &filename, bool has_thumbnail)
+    : p(new Private(title, artist, date, genre, filename, has_thumbnail, 1)) {
+}
+
+Album::Album(const std::string &title, const std::string &artist,
+             const std::string &date, const std::string &genre,
              const std::string &filename, bool has_thumbnail, int artist_count)
     : p(new Private(title, artist, date, genre, filename, has_thumbnail, artist_count)) {
 }
