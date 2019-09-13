@@ -105,6 +105,7 @@ void Codec<Album>::encode_argument(Message::Writer &out, const Album &album) {
     core::dbus::encode_argument(w, album.getGenre());
     core::dbus::encode_argument(w, album.getArtFile());
     core::dbus::encode_argument(w, album.getHasThumbnail());
+    core::dbus::encode_argument(w, album.getArtistCount());
     out.close_structure(std::move(w));
 }
 
@@ -112,8 +113,10 @@ void Codec<Album>::decode_argument(Message::Reader &in, Album &album) {
     auto r = in.pop_structure();
     string title, artist, date, genre, art_file;
     bool has_thumbnail;
-    r >> title >> artist >> date >> genre >> art_file >> has_thumbnail;
-    album = Album(title, artist, date, genre, art_file, has_thumbnail);
+    int artist_count;
+    r >> title >> artist >> date >> genre >> art_file >> has_thumbnail >> artist_count;
+
+    album = Album(title, artist, date, genre, art_file, has_thumbnail, artist_count);
 }
 
 void Codec<Filter>::encode_argument(Message::Writer &out, const Filter &filter) {

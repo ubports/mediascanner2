@@ -1158,7 +1158,7 @@ TEST_F(MediaStoreTest, listAlbums) {
     Filter filter;
     vector<Album> albums = store.listAlbums(filter);
     ASSERT_EQ(4, albums.size());
-    EXPECT_EQ("AlbumOne", albums[0].getTitle());
+    EXPECT_EQ("AlbumFour", albums[0].getTitle());
 
     // test limit
     filter.setLimit(2);

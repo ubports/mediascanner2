@@ -53,10 +53,10 @@ TEST_F(MediaStoreDBusTests, mediafile_codec) {
 }
 
 TEST_F(MediaStoreDBusTests, album_codec) {
-    mediascanner::Album album("title", "artist", "date", "genre", "art_file", true);
+    mediascanner::Album album("title", "artist", "date", "genre", "art_file", true, 1);
     message->writer() << album;
 
-    EXPECT_EQ("(sssssb)", message->signature());
+    EXPECT_EQ("(sssssbi)", message->signature());
     EXPECT_EQ(core::dbus::helper::TypeMapper<mediascanner::Album>::signature(), message->signature());
 
     mediascanner::Album album2;
