@@ -67,7 +67,7 @@
   /{,android/}system/vendor/lib{,64}/**.so m,
 
   # attach_disconnected path
-  /dev/socket/property_service rw,
+  /{,dev/}socket/property_service rw,
 
   # Android logging triggered by platform. Can safely deny
   deny /dev/log_main w,
