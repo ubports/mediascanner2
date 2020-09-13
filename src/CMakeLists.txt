@@ -1,0 +1,6 @@
+add_subdirectory(mediascanner)
+add_subdirectory(extractor)
+add_subdirectory(daemon)
+add_subdirectory(ms-dbus)
+add_subdirectory(qml/Ubuntu/MediaScanner.0.1)
+add_subdirectory(utils)

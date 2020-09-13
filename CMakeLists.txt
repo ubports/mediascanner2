@@ -12,6 +12,7 @@ if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
 endif()
 
 option(full_warnings "All possible compiler warnings." OFF)
+option(enable_tests "Enable tests" ON)
 
 include(FindPkgConfig)
 pkg_check_modules(MEDIASCANNER_DEPS REQUIRED
@@ -40,15 +41,16 @@ find_package(CoverageReport)
 
 include(GNUInstallDirs)
 set(LIBDIR $CMAKE_INSTALL_LIBDIR)
-enable_testing()
 
-add_subdirectory(src/mediascanner)
-add_subdirectory(src/extractor)
-add_subdirectory(src/daemon)
-add_subdirectory(src/ms-dbus)
-add_subdirectory(src/qml/Ubuntu/MediaScanner.0.1)
-add_subdirectory(src/utils)
-add_subdirectory(test)
+add_subdirectory(src)
+
+if(enable_tests)
+  message("Tests enabled")
+  enable_testing()
+  add_subdirectory(test)
+else()
+  message(WARNING "Tests disabled")
+endif()
 
 # Install pkg-config file
 configure_file(mediascanner-2.0.pc.in mediascanner-2.0.pc)
