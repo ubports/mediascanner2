@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <map>
 #include <deque>
+#include <stdexcept>
 
 using namespace std;
 
