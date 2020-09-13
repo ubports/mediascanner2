@@ -11,8 +11,8 @@ if(PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
   message(FATAL_ERROR "In-tree build attempt detected, aborting. Set your build dir outside your source dir, delete CMakeCache.txt from source root and try again.")
 endif()
 
-option(full_warnings "All possible compiler warnings." OFF)
-option(enable_tests "Enable tests" ON)
+option(FULL_WARNINGS "All possible compiler warnings." OFF)
+option(ENABLE_TESTS "Enable tests" ON)
 
 include(FindPkgConfig)
 pkg_check_modules(MEDIASCANNER_DEPS REQUIRED
@@ -33,7 +33,7 @@ find_package(Qt5Core REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -std=c++11")
-if(${full_warnings})
+if(${FULL_WARNINGS})
 # C does not have any more warning flags.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 endif()
@@ -44,7 +44,7 @@ set(LIBDIR $CMAKE_INSTALL_LIBDIR)
 
 add_subdirectory(src)
 
-if(enable_tests)
+if(ENABLE_TESTS)
   message("Tests enabled")
   enable_testing()
   add_subdirectory(test)
