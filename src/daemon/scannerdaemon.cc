@@ -29,6 +29,7 @@
 #include<glib.h>
 #include<glib-unix.h>
 #include<gio/gio.h>
+#include<stdexcept>
 
 #include "../mediascanner/MediaFile.hh"
 #include "../mediascanner/MediaStore.hh"

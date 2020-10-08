@@ -14,6 +14,7 @@ set_source_files_properties(dbus-codec.cc PROPERTIES COMPILE_FLAGS "-O0")
 
 target_link_libraries(ms-dbus
   mediascanner
+  Threads::Threads
   ${DBUSCPP_LDFLAGS}
   ${APPARMOR_LDFLAGS})
 # Compile with -fPIC, since this code is linked into the QML plugin.
