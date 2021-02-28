@@ -91,6 +91,7 @@
   deny @{HOME}/orcexec* w,
 
   /{,android/}system/etc/media_codecs*.xml r,
+  /{,android/}vendor/etc/media_codecs*.xml r,
   /etc/wildmidi/wildmidi.cfg r,
 
   # Allow read on all directories
