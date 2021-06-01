@@ -571,7 +571,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
         }
         break;
     case MediaOrder::Title:
-        qs += " ORDER BY title";
+        qs += " ORDER BY title COLLATE NOCASE";
         if (filter.getReverse()) {
             qs += " DESC";
         }
@@ -674,7 +674,7 @@ WHERE type = ? AND artist <> ''
     switch (filter.getOrder()) {
     case MediaOrder::Default:
     case MediaOrder::Title:
-        qs += " ORDER BY artist";
+        qs += " ORDER BY artist COLLATE NOCASE";
         if (filter.getReverse()) {
             qs += " DESC";
         }
@@ -747,6 +747,7 @@ SELECT filename, content_type, etag, title, date, artist, album, album_artist, g
     }
     qs += R"(
 ORDER BY album_artist, album, disc_number, track_number, title
+COLLATE NOCASE
 LIMIT ? OFFSET ?
 )";
     Statement query(db, qs.c_str());
@@ -787,6 +788,7 @@ SELECT album, album_artist, first(date) as date, first(genre) as genre, first(fi
     qs += R"(
 GROUP BY album
 ORDER BY album
+COLLATE NOCASE
 LIMIT ? OFFSET ?
 )";
     Statement query(db, qs.c_str());
@@ -818,6 +820,7 @@ SELECT artist FROM media
     qs += R"(
   GROUP BY artist
   ORDER BY artist
+  COLLATE NOCASE
   LIMIT ? OFFSET ?
 )";
     Statement query(db, qs.c_str());
@@ -847,6 +850,7 @@ SELECT album_artist FROM media
     qs += R"(
   GROUP BY album_artist
   ORDER BY album_artist
+  COLLATE NOCASE
   LIMIT ? OFFSET ?
 )";
     Statement query(db, qs.c_str());
@@ -871,6 +875,7 @@ SELECT genre FROM media
   WHERE type = ?
   GROUP BY genre
   ORDER BY genre
+  COLLATE NOCASE
   LIMIT ? OFFSET ?
 )");
     query.bind(1, (int)AudioMedia);
